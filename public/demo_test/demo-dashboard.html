@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据看板 - 像素风方案对比</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", sans-serif; background: #f5f0e8; padding: 20px; }
+
+.tab-bar { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 3px solid #5B3A29; }
+.tab-bar button {
+  padding: 10px 24px; border: 2px solid #5B3A29; border-bottom: none;
+  background: #E0D5C8; color: #5B3A29; font-size: 14px; font-weight: 600;
+  cursor: pointer; border-radius: 6px 6px 0 0; margin-right: -1px;
+}
+.tab-bar button.active { background: #FFF8E7; color: #5B3A29; }
+.tab-bar button:hover:not(.active) { background: #d6c9b8; }
+
+.scheme { display: none; }
+.scheme.active { display: block; }
+
+h1.scheme-title {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif;
+  letter-spacing: 2px; color: #5B3A29; font-size: 20px; margin-bottom: 6px;
+}
+.scheme-desc { color: #8B7355; font-size: 13px; margin-bottom: 20px; }
+
+/* ==================== 方案A：冒险者公告板 ==================== */
+.a-board {
+  background: #FFF8E7; border: 3px solid #5B3A29; border-radius: 8px;
+  padding: 24px; position: relative;
+  background-image: url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.025"/></svg>');
+}
+.a-header {
+  background: linear-gradient(135deg, #5B3A29, #8B6F5E); color: #FFF8E7;
+  padding: 12px 20px; border-radius: 6px; margin: -24px -24px 20px;
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; font-size: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.a-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.a-stat {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+  padding: 16px; text-align: center; position: relative; overflow: hidden;
+}
+.a-stat::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+}
+.a-stat.s1::before { background: #9C7ADB; }
+.a-stat.s2::before { background: #E8A93A; }
+.a-stat.s3::before { background: #5C8A4D; }
+.a-stat.s4::before { background: #4A90B8; }
+.a-stat .icon { font-size: 22px; margin-bottom: 6px; }
+.a-stat .label { font-size: 12px; color: #8B7355; }
+.a-stat .val { font-size: 26px; font-weight: 700; color: #5B3A29; margin: 4px 0; }
+.a-stat .sub { font-size: 11px; color: #aaa; }
+
+.a-projects { margin-bottom: 20px; }
+.a-projects h3 { font-size: 14px; color: #5B3A29; margin-bottom: 12px; border-bottom: 2px dashed #E0D5C8; padding-bottom: 8px; }
+.a-proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.a-proj {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+  padding: 16px; cursor: pointer; transition: all 0.15s;
+}
+.a-proj:hover { border-color: #5B3A29; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91,58,41,0.1); }
+.a-proj-title { font-size: 14px; font-weight: 600; color: #5B3A29; margin-bottom: 10px; }
+.a-proj-nums { display: flex; gap: 14px; font-size: 12px; color: #8B7355; margin-bottom: 10px; }
+.a-proj-nums strong { color: #5B3A29; }
+.a-prog-bar { height: 10px; background: #E0D5C8; border-radius: 5px; overflow: hidden; border: 1px solid #d0c5b8; }
+.a-prog-fill { height: 100%; border-radius: 5px;
+  background: repeating-linear-gradient(90deg, #5C8A4D 0px, #5C8A4D 6px, #4E7A3F 6px, #4E7A3F 12px);
+}
+.a-prog-text { font-size: 11px; color: #8B7355; margin-top: 4px; text-align: right; }
+
+.a-chart-box {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; padding: 16px;
+}
+.a-chart-box h3 { font-size: 14px; color: #5B3A29; margin-bottom: 12px; }
+.a-fake-chart { height: 180px; display: flex; align-items: flex-end; gap: 8px; padding: 0 10px; }
+.a-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.a-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; }
+.a-bar.b1 { background: #9C7ADB; }
+.a-bar.b2 { background: #5C8A4D; }
+.a-bar-label { font-size: 10px; color: #8B7355; }
+
+/* ==================== 方案B：牧场日记本 ==================== */
+.b-board { background: #FFF8E7; border: 3px solid #5B3A29; border-radius: 8px; padding: 0; overflow: hidden; }
+.b-spine {
+  background: linear-gradient(180deg, #8B6F5E 0%, #6D4C3D 100%);
+  padding: 16px 20px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 3px solid #5B3A29;
+}
+.b-spine h2 { color: #FFF8E7; font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; font-size: 18px; }
+.b-body { padding: 20px; }
+
+.b-row { display: flex; gap: 16px; margin-bottom: 20px; }
+.b-stat-strip {
+  flex: 1; display: flex; align-items: center; gap: 12px;
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-left: 5px solid; border-radius: 6px;
+  padding: 14px 16px;
+}
+.b-stat-strip.c1 { border-left-color: #9C7ADB; }
+.b-stat-strip.c2 { border-left-color: #E8A93A; }
+.b-stat-strip.c3 { border-left-color: #5C8A4D; }
+.b-stat-strip.c4 { border-left-color: #4A90B8; }
+.b-stat-strip .icon { font-size: 28px; }
+.b-stat-strip .info { flex: 1; }
+.b-stat-strip .label { font-size: 11px; color: #8B7355; }
+.b-stat-strip .val { font-size: 22px; font-weight: 700; color: #5B3A29; }
+.b-stat-strip .sub { font-size: 11px; color: #aaa; }
+
+.b-section-title {
+  font-size: 14px; color: #5B3A29; margin-bottom: 12px;
+  padding-left: 10px; border-left: 4px solid #E8A93A;
+}
+
+.b-proj-table {
+  width: 100%; border-collapse: collapse; background: #FFFDF5;
+  border: 2px solid #E0D5C8; border-radius: 6px; overflow: hidden;
+}
+.b-proj-table th {
+  background: #F5EDD8; color: #5B3A29; font-size: 12px; font-weight: 600;
+  padding: 10px 14px; text-align: left; border-bottom: 2px solid #E0D5C8;
+}
+.b-proj-table td { padding: 12px 14px; font-size: 13px; color: #5B3A29; border-bottom: 1px solid #f0e8d8; }
+.b-proj-table tr:hover td { background: #FFF5E0; }
+.b-proj-table tr:last-child td { border-bottom: none; }
+.b-mini-bar { width: 80px; height: 8px; background: #E0D5C8; border-radius: 4px; display: inline-block; overflow: hidden; vertical-align: middle; }
+.b-mini-fill { height: 100%; background: #5C8A4D; border-radius: 4px; }
+.b-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+}
+.b-badge.high { background: #E8F5E9; color: #2E7D32; }
+.b-badge.mid { background: #FFF3E0; color: #E65100; }
+.b-badge.low { background: #FFEBEE; color: #C62828; }
+
+/* ==================== 方案C：RPG状态面板 ==================== */
+.c-board { background: #2C1810; border: 3px solid #E8A93A; border-radius: 8px; padding: 0; overflow: hidden; }
+.c-title-bar {
+  background: linear-gradient(90deg, #E8A93A, #D4952E);
+  padding: 12px 20px; text-align: center;
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 3px;
+  color: #2C1810; font-size: 18px; font-weight: 700;
+  border-bottom: 3px solid #B8792A;
+}
+.c-body { padding: 20px; }
+.c-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.c-stat {
+  background: #3E2418; border: 2px solid #6B4226; border-radius: 6px;
+  padding: 14px; text-align: center;
+}
+.c-stat .icon { font-size: 24px; margin-bottom: 4px; }
+.c-stat .label { font-size: 11px; color: #B8966A; letter-spacing: 1px; }
+.c-stat .val { font-size: 24px; font-weight: 700; color: #E8A93A; margin: 4px 0;
+  text-shadow: 0 0 8px rgba(232,169,58,0.3); }
+.c-stat .sub { font-size: 10px; color: #7A6A52; }
+
+.c-section-title {
+  color: #E8A93A; font-size: 14px; margin-bottom: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.c-section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #6B4226, transparent); }
+
+.c-proj-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.c-proj {
+  background: #3E2418; border: 2px solid #6B4226; border-radius: 6px;
+  padding: 14px 18px; display: flex; align-items: center; gap: 16px;
+  cursor: pointer; transition: all 0.15s;
+}
+.c-proj:hover { border-color: #E8A93A; box-shadow: 0 0 12px rgba(232,169,58,0.15); }
+.c-proj-icon { font-size: 28px; }
+.c-proj-info { flex: 1; }
+.c-proj-name { font-size: 14px; color: #F5E6C8; font-weight: 600; margin-bottom: 6px; }
+.c-proj-meta { font-size: 11px; color: #7A6A52; display: flex; gap: 12px; }
+.c-proj-meta span strong { color: #B8966A; }
+.c-hp-bar { width: 100px; }
+.c-hp-outer { height: 10px; background: #1A0E08; border: 1px solid #6B4226; border-radius: 3px; overflow: hidden; }
+.c-hp-fill { height: 100%; border-radius: 2px;
+  background: linear-gradient(180deg, #5C8A4D, #3D6B2F);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.c-hp-text { font-size: 10px; color: #7A6A52; text-align: center; margin-top: 2px; }
+
+.c-chart-box { background: #3E2418; border: 2px solid #6B4226; border-radius: 6px; padding: 16px; }
+.c-chart-box h3 { color: #E8A93A; font-size: 13px; margin-bottom: 12px; }
+.c-fake-chart { height: 140px; display: flex; align-items: flex-end; gap: 6px; padding: 0 8px; }
+.c-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 4px; }
+.c-bar.g { background: linear-gradient(180deg, #5C8A4D, #3D6B2F); }
+.c-bar.y { background: linear-gradient(180deg, #E8A93A, #C4872C); }
+.c-bar-label { font-size: 9px; color: #7A6A52; text-align: center; margin-top: 4px; }
+
+/* ==================== 通用 ==================== */
+.legend { display: flex; gap: 16px; margin-top: 8px; justify-content: center; }
+.legend span { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="active" onclick="switchTab('a')">方案A · 冒险者公告板</button>
+  <button onclick="switchTab('b')">方案B · 牧场日记本</button>
+  <button onclick="switchTab('c')">方案C · RPG状态面板</button>
+</div>
+
+<!-- ========== 方案A ========== -->
+<div class="scheme active" id="scheme-a">
+  <h1 class="scheme-title">方案A · 冒险者公告板</h1>
+  <p class="scheme-desc">延续学员端温暖像素风，奶油底色 + 棕色边框 + 条纹进度条，和现有 UI 一脉相承</p>
+
+  <div class="a-board">
+    <div class="a-header">📊 冒险者公告板</div>
+
+    <div class="a-stats">
+      <div class="a-stat s1">
+        <div class="icon">👥</div>
+        <div class="label">学员总数</div>
+        <div class="val">128</div>
+        <div class="sub">本月新增 +12</div>
+      </div>
+      <div class="a-stat s2">
+        <div class="icon">⚔️</div>
+        <div class="label">在训人数</div>
+        <div class="val">86</div>
+        <div class="sub">占比 67%</div>
+      </div>
+      <div class="a-stat s3">
+        <div class="icon">🏆</div>
+        <div class="label">已通关人数</div>
+        <div class="val">34</div>
+        <div class="sub">通关率 27%</div>
+      </div>
+      <div class="a-stat s4">
+        <div class="icon">📅</div>
+        <div class="label">平均通关天数</div>
+        <div class="val">14</div>
+        <div class="sub">天</div>
+      </div>
+    </div>
+
+    <div class="a-projects">
+      <h3>📁 项目概览</h3>
+      <div class="a-proj-grid">
+        <div class="a-proj">
+          <div class="a-proj-title">📁 AI标注培训</div>
+          <div class="a-proj-nums">
+            <span>学员 <strong>68</strong></span>
+            <span>在训 <strong>42</strong></span>
+            <span>通关 <strong>20</strong></span>
+          </div>
+          <div class="a-prog-bar"><div class="a-prog-fill" style="width:65%"></div></div>
+          <div class="a-prog-text">通过率 65%</div>
+        </div>
+        <div class="a-proj">
+          <div class="a-proj-title">📁 数据清洗入门</div>
+          <div class="a-proj-nums">
+            <span>学员 <strong>45</strong></span>
+            <span>在训 <strong>30</strong></span>
+            <span>通关 <strong>10</strong></span>
+          </div>
+          <div class="a-prog-bar"><div class="a-prog-fill" style="width:40%"></div></div>
+          <div class="a-prog-text">通过率 40%</div>
+        </div>
+        <div class="a-proj">
+          <div class="a-proj-title">📁 NLP基础训练</div>
+          <div class="a-proj-nums">
+            <span>学员 <strong>15</strong></span>
+            <span>在训 <strong>14</strong></span>
+            <span>通关 <strong>4</strong></span>
+          </div>
+          <div class="a-prog-bar"><div class="a-prog-fill" style="width:28%"></div></div>
+          <div class="a-prog-text">通过率 28%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="a-chart-box">
+      <h3>📈 每周趋势</h3>
+      <div class="a-fake-chart">
+        <div class="a-bar-group"><div class="a-bar b1" style="height:40px"></div><div class="a-bar b2" style="height:20px"></div><div class="a-bar-label">W1</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:55px"></div><div class="a-bar b2" style="height:30px"></div><div class="a-bar-label">W2</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:35px"></div><div class="a-bar b2" style="height:45px"></div><div class="a-bar-label">W3</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:70px"></div><div class="a-bar b2" style="height:50px"></div><div class="a-bar-label">W4</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:60px"></div><div class="a-bar b2" style="height:65px"></div><div class="a-bar-label">W5</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:80px"></div><div class="a-bar b2" style="height:55px"></div><div class="a-bar-label">W6</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:50px"></div><div class="a-bar b2" style="height:70px"></div><div class="a-bar-label">W7</div></div>
+        <div class="a-bar-group"><div class="a-bar b1" style="height:90px"></div><div class="a-bar b2" style="height:60px"></div><div class="a-bar-label">W8</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:#9C7ADB"></span> 新增学员</span>
+        <span><span class="dot" style="background:#5C8A4D"></span> 通关人数</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 方案B ========== -->
+<div class="scheme" id="scheme-b">
+  <h1 class="scheme-title">方案B · 牧场日记本</h1>
+  <p class="scheme-desc">左侧彩色边线统计条 + 表格式项目概览，数据密度更高，适合管理视角</p>
+
+  <div class="b-board">
+    <div class="b-spine"><span style="font-size:22px">📋</span><h2>数据看板</h2></div>
+    <div class="b-body">
+      <div class="b-row">
+        <div class="b-stat-strip c1">
+          <div class="icon">👥</div>
+          <div class="info"><div class="label">学员总数</div><div class="val">128</div></div>
+          <div class="sub">+12 本月</div>
+        </div>
+        <div class="b-stat-strip c2">
+          <div class="icon">⚔️</div>
+          <div class="info"><div class="label">在训人数</div><div class="val">86</div></div>
+          <div class="sub">67%</div>
+        </div>
+        <div class="b-stat-strip c3">
+          <div class="icon">🏆</div>
+          <div class="info"><div class="label">已通关</div><div class="val">34</div></div>
+          <div class="sub">27%</div>
+        </div>
+        <div class="b-stat-strip c4">
+          <div class="icon">📅</div>
+          <div class="info"><div class="label">平均通关</div><div class="val">14天</div></div>
+        </div>
+      </div>
+
+      <div class="b-section-title">📁 项目概览</div>
+      <table class="b-proj-table">
+        <thead>
+          <tr><th>项目名称</th><th>学员</th><th>在训</th><th>通关</th><th>通过率</th><th>进度</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AI标注培训</strong></td><td>68</td><td>42</td><td>20</td>
+            <td><span class="b-badge high">65%</span></td>
+            <td><div class="b-mini-bar"><div class="b-mini-fill" style="width:65%"></div></div></td>
+          </tr>
+          <tr>
+            <td><strong>数据清洗入门</strong></td><td>45</td><td>30</td><td>10</td>
+            <td><span class="b-badge mid">40%</span></td>
+            <td><div class="b-mini-bar"><div class="b-mini-fill" style="width:40%"></div></div></td>
+          </tr>
+          <tr>
+            <td><strong>NLP基础训练</strong></td><td>15</td><td>14</td><td>4</td>
+            <td><span class="b-badge low">28%</span></td>
+            <td><div class="b-mini-bar"><div class="b-mini-fill" style="width:28%"></div></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 方案C ========== -->
+<div class="scheme" id="scheme-c">
+  <h1 class="scheme-title">方案C · RPG状态面板</h1>
+  <p class="scheme-desc">深色背景 + 金色点缀 + HP条进度，更有游戏感，适合沉浸式管理体验</p>
+
+  <div class="c-board">
+    <div class="c-title-bar">⚔️ 训练营总部 · 数据看板</div>
+    <div class="c-body">
+      <div class="c-stats">
+        <div class="c-stat"><div class="icon">👥</div><div class="label">学员总数</div><div class="val">128</div><div class="sub">本月 +12</div></div>
+        <div class="c-stat"><div class="icon">⚔️</div><div class="label">在训人数</div><div class="val">86</div><div class="sub">67%</div></div>
+        <div class="c-stat"><div class="icon">🏆</div><div class="label">已通关</div><div class="val">34</div><div class="sub">27%</div></div>
+        <div class="c-stat"><div class="icon">📅</div><div class="label">平均通关</div><div class="val">14</div><div class="sub">天</div></div>
+      </div>
+
+      <div class="c-section-title">📁 项目概览</div>
+      <div class="c-proj-list">
+        <div class="c-proj">
+          <div class="c-proj-icon">📁</div>
+          <div class="c-proj-info">
+            <div class="c-proj-name">AI标注培训</div>
+            <div class="c-proj-meta"><span>学员 <strong>68</strong></span><span>在训 <strong>42</strong></span><span>通关 <strong>20</strong></span></div>
+          </div>
+          <div class="c-hp-bar">
+            <div class="c-hp-outer"><div class="c-hp-fill" style="width:65%"></div></div>
+            <div class="c-hp-text">65%</div>
+          </div>
+        </div>
+        <div class="c-proj">
+          <div class="c-proj-icon">📁</div>
+          <div class="c-proj-info">
+            <div class="c-proj-name">数据清洗入门</div>
+            <div class="c-proj-meta"><span>学员 <strong>45</strong></span><span>在训 <strong>30</strong></span><span>通关 <strong>10</strong></span></div>
+          </div>
+          <div class="c-hp-bar">
+            <div class="c-hp-outer"><div class="c-hp-fill" style="width:40%"></div></div>
+            <div class="c-hp-text">40%</div>
+          </div>
+        </div>
+        <div class="c-proj">
+          <div class="c-proj-icon">📁</div>
+          <div class="c-proj-info">
+            <div class="c-proj-name">NLP基础训练</div>
+            <div class="c-proj-meta"><span>学员 <strong>15</strong></span><span>在训 <strong>14</strong></span><span>通关 <strong>4</strong></span></div>
+          </div>
+          <div class="c-hp-bar">
+            <div class="c-hp-outer"><div class="c-hp-fill" style="width:28%"></div></div>
+            <div class="c-hp-text">28%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="c-chart-box">
+        <h3>📈 每周趋势</h3>
+        <div class="c-fake-chart">
+          <div class="a-bar-group"><div class="c-bar y" style="height:40px"></div><div class="c-bar g" style="height:20px"></div><div class="c-bar-label" style="color:#7A6A52">W1</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:55px"></div><div class="c-bar g" style="height:30px"></div><div class="c-bar-label" style="color:#7A6A52">W2</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:35px"></div><div class="c-bar g" style="height:45px"></div><div class="c-bar-label" style="color:#7A6A52">W3</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:70px"></div><div class="c-bar g" style="height:50px"></div><div class="c-bar-label" style="color:#7A6A52">W4</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:60px"></div><div class="c-bar g" style="height:65px"></div><div class="c-bar-label" style="color:#7A6A52">W5</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:80px"></div><div class="c-bar g" style="height:55px"></div><div class="c-bar-label" style="color:#7A6A52">W6</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:50px"></div><div class="c-bar g" style="height:70px"></div><div class="c-bar-label" style="color:#7A6A52">W7</div></div>
+          <div class="a-bar-group"><div class="c-bar y" style="height:90px"></div><div class="c-bar g" style="height:60px"></div><div class="c-bar-label" style="color:#7A6A52">W8</div></div>
+        </div>
+        <div class="legend">
+          <span style="color:#B8966A"><span class="dot" style="background:#E8A93A"></span> 新增学员</span>
+          <span style="color:#B8966A"><span class="dot" style="background:#5C8A4D"></span> 通关人数</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.scheme').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('scheme-' + id).classList.add('active');
+  document.querySelectorAll('.tab-bar button')[{a:0,b:1,c:2}[id]].classList.add('active');
+}
+</script>
+</body>
+</html>

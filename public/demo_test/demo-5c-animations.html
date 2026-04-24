@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 5C Demo — 页面过渡 & 微动画</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #F5EFE0;
+    color: #5B3A29;
+    overflow-x: hidden;
+  }
+
+  /* ===== 顶部导航 ===== */
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 8px; padding: 12px 20px;
+    background: #5B3A29; flex-wrap: wrap;
+  }
+  .demo-nav button {
+    padding: 8px 18px; border: 2px solid #E8A93A; background: #7B5B3A;
+    color: #FFF8E7; font-size: 14px; cursor: pointer;
+    image-rendering: pixelated;
+  }
+  .demo-nav button:hover { background: #E8A93A; color: #5B3A29; }
+  .demo-nav button.active { background: #E8A93A; color: #5B3A29; font-weight: bold; }
+  .demo-nav .title { color: #E8A93A; font-size: 16px; font-weight: bold; line-height: 36px; margin-right: 12px; }
+
+  /* ===== 页面容器 ===== */
+  .page-container {
+    max-width: 900px; margin: 0 auto; padding: 30px 20px; min-height: 80vh;
+    position: relative;
+  }
+
+  /* ===== ① 路由过渡：fade-slide ===== */
+  .page-section {
+    animation: fade-slide-in 300ms ease-out both;
+  }
+  @keyframes fade-slide-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== ② 卡片错落入场 ===== */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px; margin-top: 20px;
+  }
+  .pixel-card {
+    background: #FFF8E7; border: 3px solid #C8A882; padding: 16px;
+    position: relative; overflow: hidden;
+    animation: pixel-pop-in 350ms ease-out both;
+  }
+  .pixel-card:nth-child(1) { animation-delay: 0ms; }
+  .pixel-card:nth-child(2) { animation-delay: 60ms; }
+  .pixel-card:nth-child(3) { animation-delay: 120ms; }
+  .pixel-card:nth-child(4) { animation-delay: 180ms; }
+  .pixel-card:nth-child(5) { animation-delay: 240ms; }
+  .pixel-card:nth-child(6) { animation-delay: 300ms; }
+
+  @keyframes pixel-pop-in {
+    from { opacity: 0; transform: scale(0.92) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .pixel-card .card-icon {
+    width: 36px; height: 36px; image-rendering: pixelated; margin-bottom: 8px;
+  }
+  .pixel-card h3 { font-size: 16px; margin-bottom: 6px; }
+  .pixel-card p { font-size: 13px; color: #8B7355; margin-bottom: 10px; }
+
+  /* ===== ④ 进度条滚动填充 ===== */
+  .progress-wrap {
+    height: 18px; background: #E0D5C8; border: 2px solid #C8A882; position: relative; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0;
+    transition: width 0.8s ease-out;
+    image-rendering: pixelated;
+  }
+  .progress-fill.yellow { background: #E8A93A; }
+  .progress-fill.green  { background: #6BBF4E; }
+  .progress-pct {
+    position: absolute; right: 6px; top: 0; line-height: 14px;
+    font-size: 11px; color: #5B3A29; font-weight: bold;
+  }
+
+  /* ===== ③ 地图路径绘制 ===== */
+  .map-area {
+    position: relative; padding: 20px 0; margin-top: 16px;
+    background: linear-gradient(180deg, #B8E6B0 0%, #A8D89A 100%);
+    border: 3px solid #7CAA6E; min-height: 500px; overflow: hidden;
+  }
+
+  .stage-path { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 20px 40px; }
+
+  .path-svg {
+    width: 300px; height: 44px;
+  }
+  .path-svg path {
+    stroke-dasharray: 800;
+    stroke-dashoffset: 800;
+    animation: draw-path 600ms ease-out forwards;
+  }
+  .path-svg:nth-of-type(1) path { animation-delay: 400ms; }
+  .path-svg:nth-of-type(2) path { animation-delay: 900ms; }
+  .path-svg:nth-of-type(3) path { animation-delay: 1400ms; }
+  .path-svg.dashed path {
+    stroke-dasharray: 8 6;
+    stroke-dashoffset: 0;
+    animation: none;
+    opacity: 0;
+    animation: fade-in 300ms ease-out 1900ms forwards;
+  }
+
+  @keyframes draw-path {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+
+  /* 关卡节点 bounce 入场 */
+  .stage-node {
+    display: flex; align-items: center; gap: 14px;
+    background: #FFF8E7; border: 3px solid #C8A882; padding: 12px 18px;
+    width: 340px; cursor: pointer; position: relative;
+    opacity: 0; animation: node-bounce-in 400ms ease-out forwards;
+  }
+  .stage-node:nth-child(1)  { animation-delay: 0ms; }
+  .stage-node:nth-child(3)  { animation-delay: 500ms; align-self: flex-end; }
+  .stage-node:nth-child(5)  { animation-delay: 1000ms; }
+  .stage-node:nth-child(7)  { animation-delay: 1500ms; align-self: flex-end; }
+  .stage-node:nth-child(9)  { animation-delay: 2000ms; }
+  .stage-node.locked { opacity: 0; animation: node-fade-in 300ms ease-out 2000ms forwards; border-style: dashed; }
+
+  @keyframes node-bounce-in {
+    0%   { opacity: 0; transform: scale(0.5); }
+    70%  { opacity: 1; transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes node-fade-in {
+    to { opacity: 0.6; }
+  }
+
+  .stage-node .node-icon {
+    width: 40px; height: 40px; image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+  .stage-node .node-title { font-size: 15px; font-weight: bold; }
+  .stage-node .node-status { font-size: 12px; margin-top: 2px; }
+  .stage-node .node-status.completed { color: #6BBF4E; }
+  .stage-node .node-status.active { color: #E8A93A; }
+  .stage-node .node-status.locked-text { color: #AAA; }
+
+  /* 玩家角色浮动 */
+  .player-float {
+    position: absolute; right: -50px; top: 50%;
+    width: 48px; image-rendering: pixelated;
+    animation: float-bob 1.5s ease-in-out infinite;
+  }
+  @keyframes float-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  /* 装饰 */
+  .map-deco {
+    position: absolute; image-rendering: pixelated; opacity: 0.4; pointer-events: none;
+  }
+
+  /* ===== 区块标题 ===== */
+  .section-title {
+    font-size: 18px; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .badge {
+    background: #E8A93A; color: #5B3A29; padding: 2px 10px;
+    font-size: 12px; font-weight: bold;
+  }
+  .section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; }
+
+  /* ===== 重播按钮 ===== */
+  .replay-btn {
+    display: inline-block; margin-top: 16px; padding: 8px 20px;
+    border: 2px solid #E8A93A; background: #FFF8E7; color: #5B3A29;
+    font-size: 13px; cursor: pointer;
+  }
+  .replay-btn:hover { background: #E8A93A; color: #fff; }
+
+  .hidden { display: none; }
+
+  /* 分隔 */
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 30px 0; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎮 5C 动画 Demo</span>
+  <button class="active" onclick="showPage('all')">全部展示</button>
+  <button onclick="showPage('transition')">① 路由过渡</button>
+  <button onclick="showPage('cards')">② 卡片入场</button>
+  <button onclick="showPage('map')">③ 地图绘制</button>
+  <button onclick="showPage('progress')">④ 进度条</button>
+</div>
+
+<!-- ===== 全部展示 ===== -->
+<div id="page-all" class="page-container">
+
+  <!-- ① 路由过渡 -->
+  <div class="page-section" id="sec-transition">
+    <div class="section-title"><span class="badge">①</span> 路由过渡 fade-slide</div>
+    <p class="section-desc">页面切换时整体 opacity + translateY 渐入，200ms。点上方按钮切换页面体验效果。</p>
+  </div>
+
+  <hr>
+
+  <!-- ② 卡片入场 -->
+  <div id="sec-cards">
+    <div class="section-title"><span class="badge">②</span> 卡片错落入场 pixel-pop-in</div>
+    <p class="section-desc">每张卡片依次 pop 出现，间隔 60ms，scale + translateY + opacity</p>
+    <div class="card-grid" id="card-grid">
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/star_gold.png" onerror="this.textContent='⭐'">
+        <h3>标注基础培训</h3>
+        <p>学习数据标注的基本流程与规范</p>
+        <div class="progress-wrap">
+          <div class="progress-fill green" data-width="100%"></div>
+          <span class="progress-pct">100%</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/sword.png" onerror="this.textContent='⚔️'">
+        <h3>图像分类进阶</h3>
+        <p>掌握复杂图像分类标注技巧</p>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="65%"></div>
+          <span class="progress-pct">65%</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/lightning.png" onerror="this.textContent='⚡'">
+        <h3>NLP 文本标注</h3>
+        <p>自然语言处理标注专项训练</p>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="30%"></div>
+          <span class="progress-pct">30%</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/book.png" onerror="this.textContent='📖'">
+        <h3>语音标注入门</h3>
+        <p>语音识别与标注基础</p>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="0%"></div>
+          <span class="progress-pct">0%</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/trophy.png" onerror="this.textContent='🏆'">
+        <h3>质量审核培训</h3>
+        <p>成为审核员的必修课程</p>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="0%"></div>
+          <span class="progress-pct">0%</span>
+        </div>
+      </div>
+      <div class="pixel-card">
+        <img class="card-icon" src="frontend/public/pixel-icons/plans/heart.png" onerror="this.textContent='❤️'">
+        <h3>综合实战项目</h3>
+        <p>真实项目模拟标注实战</p>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="0%"></div>
+          <span class="progress-pct">0%</span>
+        </div>
+      </div>
+    </div>
+    <button class="replay-btn" onclick="replayCards()">🔄 重播卡片动画</button>
+  </div>
+
+  <hr>
+
+  <!-- ③ 地图路径绘制 -->
+  <div id="sec-map">
+    <div class="section-title"><span class="badge">③</span> 地图路径绘制动画</div>
+    <p class="section-desc">SVG 路径逐段"画出来"，关卡节点 bounce 弹入，玩家角色上下浮动</p>
+    <div class="map-area" id="map-area">
+      <!-- 装饰 -->
+      <img class="map-deco" src="frontend/public/pixel-icons/decorations/deco_tree1.png" style="left:8px;bottom:8px;height:80px;" onerror="this.style.display='none'">
+      <img class="map-deco" src="frontend/public/pixel-icons/decorations/deco_tree2.png" style="right:8px;bottom:8px;height:70px;" onerror="this.style.display='none'">
+      <img class="map-deco" src="frontend/public/pixel-icons/decorations/deco_chicken.png" style="left:20px;top:30px;height:32px;opacity:0.5;" onerror="this.style.display='none'">
+      <img class="map-deco" src="frontend/public/pixel-icons/decorations/deco_cat.png" style="right:30px;top:60px;height:32px;opacity:0.5;" onerror="this.style.display='none'">
+
+      <div class="stage-path" id="stage-path">
+        <!-- 关卡1：已完成 -->
+        <div class="stage-node">
+          <img class="node-icon" src="frontend/public/pixel-icons/stages/star_gold.png" onerror="this.textContent='⭐'">
+          <div>
+            <div class="node-title">第1关：认识标注工具</div>
+            <div class="node-status completed">✅ 已完成</div>
+          </div>
+        </div>
+
+        <svg class="path-svg" viewBox="0 0 300 44"><path d="M30,8 Q150,40 270,8" stroke="#E8A93A" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+
+        <!-- 关卡2：已完成 -->
+        <div class="stage-node">
+          <img class="node-icon" src="frontend/public/pixel-icons/stages/star_gold.png" onerror="this.textContent='⭐'">
+          <div>
+            <div class="node-title">第2关：标注规范学习</div>
+            <div class="node-status completed">✅ 已完成</div>
+          </div>
+        </div>
+
+        <svg class="path-svg" viewBox="0 0 300 44"><path d="M30,8 Q150,40 270,8" stroke="#E8A93A" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+
+        <!-- 关卡3：进行中 -->
+        <div class="stage-node" style="position:relative;">
+          <img class="node-icon" src="frontend/public/pixel-icons/ui/flag.png" onerror="this.textContent='🚩'">
+          <div>
+            <div class="node-title">第3关：图像分类实操</div>
+            <div class="node-status active">🔥 进行中</div>
+          </div>
+          <img class="player-float" src="frontend/public/pixel-icons/decorations/deco_junimo.png" onerror="this.textContent='🧑'">
+        </div>
+
+        <svg class="path-svg dashed" viewBox="0 0 300 44"><path d="M30,8 Q150,40 270,8" stroke="#C8B8A0" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+
+        <!-- 关卡4：锁定 -->
+        <div class="stage-node locked">
+          <img class="node-icon" src="frontend/public/pixel-icons/ui/lock.png" onerror="this.textContent='🔒'">
+          <div>
+            <div class="node-title">第4关：质量检查</div>
+            <div class="node-status locked-text">🔒 未解锁</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="replay-btn" onclick="replayMap()">🔄 重播地图动画</button>
+  </div>
+
+  <hr>
+
+  <!-- ④ 进度条 -->
+  <div id="sec-progress">
+    <div class="section-title"><span class="badge">④</span> 进度条滚动填充</div>
+    <p class="section-desc">进度条从 0% 平滑过渡到实际值，500ms ease-out，纯 CSS transition</p>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:400px;margin-top:16px;">
+      <div>
+        <div style="font-size:13px;margin-bottom:4px;">标注基础 — 已完成</div>
+        <div class="progress-wrap">
+          <div class="progress-fill green" data-width="100%"></div>
+          <span class="progress-pct">100%</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;margin-bottom:4px;">图像分类 — 进行中</div>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="65%"></div>
+          <span class="progress-pct">65%</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;margin-bottom:4px;">NLP 文本 — 刚开始</div>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="12%"></div>
+          <span class="progress-pct">12%</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;margin-bottom:4px;">语音标注 — 未开始</div>
+        <div class="progress-wrap">
+          <div class="progress-fill yellow" data-width="0%"></div>
+          <span class="progress-pct">0%</span>
+        </div>
+      </div>
+    </div>
+    <button class="replay-btn" onclick="replayProgress()">🔄 重播进度条</button>
+  </div>
+
+</div>
+
+<script>
+  // 进度条填充
+  function animateProgress() {
+    document.querySelectorAll('.progress-fill').forEach(el => {
+      el.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.width = el.dataset.width;
+        });
+      });
+    });
+  }
+
+  // 重播卡片
+  function replayCards() {
+    const grid = document.getElementById('card-grid');
+    const cards = grid.querySelectorAll('.pixel-card');
+    cards.forEach(c => { c.style.animation = 'none'; c.offsetHeight; c.style.animation = ''; });
+    // 也重播卡片内进度条
+    grid.querySelectorAll('.progress-fill').forEach(el => {
+      el.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = el.dataset.width; }));
+    });
+  }
+
+  // 重播地图
+  function replayMap() {
+    const area = document.getElementById('stage-path');
+    const html = area.innerHTML;
+    area.innerHTML = '';
+    requestAnimationFrame(() => { area.innerHTML = html; });
+  }
+
+  // 重播进度条
+  function replayProgress() {
+    const section = document.getElementById('sec-progress');
+    section.querySelectorAll('.progress-fill').forEach(el => {
+      el.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = el.dataset.width; }));
+    });
+  }
+
+  // 页面切换（模拟路由过渡）
+  function showPage(page) {
+    document.querySelectorAll('.demo-nav button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const container = document.querySelector('.page-container');
+    container.style.animation = 'none';
+    container.offsetHeight;
+    container.style.animation = 'fade-slide-in 300ms ease-out both';
+
+    // 显示/隐藏区块
+    const sections = { transition: 'sec-transition', cards: 'sec-cards', map: 'sec-map', progress: 'sec-progress' };
+    const hrs = container.querySelectorAll('hr');
+
+    if (page === 'all') {
+      Object.values(sections).forEach(id => document.getElementById(id).style.display = '');
+      hrs.forEach(h => h.style.display = '');
+    } else {
+      Object.entries(sections).forEach(([key, id]) => {
+        document.getElementById(id).style.display = key === page ? '' : 'none';
+      });
+      hrs.forEach(h => h.style.display = 'none');
+    }
+
+    // 重新触发动画
+    setTimeout(() => {
+      if (page === 'all' || page === 'cards') replayCards();
+      if (page === 'all' || page === 'map') replayMap();
+      if (page === 'all' || page === 'progress') replayProgress();
+      else animateProgress();
+    }, 50);
+  }
+
+  // 初始加载
+  window.addEventListener('load', () => {
+    setTimeout(animateProgress, 300);
+  });
+</script>
+</body>
+</html>

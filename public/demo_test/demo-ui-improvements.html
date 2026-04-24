@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 优化方案 Demo — 6 个方向</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+
+.demo-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; gap: 12px; padding: 10px 20px; background: #5B3A29; flex-wrap: wrap; align-items: center;
+}
+.demo-nav a { color: #E8A93A; text-decoration: none; font-size: 12px; padding: 4px 10px; border: 1px solid #8B6F5E; }
+.demo-nav a:hover { background: #4E342E; }
+.demo-nav .title { color: #E8A93A; font-size: 14px; font-weight: bold; margin-right: 8px; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+.section { margin-bottom: 40px; }
+.section-header {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 22px; letter-spacing: 2px;
+  color: #5B3A29; margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 3px solid #E0D5C8;
+}
+.section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.6; }
+
+/* ========== 1. 项目卡片封面场景 ========== */
+.cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.scene-card {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.scene-card:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.scene-cover {
+  height: 150px; position: relative; overflow: hidden;
+  border-bottom: 3px solid #E0D5C8;
+}
+
+/* 场景A: 草原日出 */
+.scene-meadow {
+  background: linear-gradient(180deg, #87CEEB 0%, #B8E6B8 60%, #7CAA6E 60%, #5C8A4D 100%);
+}
+.scene-meadow::before { /* 太阳 */
+  content: ''; position: absolute; width: 32px; height: 32px; border-radius: 50%;
+  background: #FFD700; top: 20px; right: 30px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.2);
+}
+.scene-meadow::after { /* 云 */
+  content: ''; position: absolute; top: 15px; left: 20px;
+  width: 40px; height: 14px; background: rgba(255,255,255,0.9); border-radius: 10px;
+  box-shadow: 14px -6px 0 8px rgba(255,255,255,0.9), 28px 0 0 4px rgba(255,255,255,0.9);
+  animation: cloud-drift 8s ease-in-out infinite alternate;
+}
+@keyframes cloud-drift { 0% { transform: translateX(0); } 100% { transform: translateX(30px); } }
+
+/* 草 */
+.grass-row { position: absolute; bottom: 0; left: 0; right: 0; height: 20px; display: flex; gap: 6px; padding: 0 4px; align-items: flex-end; }
+.grass-blade { width: 4px; background: #4A7A3A; border-radius: 2px 2px 0 0; }
+.grass-blade:nth-child(odd) { height: 12px; animation: grass-sway 2s ease-in-out infinite alternate; }
+.grass-blade:nth-child(even) { height: 8px; animation: grass-sway 2.5s ease-in-out infinite alternate-reverse; }
+@keyframes grass-sway { 0% { transform: rotate(-5deg); } 100% { transform: rotate(5deg); } }
+
+/* 场景B: 夜空星河 */
+.scene-night {
+  background: linear-gradient(180deg, #1a1a3e 0%, #2d2d5e 40%, #4a3a5e 70%, #5C8A4D 85%, #4A7A3A 100%);
+}
+.stars { position: absolute; inset: 0; }
+.star {
+  position: absolute; width: 3px; height: 3px; background: #FFD700;
+  animation: twinkle 1.5s ease-in-out infinite alternate;
+}
+.star:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; }
+.star:nth-child(2) { top: 20%; left: 45%; animation-delay: 0.3s; width: 2px; height: 2px; }
+.star:nth-child(3) { top: 8%; left: 70%; animation-delay: 0.6s; }
+.star:nth-child(4) { top: 30%; left: 25%; animation-delay: 0.9s; width: 2px; height: 2px; }
+.star:nth-child(5) { top: 15%; left: 85%; animation-delay: 1.2s; }
+.star:nth-child(6) { top: 25%; left: 55%; animation-delay: 0.4s; width: 4px; height: 4px; background: #FFF; }
+@keyframes twinkle { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+/* 月亮 */
+.moon { position: absolute; top: 12px; right: 25px; width: 24px; height: 24px; background: #FFFDE7; border-radius: 50%; box-shadow: 0 0 10px rgba(255,253,231,0.5); }
+.moon::after { content: ''; position: absolute; top: -2px; left: 4px; width: 20px; height: 20px; background: #2d2d5e; border-radius: 50%; }
+
+/* 场景C: 沙漠黄昏 */
+.scene-desert {
+  background: linear-gradient(180deg, #FF9A56 0%, #FFB86C 30%, #FFDAA5 60%, #E8D5A0 70%, #D4B896 100%);
+}
+.dune { position: absolute; bottom: 0; width: 100%; }
+.dune::before {
+  content: ''; position: absolute; bottom: 0; left: -10%;
+  width: 70%; height: 50px;
+  background: #D4B896; border-radius: 50% 50% 0 0;
+}
+.dune::after {
+  content: ''; position: absolute; bottom: 0; right: -10%;
+  width: 60%; height: 35px;
+  background: #C8A882; border-radius: 50% 50% 0 0;
+}
+.cactus {
+  position: absolute; bottom: 30px; left: 25%;
+  width: 8px; height: 30px; background: #5C8A4D; border-radius: 4px 4px 0 0;
+}
+.cactus::before {
+  content: ''; position: absolute; top: 8px; left: -10px;
+  width: 10px; height: 6px; background: #5C8A4D; border-radius: 4px 4px 0 0;
+  transform: rotate(-30deg);
+}
+.cactus::after {
+  content: ''; position: absolute; top: 4px; right: -10px;
+  width: 12px; height: 6px; background: #5C8A4D; border-radius: 4px 4px 0 0;
+  transform: rotate(25deg);
+}
+
+.scene-icon {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  width: 48px; height: 48px; image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2));
+  z-index: 2;
+}
+
+.card-body { padding: 12px 16px; }
+.card-body h3 { font-size: 15px; font-weight: 600; color: #5B3A29; margin-bottom: 4px; }
+.card-body p { font-size: 12px; color: #8B7355; }
+
+/* ========== 2. 空状态 ========== */
+.empty-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.empty-box { border: 3px solid #E0D5C8; background: #FFFDF5; padding: 40px 20px; text-align: center; }
+.empty-box .label { font-size: 11px; color: #B0A090; margin-bottom: 12px; }
+
+.empty-old { color: #B0A090; font-size: 14px; }
+
+.empty-new { }
+.empty-junimo {
+  font-size: 48px; margin-bottom: 8px;
+  animation: junimo-sit 2s ease-in-out infinite;
+}
+@keyframes junimo-sit { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.empty-text { font-size: 15px; color: #8B7355; margin-bottom: 4px; font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; }
+.empty-sub { font-size: 12px; color: #B0A090; }
+
+/* ========== 3. 封面动态元素 ========== */
+.animated-cover { height: 160px; position: relative; overflow: hidden; border: 3px solid #5B3A29;
+  background: linear-gradient(180deg, #87CEEB 0%, #AED8E6 40%, #B8E6B8 60%, #7CAA6E 60%, #5C8A4D 100%);
+}
+/* 飘动的多层云 */
+.cloud {
+  position: absolute; background: rgba(255,255,255,0.9); border-radius: 20px;
+}
+.cloud-1 { width: 50px; height: 16px; top: 15px; left: -60px; animation: cloud-float 12s linear infinite; }
+.cloud-2 { width: 35px; height: 12px; top: 35px; left: -40px; animation: cloud-float 16s linear infinite; animation-delay: 4s; opacity: 0.7; }
+.cloud-3 { width: 45px; height: 14px; top: 22px; left: -50px; animation: cloud-float 14s linear infinite; animation-delay: 8s; }
+.cloud::before { content: ''; position: absolute; top: -8px; left: 30%; width: 60%; height: 16px; background: inherit; border-radius: 20px; }
+@keyframes cloud-float { 0% { transform: translateX(-60px); } 100% { transform: translateX(calc(100vw + 60px)); } }
+
+/* 闪烁星星 */
+.sparkle {
+  position: absolute; font-size: 10px;
+  animation: sparkle-pop 2s ease-in-out infinite;
+}
+.sparkle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+.sparkle:nth-child(2) { top: 10%; right: 25%; animation-delay: 0.7s; }
+.sparkle:nth-child(3) { top: 35%; left: 60%; animation-delay: 1.4s; }
+@keyframes sparkle-pop {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* 蝴蝶 */
+.butterfly {
+  position: absolute; font-size: 14px; top: 25%; left: 10%;
+  animation: butterfly-fly 6s ease-in-out infinite;
+}
+@keyframes butterfly-fly {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(60px, -15px) rotate(5deg); }
+  50% { transform: translate(120px, 5px) rotate(-3deg); }
+  75% { transform: translate(80px, -10px) rotate(4deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* 摇摆花朵 */
+.flower { position: absolute; bottom: 8px; font-size: 16px; transform-origin: bottom center; }
+.flower-1 { left: 15%; animation: flower-sway 3s ease-in-out infinite; }
+.flower-2 { left: 75%; animation: flower-sway 3.5s ease-in-out infinite alternate; font-size: 14px; }
+.flower-3 { left: 45%; animation: flower-sway 2.8s ease-in-out infinite; font-size: 12px; }
+@keyframes flower-sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+
+/* ========== 4. 进度可视化 ========== */
+.progress-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.prog-card { border: 3px solid #E0D5C8; background: #FFFDF5; padding: 16px; }
+.prog-card .label { font-size: 11px; color: #B0A090; margin-bottom: 8px; }
+
+.stage-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; background: #FFF8E7; border: 2px solid #E8A93A;
+  font-size: 13px; color: #B8860B; font-weight: 500;
+}
+.stage-badge .icon { font-size: 16px; }
+
+.star-rating { display: flex; gap: 2px; margin-top: 8px; }
+.star-rating .star { font-size: 18px; }
+.star-rating .star.filled { color: #FFD700; filter: drop-shadow(0 1px 2px rgba(255,215,0,0.4)); }
+.star-rating .star.empty { color: #E0D5C8; }
+
+.prog-bar { height: 16px; background: #E0D5C8; border: 2px solid #5B3A29; position: relative; overflow: hidden; margin-top: 8px; }
+.prog-fill { height: 100%; transition: width 1.2s ease; position: relative; }
+.prog-fill.green { background: repeating-linear-gradient(90deg, #5C8A4D 0px, #5C8A4D 6px, #6B9A5D 6px, #6B9A5D 12px); }
+.prog-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px; background: rgba(255,255,255,0.4); }
+.prog-text { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: bold; color: #5B3A29; }
+
+/* ========== 5. 骨架屏 ========== */
+.skeleton-demo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.skeleton-card { border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden; }
+.skeleton-cover { height: 120px; background: #F0EAE0; position: relative; overflow: hidden; }
+.skeleton-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,248,231,0.6) 50%, transparent 100%);
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.skeleton-body { padding: 12px 16px; }
+.skeleton-line { height: 12px; background: #EDE7DA; margin-bottom: 8px; position: relative; overflow: hidden; }
+.skeleton-line::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,248,231,0.6) 50%, transparent 100%);
+  animation: shimmer 1.8s infinite;
+}
+.skeleton-line.w60 { width: 60%; }
+.skeleton-line.w80 { width: 80%; }
+.skeleton-line.w40 { width: 40%; }
+
+/* ========== 6. 登录巡逻角色 ========== */
+.login-demo {
+  border: 3px solid #5B3A29; overflow: hidden; position: relative;
+  height: 200px;
+  background: linear-gradient(180deg, #6EB5FF 0%, #A8D8EA 40%, #B8E6B8 65%, #7CAA6E 65%, #5C8A4D 100%);
+}
+.login-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 50px;
+  background: repeating-linear-gradient(90deg, #5C8A4D 0px, #5C8A4D 16px, #4A7A3A 16px, #4A7A3A 32px);
+  border-top: 3px solid #3E6830;
+}
+.login-panel {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%);
+  background: rgba(255,248,231,0.92); border: 3px solid #5B3A29;
+  padding: 16px 24px; text-align: center; min-width: 200px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+}
+.login-panel h4 { font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 18px; color: #5B3A29; letter-spacing: 2px; margin-bottom: 8px; }
+.login-panel .fake-input { width: 160px; height: 28px; border: 2px solid #E0D5C8; background: #FFF; margin: 4px auto; }
+.login-panel .fake-btn { display: inline-block; padding: 6px 20px; background: #5C8A4D; color: #fff; border: 2px solid #5B3A29; font-size: 12px; margin-top: 6px; box-shadow: 2px 2px 0 #3E2723; }
+
+.patrol-character {
+  position: absolute; bottom: 50px; font-size: 28px;
+  animation: patrol 8s linear infinite;
+}
+@keyframes patrol {
+  0% { left: -40px; transform: scaleX(1); }
+  45% { left: calc(100% - 10px); transform: scaleX(1); }
+  50% { left: calc(100% - 10px); transform: scaleX(-1); }
+  95% { left: -40px; transform: scaleX(-1); }
+  100% { left: -40px; transform: scaleX(1); }
+}
+.patrol-character .walk-bounce {
+  display: inline-block;
+  animation: walk-bounce 0.4s ease-in-out infinite alternate;
+}
+@keyframes walk-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-4px); } }
+
+/* 路灯 */
+.lamp { position: absolute; bottom: 50px; font-size: 24px; }
+.lamp-1 { left: 15%; }
+.lamp-2 { right: 15%; }
+
+/* 小动物 */
+.critter {
+  position: absolute; bottom: 53px; right: 30%; font-size: 16px;
+  animation: critter-hop 3s ease-in-out infinite;
+}
+@keyframes critter-hop {
+  0%, 80%, 100% { transform: translateY(0); }
+  85% { transform: translateY(-8px); }
+  90% { transform: translateY(0); }
+  95% { transform: translateY(-4px); }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎨 UI 优化方案 Demo</span>
+  <a href="#s1">1.卡片封面</a>
+  <a href="#s2">2.空状态</a>
+  <a href="#s3">3.动态元素</a>
+  <a href="#s4">4.进度增强</a>
+  <a href="#s5">5.骨架屏</a>
+  <a href="#s6">6.登录巡逻</a>
+</div>
+
+<div class="container">
+
+<!-- 1. 项目卡片封面场景 -->
+<div class="section" id="s1">
+  <h2 class="section-header">1️⃣ 项目卡片封面 — 像素场景</h2>
+  <div class="section-desc">
+    <strong>现在：</strong>淡色渐变 + 居中图标<br>
+    <strong>方案：</strong>纯 CSS 绘制小场景（草原/星空/沙漠/雪山等），图标像 NPC 站在地面上。每个项目根据 ID hash 自动分配不同场景。
+  </div>
+  <div class="cards-row">
+    <!-- 草原日出 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-meadow">
+        <div class="grass-row">
+          <div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div>
+          <div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div>
+          <div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div>
+          <div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div>
+          <div class="grass-blade"></div><div class="grass-blade"></div><div class="grass-blade"></div>
+        </div>
+        <div class="scene-icon" style="font-size:42px; bottom:20px;">📋</div>
+      </div>
+      <div class="card-body">
+        <h3>图像标注基础</h3>
+        <p>草原日出主题 — 适合入门项目</p>
+      </div>
+    </div>
+
+    <!-- 夜空星河 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-night">
+        <div class="stars">
+          <div class="star"></div><div class="star"></div><div class="star"></div>
+          <div class="star"></div><div class="star"></div><div class="star"></div>
+        </div>
+        <div class="moon"></div>
+        <div class="scene-icon" style="font-size:42px; bottom:20px;">🔬</div>
+      </div>
+      <div class="card-body">
+        <h3>NLP 文本分类</h3>
+        <p>星空主题 — 适合进阶项目</p>
+      </div>
+    </div>
+
+    <!-- 沙漠黄昏 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-desert">
+        <div class="dune"></div>
+        <div class="cactus"></div>
+        <div class="scene-icon" style="font-size:42px; bottom:20px;">🗺️</div>
+      </div>
+      <div class="card-body">
+        <h3>语音标注进阶</h3>
+        <p>沙漠黄昏主题 — 适合挑战项目</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. 空状态 -->
+<div class="section" id="s2">
+  <h2 class="section-header">2️⃣ 空状态插画</h2>
+  <div class="empty-demo">
+    <div class="empty-box">
+      <div class="label">当前（纯文字）</div>
+      <div class="empty-old">暂无数据</div>
+    </div>
+    <div class="empty-box">
+      <div class="label">优化后（像素风插画 + 趣味文案）</div>
+      <div class="empty-new">
+        <div class="empty-junimo">🌱</div>
+        <div class="empty-text">这里还是一片空地...</div>
+        <div class="empty-sub">等待管理员播下第一颗种子 🌿</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. 封面动态元素 -->
+<div class="section" id="s3">
+  <h2 class="section-header">3️⃣ 卡片封面动态元素</h2>
+  <div class="section-desc">
+    在场景封面中加入飘动的云、闪烁的星星、飞舞的蝴蝶、摇摆的花朵 — 让静态卡片"活"起来。
+  </div>
+  <div class="animated-cover">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+    <span class="sparkle">✦</span>
+    <span class="butterfly">🦋</span>
+    <span class="flower flower-1">🌻</span>
+    <span class="flower flower-2">🌸</span>
+    <span class="flower flower-3">🌼</span>
+    <div class="scene-icon" style="font-size:42px; bottom:12px;">📋</div>
+  </div>
+</div>
+
+<!-- 4. 进度可视化增强 -->
+<div class="section" id="s4">
+  <h2 class="section-header">4️⃣ 学习进度可视化增强</h2>
+  <div class="progress-demo">
+    <div class="prog-card">
+      <div class="label">关卡解锁徽章</div>
+      <div class="stage-badge"><span class="icon">🔓</span> 已解锁 5 / 8 关卡</div>
+      <div style="margin-top:12px;">
+        <div class="stage-badge" style="border-color:#5C8A4D; color:#5C8A4D; background:#E8F5E9;">
+          <span class="icon">⚔️</span> 当前：第 6 关 — 边界框标注
+        </div>
+      </div>
+    </div>
+    <div class="prog-card">
+      <div class="label">星星评级（按测验分数）</div>
+      <div style="font-size:14px; color:#5B3A29; margin-bottom:4px;">图像分类基础</div>
+      <div class="star-rating">
+        <span class="star filled">★</span>
+        <span class="star filled">★</span>
+        <span class="star filled">★</span>
+      </div>
+      <div style="font-size:11px; color:#8B7355; margin-top:4px;">测验 95 分 → ★★★</div>
+
+      <div style="font-size:14px; color:#5B3A29; margin-top:12px; margin-bottom:4px;">NLP 进阶标注</div>
+      <div class="star-rating">
+        <span class="star filled">★</span>
+        <span class="star filled">★</span>
+        <span class="star empty">★</span>
+      </div>
+      <div style="font-size:11px; color:#8B7355; margin-top:4px;">测验 78 分 → ★★☆</div>
+    </div>
+    <div class="prog-card" style="grid-column: span 2;">
+      <div class="label">条纹进度条（像素风强化）</div>
+      <div class="prog-bar">
+        <div class="prog-fill green" style="width: 62%"></div>
+        <span class="prog-text">62%</span>
+      </div>
+      <div style="font-size:11px; color:#8B7355; margin-top:6px;">条纹填充 + 右侧高光 + 百分比文字 — 比纯色更有像素游戏感</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. 骨架屏 -->
+<div class="section" id="s5">
+  <h2 class="section-header">5️⃣ Loading 像素骨架屏</h2>
+  <div class="section-desc">用闪烁的方块占位代替旋转加载，更沉浸、更像素。</div>
+  <div class="skeleton-demo">
+    <div class="skeleton-card">
+      <div class="skeleton-cover"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line w80"></div>
+        <div class="skeleton-line w60"></div>
+        <div class="skeleton-line w40"></div>
+      </div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-cover"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line w60"></div>
+        <div class="skeleton-line w80"></div>
+        <div class="skeleton-line w40"></div>
+      </div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton-cover"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line w80"></div>
+        <div class="skeleton-line w40"></div>
+        <div class="skeleton-line w60"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. 登录巡逻角色 -->
+<div class="section" id="s6">
+  <h2 class="section-header">6️⃣ 登录页像素角色巡逻</h2>
+  <div class="section-desc">底部草地上一个小角色来回走动 + 蹦跳，营造"有人在"的生活感。</div>
+  <div class="login-demo">
+    <div class="login-ground"></div>
+    <div class="login-panel">
+      <h4>🏰 培训系统</h4>
+      <div class="fake-input"></div>
+      <div class="fake-input"></div>
+      <div class="fake-btn">登 录</div>
+    </div>
+    <div class="lamp lamp-1">🏮</div>
+    <div class="lamp lamp-2">🏮</div>
+    <div class="critter">🐇</div>
+    <div class="patrol-character"><span class="walk-bounce">🧑‍🌾</span></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

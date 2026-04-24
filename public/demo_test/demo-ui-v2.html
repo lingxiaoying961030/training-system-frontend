@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 优化方案 v2 — 使用现有素材</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+img { image-rendering: pixelated; }
+
+.demo-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; gap: 12px; padding: 10px 20px; background: #5B3A29; flex-wrap: wrap; align-items: center;
+}
+.demo-nav a { color: #E8A93A; text-decoration: none; font-size: 12px; padding: 4px 10px; border: 1px solid #8B6F5E; }
+.demo-nav a:hover { background: #4E342E; }
+.demo-nav .title { color: #E8A93A; font-size: 14px; font-weight: bold; margin-right: 8px; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+.section { margin-bottom: 40px; }
+.section-header {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 22px; letter-spacing: 2px;
+  color: #5B3A29; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 3px solid #E0D5C8;
+}
+.section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.6; }
+.compare { display: flex; gap: 4px; font-size: 12px; color: #B0A090; margin-bottom: 8px; }
+.compare .old { padding: 2px 8px; background: #F0EAE0; }
+.compare .new { padding: 2px 8px; background: #E8F5E9; color: #2E7D32; }
+
+/* ========== 1. 项目卡片封面 — 素材版 ========== */
+.cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.scene-card {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.scene-card:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.scene-cover {
+  height: 150px; position: relative; overflow: hidden;
+  border-bottom: 3px solid #E0D5C8;
+}
+
+/* 白天场景 */
+.scene-day {
+  background: url('/pixel-icons/ui/daybg.png') center/cover;
+}
+.scene-day .clouds {
+  position: absolute; top: -10px; left: 0; width: 200%; height: 80px;
+  background: url('/pixel-icons/ui/clouds.png') repeat-x;
+  background-size: auto 70px;
+  animation: clouds-scroll 20s linear infinite;
+}
+@keyframes clouds-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+.scene-day .ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 32px;
+}
+
+/* 夜晚场景 */
+.scene-night {
+  background: url('/pixel-icons/ui/nightbg.png') center/cover;
+}
+.scene-night .ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 32px;
+  filter: brightness(0.6) hue-rotate(180deg);
+}
+/* 星星闪烁 */
+.twinkle-star {
+  position: absolute; width: 4px; height: 4px; background: #FFD700;
+  animation: twinkle 1.5s ease-in-out infinite alternate;
+}
+.twinkle-star:nth-child(1) { top: 12%; left: 15%; }
+.twinkle-star:nth-child(2) { top: 22%; left: 55%; animation-delay: 0.5s; }
+.twinkle-star:nth-child(3) { top: 8%; left: 78%; animation-delay: 1s; }
+.twinkle-star:nth-child(4) { top: 30%; left: 35%; animation-delay: 0.3s; width: 3px; height: 3px; }
+@keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+/* 草地场景 */
+.scene-meadow {
+  background: url('/pixel-icons/backgrounds/bg_meadow.png') repeat center;
+  background-size: 128px;
+}
+
+.scene-icon {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  width: 48px; height: 48px;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.25));
+  z-index: 2;
+  transition: transform 0.3s;
+}
+.scene-card:hover .scene-icon { animation: icon-hop 0.4s ease; }
+@keyframes icon-hop { 0%,100%{transform:translateX(-50%) translateY(0);} 40%{transform:translateX(-50%) translateY(-10px);} }
+
+/* 装饰小物 */
+.deco-item { position: absolute; z-index: 1; }
+.deco-tree { height: 60px; bottom: 20px; }
+.deco-animal { height: 28px; bottom: 28px; }
+.deco-animal.hop { animation: animal-hop 2s ease-in-out infinite; }
+@keyframes animal-hop { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+
+.card-body { padding: 12px 16px; }
+.card-body h3 { font-size: 15px; font-weight: 600; color: #5B3A29; margin-bottom: 4px; }
+.card-body p { font-size: 12px; color: #8B7355; }
+
+/* ========== 3. 动态元素增强 ========== */
+.animated-full {
+  height: 180px; position: relative; overflow: hidden;
+  border: 3px solid #5B3A29;
+  background: url('/pixel-icons/ui/daybg_hd.png') center/cover;
+}
+.animated-full .clouds-layer {
+  position: absolute; top: 0; left: 0; width: 200%; height: 100px;
+  background: url('/pixel-icons/ui/clouds.png') repeat-x;
+  background-size: auto 80px;
+  animation: clouds-scroll 25s linear infinite;
+}
+.animated-full .bush-layer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 32px;
+}
+.animated-full .floor-layer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 16px;
+  background: url('/pixel-icons/ui/floor_02.png') repeat;
+  background-size: 32px;
+}
+/* 飘动的动物 */
+.roaming {
+  position: absolute; bottom: 34px; z-index: 3;
+  animation: roam 10s linear infinite;
+}
+.roaming img { height: 28px; }
+.roaming.r2 { animation-duration: 14s; animation-delay: 3s; }
+@keyframes roam {
+  0% { left: -40px; transform: scaleX(1); }
+  45% { left: calc(100% + 10px); transform: scaleX(1); }
+  45.01% { left: calc(100% + 10px); transform: scaleX(-1); }
+  90% { left: -40px; transform: scaleX(-1); }
+  90.01% { left: -40px; transform: scaleX(1); }
+  100% { left: -40px; transform: scaleX(1); }
+}
+/* junimo 蹦跳 */
+.junimo-bounce {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 4;
+  animation: jbounce 1.5s ease-in-out infinite;
+}
+.junimo-bounce img { height: 32px; }
+@keyframes jbounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-12px);} }
+
+/* 树木摇摆 */
+.tree-sway { transform-origin: bottom center; }
+.tree-sway.s1 { animation: treesway 4s ease-in-out infinite; }
+.tree-sway.s2 { animation: treesway 5s ease-in-out infinite alternate; }
+@keyframes treesway { 0%,100%{transform:rotate(-1deg);} 50%{transform:rotate(1deg);} }
+
+/* ========== 6. 登录巡逻 — 素材版 ========== */
+.login-demo {
+  height: 260px; position: relative; overflow: hidden;
+  border: 3px solid #5B3A29;
+  background: url('/pixel-icons/ui/daybg_hd.png') center top/cover;
+}
+.login-ground-layer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
+  background: url('/pixel-icons/backgrounds/bg_path.png') repeat;
+  background-size: 64px;
+  border-top: 3px solid #8B6F5E;
+}
+.login-bush-layer {
+  position: absolute; bottom: 44px; left: 0; right: 0; height: 32px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 32px;
+}
+.login-clouds {
+  position: absolute; top: 0; left: 0; width: 200%; height: 80px;
+  background: url('/pixel-icons/ui/clouds_small.png') repeat-x;
+  background-size: auto 60px;
+  animation: clouds-scroll 30s linear infinite;
+}
+.login-panel {
+  position: absolute; top: 45%; left: 50%; transform: translate(-50%, -55%);
+  background: url('/pixel-icons/ui/letterBG_clean.png') center/cover;
+  padding: 20px 28px; text-align: center; min-width: 220px;
+  border: 3px solid #5B3A29;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+  z-index: 5;
+}
+.login-panel h4 {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 18px;
+  color: #5B3A29; letter-spacing: 2px; margin-bottom: 10px;
+}
+.login-panel .fake-input {
+  width: 170px; height: 28px; border: 2px solid #C8A882; background: #FFF8E7; margin: 5px auto;
+}
+.login-panel .fake-btn {
+  display: inline-block; padding: 6px 24px; background: #5C8A4D; color: #fff;
+  border: 2px solid #3E6830; font-size: 12px; margin-top: 8px;
+  box-shadow: 2px 2px 0 #3E2723;
+}
+
+/* 巡逻角色 — 用真实角色素材 */
+.patrol {
+  position: absolute; bottom: 48px; z-index: 3;
+  animation: patrol 10s linear infinite;
+}
+.patrol img { height: 48px; }
+@keyframes patrol {
+  0% { left: -50px; transform: scaleX(1); }
+  45% { left: calc(100% + 10px); transform: scaleX(1); }
+  45.01% { left: calc(100% + 10px); transform: scaleX(-1); }
+  95% { left: -50px; transform: scaleX(-1); }
+  95.01% { left: -50px; transform: scaleX(1); }
+  100% { left: -50px; transform: scaleX(1); }
+}
+.patrol .walk { display: inline-block; animation: walkbob 0.35s ease-in-out infinite alternate; }
+@keyframes walkbob { 0%{transform:translateY(0);} 100%{transform:translateY(-3px);} }
+
+/* 装饰树 */
+.login-tree { position: absolute; bottom: 36px; z-index: 2; }
+.login-tree img { height: 80px; }
+
+/* 小动物 */
+.login-critter {
+  position: absolute; bottom: 52px; z-index: 4;
+}
+.login-critter img { height: 24px; }
+.login-critter.pecking { animation: peck 1s ease-in-out infinite; }
+@keyframes peck { 0%,100%{transform:rotate(0);} 30%{transform:rotate(15deg);} 50%{transform:rotate(0);} }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎨 UI 优化 v2 — 素材版</span>
+  <a href="#s1">1.卡片封面</a>
+  <a href="#s3">3.动态元素</a>
+  <a href="#s6">6.登录巡逻</a>
+</div>
+
+<div class="container">
+
+<!-- 1. 项目卡片封面 -->
+<div class="section" id="s1">
+  <h2 class="section-header">1️⃣ 项目卡片封面 — 素材场景版</h2>
+  <div class="section-desc">
+    用已有的 daybg/nightbg/meadow 做背景，clouds 做飘动层，bush 做前景，再点缀树木和小动物。
+  </div>
+  <div class="compare"><span class="old">Before: 纯色渐变 + 图标</span><span class="new">After: 像素场景 + 装饰 + 动画</span></div>
+
+  <div class="cards-row">
+    <!-- 白天 + 树 + 鸡 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-day">
+        <div class="clouds"></div>
+        <img src="/pixel-icons/decorations/deco_tree1.png" class="deco-item deco-tree tree-sway s1" style="left:8px;">
+        <img src="/pixel-icons/decorations/deco_chicken.png" class="deco-item deco-animal hop" style="left:60px;">
+        <img src="/pixel-icons/projects/adventure_icon_64px.png" class="scene-icon">
+        <div class="ground"></div>
+      </div>
+      <div class="card-body">
+        <h3>图像标注基础</h3>
+        <p>白天草原 — 树木 + 小鸡</p>
+      </div>
+    </div>
+
+    <!-- 夜晚 + 星星 + 猫 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-night">
+        <div class="twinkle-star"></div><div class="twinkle-star"></div>
+        <div class="twinkle-star"></div><div class="twinkle-star"></div>
+        <img src="/pixel-icons/decorations/deco_tree2.png" class="deco-item deco-tree tree-sway s2" style="right:8px;">
+        <img src="/pixel-icons/decorations/deco_cat.png" class="deco-item deco-animal" style="right:65px; height:32px; bottom:26px;">
+        <img src="/pixel-icons/projects/gem_icon_64px.png" class="scene-icon">
+        <div class="ground"></div>
+      </div>
+      <div class="card-body">
+        <h3>NLP 文本分类</h3>
+        <p>星空夜晚 — 闪星 + 小猫</p>
+      </div>
+    </div>
+
+    <!-- 草地 + junimo + 鸭子 -->
+    <div class="scene-card">
+      <div class="scene-cover scene-meadow">
+        <img src="/pixel-icons/decorations/deco_tree1.png" class="deco-item deco-tree tree-sway s1" style="right:5px;">
+        <img src="/pixel-icons/decorations/deco_duck.png" class="deco-item deco-animal hop" style="left:15px; height:24px;">
+        <img src="/pixel-icons/decorations/deco_junimo.png" class="deco-item" style="height:24px; bottom:32px; right:50px; animation: jbounce 1.5s ease-in-out infinite;">
+        <img src="/pixel-icons/projects/chestRuby_icon_64px.png" class="scene-icon">
+      </div>
+      <div class="card-body">
+        <h3>语音标注进阶</h3>
+        <p>草地田园 — Junimo + 鸭子</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. 动态元素 -->
+<div class="section" id="s3">
+  <h2 class="section-header">3️⃣ 封面动态元素（大图展示）</h2>
+  <div class="section-desc">
+    组合效果：云飘动 + 树摇摆 + 动物漫游 + Junimo 蹦跳。全部用已有素材，零新资源。
+  </div>
+  <div class="animated-full">
+    <div class="clouds-layer"></div>
+
+    <!-- 树 -->
+    <img src="/pixel-icons/decorations/deco_tree1.png" class="deco-item deco-tree tree-sway s1" style="left:30px; height:70px; bottom: 28px;">
+    <img src="/pixel-icons/decorations/deco_tree2.png" class="deco-item deco-tree tree-sway s2" style="right:40px; height:70px; bottom: 28px;">
+
+    <!-- 漫游动物 -->
+    <div class="roaming"><img src="/pixel-icons/decorations/deco_dog.png"></div>
+    <div class="roaming r2"><img src="/pixel-icons/decorations/deco_chicken.png" style="height:22px;"></div>
+
+    <!-- Junimo -->
+    <div class="junimo-bounce"><img src="/pixel-icons/decorations/deco_junimo.png"></div>
+
+    <div class="bush-layer"></div>
+    <div class="floor-layer"></div>
+  </div>
+</div>
+
+<!-- 6. 登录巡逻 -->
+<div class="section" id="s6">
+  <h2 class="section-header">6️⃣ 登录页角色巡逻</h2>
+  <div class="section-desc">
+    背景用 daybg，真实角色（Abigail）来回走动，加树木、小动物装饰，信纸面板登录框。
+  </div>
+  <div class="login-demo">
+    <div class="login-clouds"></div>
+
+    <!-- 树 -->
+    <div class="login-tree" style="left: 30px;"><img src="/pixel-icons/decorations/deco_tree1.png" class="tree-sway s1"></div>
+    <div class="login-tree" style="right: 30px;"><img src="/pixel-icons/decorations/deco_tree2.png" class="tree-sway s2"></div>
+
+    <!-- 登录面板 -->
+    <div class="login-panel">
+      <h4>🏰 培训系统</h4>
+      <div class="fake-input"></div>
+      <div class="fake-input"></div>
+      <div class="fake-btn">登 录</div>
+    </div>
+
+    <!-- 巡逻角色 -->
+    <div class="patrol"><span class="walk"><img src="/pixel-icons/avatars/avatar_abigail.png"></span></div>
+
+    <!-- 小鸡啄食 -->
+    <div class="login-critter pecking" style="right: 25%;"><img src="/pixel-icons/decorations/deco_chicken.png"></div>
+
+    <!-- Junimo -->
+    <div class="login-critter" style="left: 20%;"><img src="/pixel-icons/decorations/deco_junimo.png" style="height:20px; animation: jbounce 1.5s ease-in-out infinite;"></div>
+
+    <div class="login-bush-layer"></div>
+    <div class="login-ground-layer"></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

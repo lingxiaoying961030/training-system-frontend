@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo - 方案B 项目管理（树形+题库内嵌）</title>
+<style>
+:root {
+  --pixel-bg: #f5ebe0; --pixel-card: #fffbf0; --pixel-border: #8b6914;
+  --pixel-text: #4a3728; --pixel-muted: #9e8a76; --pixel-link: #4a90d9;
+  --pixel-green: #5a9e4b; --pixel-orange: #d4882a; --pixel-red: #c0392b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', system-ui, sans-serif; background: var(--pixel-bg); color: var(--pixel-text); }
+
+/* 整体布局 */
+.page { display: flex; height: 100vh; }
+.sidebar { width: 200px; background: #3d2b1f; color: #e8dcc8; flex-shrink: 0; }
+.sidebar-title { padding: 16px; font-weight: 700; font-size: 15px; border-bottom: 1px solid #5a4332; }
+.sidebar-item { padding: 10px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.sidebar-item:hover { background: #5a4332; }
+.sidebar-item.active { background: var(--pixel-link); color: #fff; border-radius: 0; }
+.main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.page-header { padding: 16px 24px; background: var(--pixel-card); border-bottom: 2px solid var(--pixel-border); display: flex; align-items: center; justify-content: space-between; }
+.page-header h2 { font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.content { flex: 1; display: flex; overflow: hidden; }
+
+/* 左侧树 */
+.tree-panel { width: 270px; background: #faf5ea; border-right: 2px solid var(--pixel-border); overflow-y: auto; flex-shrink: 0; }
+.tree-header { padding: 10px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #e8dcc8; background: #f0e6d2; display: flex; align-items: center; justify-content: space-between; }
+.tree-project { padding: 10px 14px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #e8dcc8; cursor: pointer; }
+.tree-project:hover { background: #f0e6d2; }
+.tree-project.active { background: #e0d5c0; border-left: 3px solid var(--pixel-link); }
+.tree-plan { padding: 8px 14px 8px 28px; font-size: 13px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #f0e6d2; cursor: pointer; }
+.tree-plan:hover { background: #f5edd8; }
+.tree-plan.active { background: #e8dcc8; color: var(--pixel-link); font-weight: 600; }
+.tree-stage { padding: 6px 14px 6px 46px; font-size: 12px; color: var(--pixel-muted); border-bottom: 1px solid #f8f2e8; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.tree-stage:hover { background: #faf5ea; color: var(--pixel-text); }
+.tree-stage.active { background: #e0edf8; color: var(--pixel-link); font-weight: 600; }
+.tree-badge { font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #e8dcc8; color: var(--pixel-muted); margin-left: auto; }
+
+/* 右侧详情 */
+.detail-panel { flex: 1; padding: 20px 24px; overflow-y: auto; }
+.detail-breadcrumb { font-size: 12px; color: var(--pixel-muted); margin-bottom: 12px; }
+.detail-breadcrumb span { color: var(--pixel-link); cursor: pointer; }
+.detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.detail-header h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* Tab 切换 */
+.detail-tabs { display: flex; gap: 0; border-bottom: 2px solid #e8dcc8; margin-bottom: 16px; }
+.detail-tab { padding: 8px 20px; font-size: 13px; font-weight: 600; color: var(--pixel-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.detail-tab:hover { color: var(--pixel-text); }
+.detail-tab.active { color: var(--pixel-link); border-bottom-color: var(--pixel-link); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 统计条 */
+.stats-bar { display: flex; gap: 16px; padding: 10px 14px; background: #faf5ea; border: 1px solid #e8dcc8; border-radius: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-item { font-size: 12px; }
+.stat-item strong { color: var(--pixel-link); }
+
+/* 按钮 */
+.btn { padding: 6px 14px; border: 2px solid var(--pixel-border); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; background: #fff; }
+.btn-primary { background: var(--pixel-link); color: #fff; border-color: #3a7bc8; }
+.btn-outline { background: transparent; color: var(--pixel-text); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-green { background: var(--pixel-green); color: #fff; border-color: #4a8e3b; }
+.btn-dashed { border-style: dashed; width: 100%; color: var(--pixel-muted); margin-top: 8px; }
+
+/* 单元列表 */
+.unit-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--pixel-card); border: 1px solid #e8dcc8; border-radius: 6px; margin-bottom: 6px; font-size: 13px; cursor: pointer; }
+.unit-item:hover { border-color: var(--pixel-link); }
+.unit-icon { font-size: 15px; }
+.unit-name { flex: 1; }
+.unit-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+.unit-tag.article { background: #e3f2fd; color: #1976d2; }
+.unit-tag.video { background: #f3e5f5; color: #7b1fa2; }
+.unit-tag.practice { background: #e8f5e9; color: #2e7d32; }
+.unit-tag.quiz { background: #fff3e0; color: #e65100; }
+.unit-drag { color: #ccc; cursor: grab; font-size: 14px; }
+
+/* 题库区域 */
+.upload-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; padding: 12px; background: #faf5ea; border: 1px dashed var(--pixel-border); border-radius: 8px; flex-wrap: wrap; }
+.upload-bar select { padding: 6px 8px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 12px; }
+.upload-bar .upload-hint { font-size: 11px; color: var(--pixel-muted); }
+
+.q-filter { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.q-filter select, .q-filter input { padding: 5px 8px; border: 1px solid #d4c5a0; border-radius: 4px; font-size: 12px; }
+.q-filter input { flex: 1; }
+
+.q-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #f0e6d2; font-size: 12px; }
+.q-item:hover { background: #faf8f0; }
+.q-type { font-size: 10px; padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+.q-type.single { background: #e3f2fd; color: #1976d2; }
+.q-type.multiple { background: #f3e5f5; color: #7b1fa2; }
+.q-type.judge { background: #fff3e0; color: #e65100; }
+.q-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q-pool { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f0f0f0; color: #666; }
+
+/* 通用题提示 */
+.fallback-hint { padding: 8px 12px; background: #fff8f0; border: 1px solid #f0d9b5; border-radius: 6px; font-size: 12px; color: var(--pixel-orange); margin-bottom: 12px; }
+
+/* 项目级视图 */
+.plan-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.plan-card { background: var(--pixel-card); border: 2px solid #d4c5a0; border-radius: 8px; padding: 14px; cursor: pointer; transition: all 0.15s; }
+.plan-card:hover { border-color: var(--pixel-link); box-shadow: 0 2px 8px rgba(74,144,217,0.12); }
+.plan-card h4 { font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.plan-card .pc-meta { font-size: 12px; color: var(--pixel-muted); display: flex; gap: 10px; }
+.plan-card .pc-stages { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+.pc-stage-chip { font-size: 11px; padding: 2px 8px; background: #f0e6d2; border-radius: 4px; }
+
+.pixel-progress { height: 6px; background: #e8dcc8; border-radius: 3px; overflow: hidden; }
+.pixel-progress-fill { height: 100%; background: var(--pixel-green); border-radius: 3px; }
+
+/* 设置 tab */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--pixel-muted); }
+.form-group input, .form-group select, .form-group textarea { padding: 8px 10px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 13px; width: 100%; max-width: 400px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- 左侧导航 -->
+  <div class="sidebar">
+    <div class="sidebar-title">🎮 培训管理系统</div>
+    <div class="sidebar-item">📈 数据看板</div>
+    <div class="sidebar-item active">📁 项目管理</div>
+    <div class="sidebar-item">👥 学员进度</div>
+    <div class="sidebar-item">📋 实战审核</div>
+    <div class="sidebar-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main-area">
+    <div class="page-header">
+      <h2>📁 项目管理</h2>
+    </div>
+
+    <div class="content">
+      <!-- 树面板 -->
+      <div class="tree-panel">
+        <div class="tree-header">
+          结构导航
+          <button class="btn btn-sm btn-primary" style="font-size: 10px; padding: 2px 6px;">+ 新项目</button>
+        </div>
+
+        <!-- 项目1 -->
+        <div class="tree-project" onclick="showProject()" id="tp1">
+          📁 数据分析入门
+          <span class="tree-badge">2</span>
+        </div>
+        <div class="tree-plan" onclick="showPlan()" id="tpl1">
+          📋 2026春季-初级班
+          <span class="tree-badge">3</span>
+        </div>
+        <div class="tree-stage" onclick="showStage('units')" id="ts1">🏁 第一关：Excel 基础</div>
+        <div class="tree-stage active" onclick="showStage('units')" id="ts2">🏁 第二关：数据透视表</div>
+        <div class="tree-stage" onclick="showStage('units')" id="ts3">🏁 第三关：SQL 入门</div>
+        <div class="tree-plan" onclick="showPlan()" id="tpl2">
+          📋 2026春季-进阶班
+          <span class="tree-badge">2</span>
+        </div>
+        <div class="tree-stage" onclick="showStage('units')" id="ts4">🏁 第一关：Python 基础</div>
+        <div class="tree-stage" onclick="showStage('units')" id="ts5">🏁 第二关：Pandas 实战</div>
+
+        <!-- 项目2 -->
+        <div class="tree-project" onclick="showProject()" id="tp2">
+          📁 商业分析
+          <span class="tree-badge">1</span>
+        </div>
+        <div class="tree-plan" onclick="showPlan()" id="tpl3">
+          📋 2026Q2-第一期
+          <span class="tree-badge">4</span>
+        </div>
+      </div>
+
+      <!-- 详情面板 -->
+      <div class="detail-panel">
+
+        <!-- ===== 视图1：关卡详情（默认展示） ===== -->
+        <div id="view-stage">
+          <div class="detail-breadcrumb">
+            <span onclick="showProject()">数据分析入门</span> › <span onclick="showPlan()">2026春季-初级班</span> › 第二关：数据透视表
+          </div>
+          <div class="detail-header">
+            <h3>🏁 第二关：数据透视表</h3>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-outline">✏️ 编辑关卡</button>
+              <button class="btn btn-sm btn-outline" style="color: var(--pixel-red);">🗑</button>
+            </div>
+          </div>
+
+          <!-- 三个Tab -->
+          <div class="detail-tabs">
+            <div class="detail-tab active" onclick="switchDetailTab(0)">📚 单元 (4)</div>
+            <div class="detail-tab" onclick="switchDetailTab(1)">📝 题库 (18)</div>
+            <div class="detail-tab" onclick="switchDetailTab(2)">⚙️ 设置</div>
+          </div>
+
+          <!-- Tab0: 单元 -->
+          <div class="tab-panel active" id="dtab-0">
+            <div class="stats-bar">
+              <div class="stat-item">排序：<strong>2</strong></div>
+              <div class="stat-item">学员通过：<strong>3/6</strong></div>
+              <div class="stat-item">
+                进度
+                <div class="pixel-progress" style="width: 60px; display: inline-block; vertical-align: middle; margin-left: 4px;">
+                  <div class="pixel-progress-fill" style="width: 50%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="unit-item">
+              <span class="unit-drag">⋮⋮</span>
+              <span class="unit-icon">📖</span>
+              <span class="unit-name">学习：数据透视表概念与应用</span>
+              <span class="unit-tag article">文章</span>
+              <button class="btn btn-sm btn-outline">✏️</button>
+            </div>
+            <div class="unit-item">
+              <span class="unit-drag">⋮⋮</span>
+              <span class="unit-icon">🎬</span>
+              <span class="unit-name">视频：手把手创建数据透视表</span>
+              <span class="unit-tag video">视频</span>
+              <button class="btn btn-sm btn-outline">✏️</button>
+            </div>
+            <div class="unit-item">
+              <span class="unit-drag">⋮⋮</span>
+              <span class="unit-icon">📝</span>
+              <span class="unit-name">练习：透视表基本操作</span>
+              <span class="unit-tag practice">练习</span>
+              <span style="font-size: 11px; color: var(--pixel-muted);">10题 · 抽5</span>
+              <button class="btn btn-sm btn-outline">✏️</button>
+            </div>
+            <div class="unit-item">
+              <span class="unit-drag">⋮⋮</span>
+              <span class="unit-icon">🎯</span>
+              <span class="unit-name">测验：数据透视表综合测试</span>
+              <span class="unit-tag quiz">测验</span>
+              <span style="font-size: 11px; color: var(--pixel-muted);">8题 · 抽5 · 80分过</span>
+              <button class="btn btn-sm btn-outline">✏️</button>
+            </div>
+            <button class="btn btn-dashed">+ 添加单元</button>
+          </div>
+
+          <!-- Tab1: 题库 -->
+          <div class="tab-panel" id="dtab-1">
+            <div class="upload-bar">
+              <span style="font-size: 13px; font-weight: 600;">📤 上传题目到本关卡</span>
+              <input type="file" accept=".xlsx" style="font-size: 11px; border: none; padding: 0;">
+              <button class="btn btn-sm btn-primary">上传</button>
+              <span class="upload-hint">xlsx 格式 · 无需填写分类列 · 自动绑定到当前关卡</span>
+            </div>
+
+            <div class="stats-bar">
+              <div class="stat-item">本关卡题目：<strong>10</strong></div>
+              <div class="stat-item">单选 <strong>5</strong></div>
+              <div class="stat-item">多选 <strong>3</strong></div>
+              <div class="stat-item">判断 <strong>2</strong></div>
+              <div class="stat-item" style="margin-left: auto;">练习池 <strong>6</strong> · 测验池 <strong>4</strong></div>
+            </div>
+
+            <div class="q-filter">
+              <select><option>全部类型</option><option>单选</option><option>多选</option><option>判断</option></select>
+              <select><option>全部题池</option><option>练习池</option><option>测验池</option></select>
+              <input placeholder="🔍 搜索题目内容...">
+            </div>
+
+            <!-- 本关卡题目 -->
+            <div style="font-size: 12px; font-weight: 600; color: var(--pixel-text); margin-bottom: 6px; padding: 4px 0;">🏁 本关卡题目 (10题)</div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type single">单选</span>
+              <span class="q-text">创建数据透视表时，数据源必须满足什么条件？</span>
+              <span class="q-pool">练习</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">✏️</button>
+            </div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type multiple">多选</span>
+              <span class="q-text">数据透视表的四个区域包括哪些？</span>
+              <span class="q-pool">测验</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">✏️</button>
+            </div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type single">单选</span>
+              <span class="q-text">在透视表中，"值字段设置"可以更改什么？</span>
+              <span class="q-pool">练习</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">✏️</button>
+            </div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type judge">判断</span>
+              <span class="q-text">数据透视表只能用于数值型数据的汇总</span>
+              <span class="q-pool">测验</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">✏️</button>
+            </div>
+            <div style="padding: 4px 10px; font-size: 11px; color: var(--pixel-muted);">... 还有 6 题</div>
+
+            <!-- 可抽取的通用题 -->
+            <div style="margin-top: 16px;">
+              <div class="fallback-hint">
+                💡 本关卡还可以从 <strong>项目通用题库</strong> 中抽题（共 15 题）。通用题 = 未绑定关卡的题目，所有关卡共享。
+                <span style="cursor: pointer; color: var(--pixel-link); margin-left: 4px;" onclick="document.getElementById('general-qs').style.display = document.getElementById('general-qs').style.display === 'none' ? '' : 'none'">查看通用题 ▸</span>
+              </div>
+              <div id="general-qs" style="display: none; border: 1px solid #e8dcc8; border-radius: 6px; padding: 8px 0;">
+                <div class="q-item">
+                  <input type="checkbox">
+                  <span class="q-type single">单选</span>
+                  <span class="q-text">数据分析的第一步通常是？</span>
+                  <span class="q-pool">练习</span>
+                  <button class="btn btn-sm btn-outline" title="归入本关卡" style="font-size: 10px;">📥 归入</button>
+                </div>
+                <div class="q-item">
+                  <input type="checkbox">
+                  <span class="q-type judge">判断</span>
+                  <span class="q-text">数据清洗是数据分析中不可或缺的环节</span>
+                  <span class="q-pool">测验</span>
+                  <button class="btn btn-sm btn-outline" title="归入本关卡" style="font-size: 10px;">📥 归入</button>
+                </div>
+                <div style="padding: 4px 10px; font-size: 11px; color: var(--pixel-muted);">... 还有 13 题</div>
+              </div>
+            </div>
+
+            <!-- 批量操作 -->
+            <div style="margin-top: 12px; padding: 8px 12px; background: #f5f5f5; border-radius: 6px; display: flex; gap: 8px; align-items: center; font-size: 12px;">
+              <span>批量操作：</span>
+              <button class="btn btn-sm btn-outline">📦 移动到其他关卡</button>
+              <button class="btn btn-sm btn-outline">🔄 切换题池</button>
+              <button class="btn btn-sm btn-outline" style="color: var(--pixel-red);">🗑 删除</button>
+            </div>
+          </div>
+
+          <!-- Tab2: 设置 -->
+          <div class="tab-panel" id="dtab-2">
+            <div class="form-group">
+              <label>关卡名称</label>
+              <input value="第二关：数据透视表">
+            </div>
+            <div class="form-group">
+              <label>排序序号</label>
+              <input type="number" value="2" style="max-width: 100px;">
+            </div>
+            <div class="form-group">
+              <label>关卡描述</label>
+              <textarea rows="3" style="max-width: 400px;">掌握 Excel 数据透视表的创建和使用</textarea>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 8px;">💾 保存</button>
+          </div>
+        </div>
+
+        <!-- ===== 视图2：计划详情 ===== -->
+        <div id="view-plan" style="display: none;">
+          <div class="detail-breadcrumb">
+            <span onclick="showProject()">数据分析入门</span> › 2026春季-初级班
+          </div>
+          <div class="detail-header">
+            <h3>📋 2026春季-初级班</h3>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-outline">✏️ 编辑</button>
+              <button class="btn btn-sm btn-green">+ 添加关卡</button>
+            </div>
+          </div>
+          <div class="stats-bar">
+            <div class="stat-item">关卡：<strong>3</strong></div>
+            <div class="stat-item">学员：<strong>6</strong></div>
+            <div class="stat-item">题目总计：<strong>32</strong></div>
+            <div class="stat-item">通关率：<strong>50%</strong></div>
+          </div>
+          <h3 style="font-size: 14px; margin-bottom: 10px;">🏁 关卡列表</h3>
+          <div class="plan-cards">
+            <div class="plan-card" onclick="showStage('units')">
+              <h4>🏁 第一关：Excel 基础</h4>
+              <div class="pc-meta"><span>4 单元</span><span>14 题</span><span>5/6 通过</span></div>
+              <div class="pc-stages">
+                <span class="pc-stage-chip">📖 学习</span>
+                <span class="pc-stage-chip">📝 练习×1</span>
+                <span class="pc-stage-chip">🎯 测验×1</span>
+              </div>
+            </div>
+            <div class="plan-card" onclick="showStage('units')" style="border-color: var(--pixel-link);">
+              <h4>🏁 第二关：数据透视表</h4>
+              <div class="pc-meta"><span>4 单元</span><span>18 题</span><span>3/6 通过</span></div>
+              <div class="pc-stages">
+                <span class="pc-stage-chip">📖 学习</span>
+                <span class="pc-stage-chip">🎬 视频</span>
+                <span class="pc-stage-chip">📝 练习×1</span>
+                <span class="pc-stage-chip">🎯 测验×1</span>
+              </div>
+            </div>
+            <div class="plan-card" onclick="showStage('units')">
+              <h4>🏁 第三关：SQL 入门</h4>
+              <div class="pc-meta"><span>3 单元</span><span>10 题</span><span>1/6 通过</span></div>
+              <div class="pc-stages">
+                <span class="pc-stage-chip">📖 学习</span>
+                <span class="pc-stage-chip">📝 练习×1</span>
+                <span class="pc-stage-chip">🎯 测验×1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 视图3：项目详情 ===== -->
+        <div id="view-project" style="display: none;">
+          <div class="detail-header">
+            <h3>📁 数据分析入门</h3>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-outline">✏️ 编辑</button>
+              <button class="btn btn-sm btn-green">+ 添加计划</button>
+            </div>
+          </div>
+          <div class="stats-bar">
+            <div class="stat-item">计划：<strong>2</strong></div>
+            <div class="stat-item">关卡：<strong>5</strong></div>
+            <div class="stat-item">题目：<strong>47</strong></div>
+            <div class="stat-item">通用题：<strong>15</strong></div>
+            <div class="stat-item">学员：<strong>6</strong></div>
+          </div>
+
+          <h3 style="font-size: 14px; margin-bottom: 10px;">📋 培训计划</h3>
+          <div class="plan-cards">
+            <div class="plan-card" onclick="showPlan()">
+              <h4>📋 2026春季-初级班</h4>
+              <div class="pc-meta"><span>3 关卡</span><span>32 题</span><span>6 学员</span></div>
+              <div class="pc-stages">
+                <span class="pc-stage-chip">Excel 基础</span>
+                <span class="pc-stage-chip">数据透视表</span>
+                <span class="pc-stage-chip">SQL 入门</span>
+              </div>
+            </div>
+            <div class="plan-card" onclick="showPlan()">
+              <h4>📋 2026春季-进阶班</h4>
+              <div class="pc-meta"><span>2 关卡</span><span>20 题</span><span>3 学员</span></div>
+              <div class="pc-stages">
+                <span class="pc-stage-chip">Python 基础</span>
+                <span class="pc-stage-chip">Pandas 实战</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 项目通用题 -->
+          <div style="margin-top: 20px;">
+            <h3 style="font-size: 14px; margin-bottom: 10px;">🌐 项目通用题库 <span style="font-size: 12px; font-weight: 400; color: var(--pixel-orange);">15题 · 所有关卡共享</span></h3>
+            <div class="upload-bar">
+              <span style="font-size: 12px;">📤 上传通用题（不绑定关卡）</span>
+              <input type="file" accept=".xlsx" style="font-size: 11px; border: none; padding: 0;">
+              <button class="btn btn-sm btn-primary">上传</button>
+            </div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type single">单选</span>
+              <span class="q-text">数据分析的第一步通常是？</span>
+              <span class="q-pool">练习</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">📦 分配</button>
+            </div>
+            <div class="q-item">
+              <input type="checkbox">
+              <span class="q-type judge">判断</span>
+              <span class="q-text">数据清洗是数据分析中不可或缺的环节</span>
+              <span class="q-pool">测验</span>
+              <button class="btn btn-sm btn-outline" style="font-size: 10px;">📦 分配</button>
+            </div>
+            <div style="padding: 4px 10px; font-size: 11px; color: var(--pixel-muted);">... 还有 13 题</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchDetailTab(idx) {
+  document.querySelectorAll('.detail-tab').forEach((t, i) => t.classList.toggle('active', i === idx))
+  document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx))
+}
+
+function showStage(tab) {
+  document.getElementById('view-stage').style.display = ''
+  document.getElementById('view-plan').style.display = 'none'
+  document.getElementById('view-project').style.display = 'none'
+  if (tab === 'questions') switchDetailTab(1)
+  else switchDetailTab(0)
+}
+
+function showPlan() {
+  document.getElementById('view-stage').style.display = 'none'
+  document.getElementById('view-plan').style.display = ''
+  document.getElementById('view-project').style.display = 'none'
+}
+
+function showProject() {
+  document.getElementById('view-stage').style.display = 'none'
+  document.getElementById('view-plan').style.display = 'none'
+  document.getElementById('view-project').style.display = ''
+}
+</script>
+</body>
+</html>

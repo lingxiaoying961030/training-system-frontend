@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案A：树内内联编辑（不跳页）</title>
+<style>
+:root { --border: #8b6914; --card: #fffbf0; --muted: #9e8a76; --link: #4a90d9; --bg: #f5efe0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: #4a3728; }
+.banner { background: #6b4e2e; color: #ffd700; padding: 14px 20px; font-size: 14px; font-weight: 600; }
+.banner small { font-weight: 400; color: #d4c090; display: block; margin-top: 4px; font-size: 12px; }
+.layout { display: flex; height: calc(100vh - 56px); }
+
+/* 树 */
+.tree { width: 280px; background: #faf5ea; border-right: 2px solid var(--border); overflow-y: auto; }
+.tree-hdr { padding: 12px 14px; font-weight: 600; font-size: 13px; border-bottom: 2px solid var(--border); background: #f0e6d2; display: flex; justify-content: space-between; }
+.t-proj { padding: 10px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #e8dcc8; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-proj:hover { background: #f0e6d2; }
+.t-plan { padding: 8px 14px 8px 28px; font-size: 13px; border-bottom: 1px solid #f0e6d2; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-plan:hover { background: #f5edd8; }
+.t-plan.active { background: #e8dcc8; color: var(--link); font-weight: 600; }
+.t-stage { padding: 6px 14px 6px 46px; font-size: 12px; color: var(--muted); border-bottom: 1px solid #f8f2e8; cursor: pointer; }
+.t-stage:hover { background: #faf5ea; color: #4a3728; }
+.t-stage.active { background: #e0edf8; color: var(--link); font-weight: 600; }
+.badge { font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #e8dcc8; color: var(--muted); margin-left: auto; }
+
+/* 详情 */
+.detail { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.crumb { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.crumb a { color: var(--link); cursor: pointer; text-decoration: none; }
+.dtl-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dtl-hdr h3 { font-size: 16px; }
+.desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.stats { display: flex; gap: 16px; padding: 10px 14px; background: #faf5ea; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 12px; margin-bottom: 16px; }
+.stats strong { color: var(--link); }
+
+/* 单元区域 - 核心变化 */
+.unit-section { border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.unit-hdr { padding: 10px 14px; background: #f0e6d2; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; }
+.unit-body { background: var(--card); }
+.unit-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f0e6d2; font-size: 13px; }
+.unit-item:last-child { border-bottom: none; }
+.unit-item:hover { background: #faf8f0; }
+.drag-h { cursor: grab; color: #ccc; font-size: 14px; }
+.drag-h:hover { color: #999; }
+.u-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.u-article { background: #e3f2fd; color: #1976d2; }
+.u-video { background: #e8f5e9; color: #2e7d32; }
+.u-practice { background: #f5f5f5; color: #666; }
+.u-quiz { background: #fff3e0; color: #e65100; }
+.u-practical { background: #fce4ec; color: #c62828; }
+.u-name { flex: 1; }
+.u-req { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #e8f5e9; color: #2e7d32; }
+
+/* 单元内联展开编辑 */
+.unit-expand { padding: 12px 14px 12px 38px; background: #fdfaf0; border-bottom: 2px solid #e8dcc8; }
+.unit-expand-inner { border: 1px solid #e0d5c8; border-radius: 6px; padding: 14px; background: #fff; }
+.ue-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ue-row label { font-size: 12px; font-weight: 600; color: var(--muted); width: 60px; text-align: right; }
+.ue-row input, .ue-row select { padding: 6px 8px; border: 1px solid #d4c5a0; border-radius: 4px; font-size: 13px; flex: 1; }
+.ue-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+
+/* 内容预览区 */
+.content-preview { margin-top: 10px; padding: 10px; background: #faf5ea; border: 1px dashed #d4c5a0; border-radius: 4px; font-size: 12px; color: var(--muted); }
+.content-preview a { color: var(--link); }
+
+/* 导师区 */
+.mentor-section { border: 2px solid #b8a88a; border-radius: 8px; overflow: hidden; }
+.mentor-hdr { padding: 10px 14px; background: #f0e6d2; font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; }
+.mentor-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid #f0e6d2; font-size: 13px; }
+
+.btn { padding: 5px 12px; border: 1px solid #d4c5a0; background: #fff; border-radius: 4px; cursor: pointer; font-size: 11px; }
+.btn:hover { background: #faf5ea; border-color: var(--border); }
+.btn-p { background: var(--link); color: #fff; border-color: #3a7bc8; }
+.btn-d { color: #c0392b; border-color: #e8b4b4; }
+
+.highlight { animation: pulse 1s ease; }
+@keyframes pulse { 0%,100% { background: transparent; } 50% { background: #fff3cd; } }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  方案A：树内内联编辑（不跳页）
+  <small>核心思路：选中关卡后，单元管理直接在右侧详情面板中完成，点击单元可内联展开编辑。无需跳到单独的 StageEdit 页面。</small>
+</div>
+
+<div class="layout">
+  <div class="tree">
+    <div class="tree-hdr"><span>📁 项目结构</span> <button class="btn">+ 新项目</button></div>
+    <div class="t-proj">▼ 📁 数据标注培训 <span class="badge">2</span></div>
+    <div class="t-plan">▼ 📋 2026春季班 <span class="badge">3</span></div>
+    <div class="t-stage">🎯 入门基础</div>
+    <div class="t-stage active">📝 文本标注实战</div>
+    <div class="t-stage">🏆 综合考核</div>
+    <div class="t-plan">▸ 📋 2026秋季班 <span class="badge">2</span></div>
+  </div>
+
+  <div class="detail">
+    <div class="crumb"><a>数据标注培训</a> › <a>2026春季班</a> › 📝 文本标注实战</div>
+    <div class="dtl-hdr">
+      <h3>📝 文本标注实战</h3>
+      <div style="display: flex; gap: 6px;">
+        <span style="font-size: 11px; padding: 3px 8px; border-radius: 10px; background: #e8f5e9; color: #2e7d32;">已发布</span>
+        <button class="btn">✏️ 编辑信息</button>
+        <button class="btn btn-d">🗑</button>
+      </div>
+    </div>
+    <div class="desc">学习文本标注的核心方法，并进行实战练习</div>
+    <div class="stats">
+      <div>单元：<strong>5</strong></div>
+      <div>必学：<strong>4</strong></div>
+      <div>导师：<strong>2</strong></div>
+    </div>
+
+    <!-- 👇 核心改变：单元直接在这里管理 -->
+    <div class="unit-section">
+      <div class="unit-hdr">
+        <span>📚 学习单元</span>
+        <div style="display: flex; gap: 6px;">
+          <span style="font-size: 11px; color: var(--muted);">拖拽排序</span>
+          <button class="btn btn-p">+ 添加单元</button>
+        </div>
+      </div>
+      <div class="unit-body">
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-article">文章</span>
+          <span class="u-name">1. 文本标注概述</span>
+          <span class="u-req">必学</span>
+          <button class="btn" onclick="this.closest('.unit-item').nextElementSibling.style.display=this.closest('.unit-item').nextElementSibling.style.display==='none'?'block':'none'">⚙️</button>
+          <button class="btn" title="编辑内容">📝</button>
+          <button class="btn btn-d">🗑</button>
+        </div>
+        <!-- 内联展开：点击⚙️后出现 -->
+        <div class="unit-expand" style="display: none;">
+          <div class="unit-expand-inner">
+            <div class="ue-row"><label>标题</label><input value="文本标注概述"></div>
+            <div class="ue-row"><label>类型</label><select><option selected>文章</option><option>视频</option><option>练习</option><option>测验</option><option>实战演练</option></select></div>
+            <div class="ue-row"><label>必学</label><select><option selected>是</option><option>否</option></select></div>
+            <div class="content-preview">
+              📖 已有内容（1200字）· <a>点击编辑内容 →</a>
+            </div>
+            <div class="ue-actions">
+              <button class="btn" onclick="this.closest('.unit-expand').style.display='none'">取消</button>
+              <button class="btn btn-p">💾 保存</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-video">视频</span>
+          <span class="u-name">2. 标注工具操作演示</span>
+          <span class="u-req">必学</span>
+          <button class="btn">⚙️</button>
+          <button class="btn">📝</button>
+          <button class="btn btn-d">🗑</button>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practice">练习</span>
+          <span class="u-name">3. 标注练习</span>
+          <span class="u-req">必学</span>
+          <button class="btn">⚙️</button>
+          <button class="btn">📝</button>
+          <button class="btn btn-d">🗑</button>
+        </div>
+
+        <div class="unit-item highlight">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-quiz">测验</span>
+          <span class="u-name">4. 阶段测验</span>
+          <span class="u-req">必学</span>
+          <button class="btn">⚙️</button>
+          <button class="btn">📝</button>
+          <button class="btn btn-d">🗑</button>
+        </div>
+
+        <div class="unit-item" style="opacity: 0.7;">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practical">实战</span>
+          <span class="u-name">5. 实战标注任务</span>
+          <span style="font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f5f5f5; color: #999;">选学</span>
+          <button class="btn">⚙️</button>
+          <button class="btn">📝</button>
+          <button class="btn btn-d">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导师 -->
+    <div class="mentor-section">
+      <div class="mentor-hdr"><span>👨‍🏫 导师</span> <button class="btn btn-p">+ 添加</button></div>
+      <div class="mentor-item">
+        <span>👤 张老师</span>
+        <span class="badge" style="background: #e3f2fd; color: #1976d2;">导师</span>
+        <span style="margin-left: auto;"><button class="btn btn-d" style="font-size: 10px;">移除</button></span>
+      </div>
+      <div class="mentor-item">
+        <span>👤 李老师</span>
+        <span class="badge" style="background: #e3f2fd; color: #1976d2;">导师</span>
+        <span style="margin-left: auto;"><button class="btn btn-d" style="font-size: 10px;">移除</button></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

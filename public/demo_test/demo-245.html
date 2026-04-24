@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2/4/5 优化方案 Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+img { image-rendering: pixelated; }
+
+.demo-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; gap: 12px; padding: 10px 20px; background: #5B3A29; align-items: center;
+}
+.demo-nav .title { color: #E8A93A; font-size: 14px; font-weight: bold; margin-right: 8px; }
+.demo-nav a { color: #E8A93A; text-decoration: none; font-size: 12px; padding: 4px 10px; border: 1px solid #8B6F5E; }
+.demo-nav a:hover { background: #4E342E; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+.section { margin-bottom: 48px; }
+.section-header {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 20px; letter-spacing: 2px;
+  color: #5B3A29; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 3px solid #E0D5C8;
+}
+.section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.7; }
+.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.compare-label { font-size: 11px; color: #B0A090; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ========== 2. 空状态 ========== */
+.empty-box {
+  border: 3px solid #E0D5C8; background: #FFFDF5; padding: 40px 24px; text-align: center;
+}
+.empty-old { color: #B0A090; font-size: 14px; }
+
+.empty-new { display: flex; flex-direction: column; align-items: center; }
+.empty-icon { margin-bottom: 12px; }
+.empty-icon img { height: 48px; opacity: 0.6; }
+.empty-title {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif;
+  font-size: 16px; letter-spacing: 2px; color: #8B7355; margin-bottom: 4px;
+}
+.empty-sub { font-size: 12px; color: #B0A090; }
+
+/* 不同场景的空状态 */
+.empty-variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.empty-variant {
+  border: 3px solid #E0D5C8; background: #FFFDF5; padding: 24px 16px; text-align: center;
+}
+.empty-variant .ctx { font-size: 10px; color: #B0A090; margin-bottom: 12px; border-bottom: 1px dashed #E0D5C8; padding-bottom: 6px; }
+
+/* ========== 4. 进度增强 ========== */
+/* 徽章 */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; font-size: 13px; font-weight: 500;
+  border: 2px solid; background: #FFFDF5;
+}
+.badge img { width: 16px; height: 16px; }
+.badge-gold { border-color: #E8A93A; color: #B8860B; }
+.badge-green { border-color: #A5D6A7; color: #2E7D32; }
+.badge-brown { border-color: #D7CCC8; color: #5D4037; }
+
+/* 星级 */
+.star-row { display: flex; gap: 2px; align-items: center; }
+.star { font-size: 20px; }
+.star.filled { color: #FFD700; filter: drop-shadow(0 1px 2px rgba(255,215,0,0.3)); }
+.star.empty { color: #E0D5C8; }
+.star-label { font-size: 11px; color: #8B7355; margin-left: 8px; }
+
+/* 条纹进度条 */
+.prog-bar {
+  height: 16px; background: #E0D5C8; border: 2px solid #5B3A29;
+  position: relative; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; position: relative;
+  transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.prog-fill.striped-green {
+  background: repeating-linear-gradient(90deg, #5C8A4D 0px, #5C8A4D 6px, #6B9A5D 6px, #6B9A5D 12px);
+}
+.prog-fill.striped-gold {
+  background: repeating-linear-gradient(90deg, #E8A93A 0px, #E8A93A 6px, #F0B84A 6px, #F0B84A 12px);
+}
+.prog-fill::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px;
+  background: rgba(255,255,255,0.4);
+}
+.prog-text {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; font-weight: bold; color: #5B3A29;
+  text-shadow: 0 0 3px rgba(255,255,255,0.8);
+}
+
+/* 旧进度条 */
+.prog-bar-old { height: 12px; background: #E0D5C8; border: 2px solid #5B3A29; }
+.prog-fill-old { height: 100%; background: #E8A93A; }
+
+/* demo 卡片 */
+.demo-card {
+  border: 3px solid #E0D5C8; background: #FFFDF5; padding: 16px 20px;
+}
+.demo-card .card-title { font-size: 15px; font-weight: 600; color: #5B3A29; margin-bottom: 8px; }
+.demo-card .card-sub { font-size: 12px; color: #8B7355; margin-bottom: 6px; }
+
+/* progress demo grid */
+.prog-demos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ========== 5. 骨架屏 ========== */
+.skeleton-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* 旧 loading */
+.old-loading {
+  border: 3px solid #E0D5C8; background: #FFFDF5; padding: 60px; text-align: center;
+}
+.spinner {
+  width: 32px; height: 32px; border: 3px solid #E0D5C8; border-top-color: #E8A93A;
+  border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 骨架屏卡片 */
+.skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.skel-card { border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden; }
+.skel-cover { height: 90px; background: #F0EAE0; position: relative; overflow: hidden; }
+.skel-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,248,231,0.5) 50%, transparent 100%);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+.skel-body { padding: 10px 12px; }
+.skel-line {
+  height: 10px; background: #EDE7DA; margin-bottom: 8px;
+  position: relative; overflow: hidden;
+}
+.skel-line::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,248,231,0.5) 50%, transparent 100%);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+.skel-line:last-child { margin-bottom: 0; }
+.skel-line.w80 { width: 80%; }
+.skel-line.w60 { width: 60%; }
+.skel-line.w40 { width: 40%; }
+
+/* 木质条骨架 */
+.skel-wood { height: 30px; background: #D4B896; position: relative; overflow: hidden; }
+.skel-wood::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,248,231,0.3) 50%, transparent 100%);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* 进度条骨架 */
+.skel-prog { height: 10px; background: #EDE7DA; border: 2px solid #D4B896; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎨 优化方案 2/4/5</span>
+  <a href="#s2">2.空状态</a>
+  <a href="#s4">4.进度增强</a>
+  <a href="#s5">5.骨架屏</a>
+</div>
+
+<div class="container">
+
+<!-- ===== 2. 空状态 ===== -->
+<div class="section" id="s2">
+  <h2 class="section-header">2️⃣ 空状态插画</h2>
+  <div class="section-desc">不同页面的空状态用不同的图标和文案，保持像素风但增加温度。</div>
+
+  <div class="compare-row">
+    <div>
+      <div class="compare-label">当前 — 纯文字</div>
+      <div class="empty-box"><div class="empty-old">暂无开放项目，请耐心等待~</div></div>
+    </div>
+    <div>
+      <div class="compare-label">优化后 — 图标 + 分层文案</div>
+      <div class="empty-box">
+        <div class="empty-new">
+          <div class="empty-icon"><img src="/pixel-icons/decorations/deco_junimo.png"></div>
+          <div class="empty-title">这里还是一片空地...</div>
+          <div class="empty-sub">等待管理员播下第一颗种子 🌿</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-variants">
+    <div class="empty-variant">
+      <div class="ctx">项目列表为空</div>
+      <div class="empty-new">
+        <div class="empty-icon"><img src="/pixel-icons/decorations/deco_junimo.png"></div>
+        <div class="empty-title">暂无开放项目</div>
+        <div class="empty-sub">冒险尚未开启，耐心等待吧 ⏳</div>
+      </div>
+    </div>
+    <div class="empty-variant">
+      <div class="ctx">搜索无结果</div>
+      <div class="empty-new">
+        <div class="empty-icon"><img src="/pixel-icons/plans/question.png" style="height:36px;"></div>
+        <div class="empty-title">没有找到匹配项目</div>
+        <div class="empty-sub">换个关键词试试？</div>
+      </div>
+    </div>
+    <div class="empty-variant">
+      <div class="ctx">计划列表为空</div>
+      <div class="empty-new">
+        <div class="empty-icon"><img src="/pixel-icons/plans/book.png" style="height:36px;"></div>
+        <div class="empty-title">暂无学习计划</div>
+        <div class="empty-sub">管理员还在准备中...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. 进度增强 ===== -->
+<div class="section" id="s4">
+  <h2 class="section-header">4️⃣ 进度可视化增强</h2>
+
+  <!-- 4a: 条纹进度条 -->
+  <div class="section-desc"><strong>4a 条纹进度条</strong> — 比纯色更有像素游戏质感</div>
+  <div class="compare-row" style="margin-bottom:24px;">
+    <div>
+      <div class="compare-label">当前 — 纯色填充</div>
+      <div class="demo-card">
+        <div class="card-title">图像标注基础</div>
+        <div class="prog-bar-old"><div class="prog-fill-old" style="width:62%;"></div></div>
+        <div class="card-sub" style="margin-top:4px;">5/8 关卡已完成</div>
+      </div>
+    </div>
+    <div>
+      <div class="compare-label">优化后 — 条纹 + 百分比 + 高光</div>
+      <div class="demo-card">
+        <div class="card-title">图像标注基础</div>
+        <div class="prog-bar">
+          <div class="prog-fill striped-gold" style="width:62%;"></div>
+          <span class="prog-text">62%</span>
+        </div>
+        <div class="card-sub" style="margin-top:4px;">5/8 关卡已完成</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4b: 星级评分 -->
+  <div class="section-desc"><strong>4b 关卡星级评分</strong> — 按测验成绩给 ★★★（≥90 三星，≥70 二星，及格一星）</div>
+  <div class="prog-demos" style="margin-bottom:24px;">
+    <div class="demo-card">
+      <div class="card-title">第 3 关：边界框标注</div>
+      <div class="star-row">
+        <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+        <span class="star-label">测验 95 分</span>
+      </div>
+    </div>
+    <div class="demo-card">
+      <div class="card-title">第 4 关：语义分割</div>
+      <div class="star-row">
+        <span class="star filled">★</span><span class="star filled">★</span><span class="star empty">★</span>
+        <span class="star-label">测验 78 分</span>
+      </div>
+    </div>
+    <div class="demo-card">
+      <div class="card-title">第 5 关：质量检查</div>
+      <div class="star-row">
+        <span class="star filled">★</span><span class="star empty">★</span><span class="star empty">★</span>
+        <span class="star-label">测验 65 分</span>
+      </div>
+    </div>
+    <div class="demo-card">
+      <div class="card-title">第 6 关：（未通关）</div>
+      <div class="star-row">
+        <span class="star empty">★</span><span class="star empty">★</span><span class="star empty">★</span>
+        <span class="star-label">未完成</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4c: 徽章 -->
+  <div class="section-desc"><strong>4c 进度徽章</strong> — 地图页顶部显示总体进度概览</div>
+  <div class="demo-card" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+    <span class="badge badge-gold"><img src="/pixel-icons/ui/star_gold.png"> 已解锁 5/8 关卡</span>
+    <span class="badge badge-green"><img src="/pixel-icons/ui/trophy.png"> 已通关 3 关</span>
+    <span class="badge badge-brown"><img src="/pixel-icons/ui/flag.png"> 当前：第 6 关</span>
+  </div>
+</div>
+
+<!-- ===== 5. 骨架屏 ===== -->
+<div class="section" id="s5">
+  <h2 class="section-header">5️⃣ Loading 骨架屏</h2>
+  <div class="section-desc">用闪烁方块占位代替旋转圈，结构和真实卡片一致（木质条 + 封面 + 内容），加载完直接淡入替换。</div>
+
+  <div class="skeleton-compare">
+    <div>
+      <div class="compare-label">当前 — 旋转加载</div>
+      <div class="old-loading">
+        <div class="spinner"></div>
+        <div style="font-size:13px; color:#B0A090;">加载中...</div>
+      </div>
+    </div>
+    <div>
+      <div class="compare-label">优化后 — 骨架屏</div>
+      <div class="skeleton-grid">
+        <div class="skel-card">
+          <div class="skel-wood"></div>
+          <div class="skel-cover"></div>
+          <div class="skel-body">
+            <div class="skel-line w80"></div>
+            <div class="skel-prog"></div>
+          </div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-wood"></div>
+          <div class="skel-cover"></div>
+          <div class="skel-body">
+            <div class="skel-line w60"></div>
+            <div class="skel-prog"></div>
+          </div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-wood"></div>
+          <div class="skel-cover"></div>
+          <div class="skel-body">
+            <div class="skel-line w80"></div>
+            <div class="skel-prog"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

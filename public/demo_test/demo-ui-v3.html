@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 优化 v3 — 克制精致版</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+img { image-rendering: pixelated; }
+
+.demo-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; gap: 12px; padding: 10px 20px; background: #5B3A29; flex-wrap: wrap; align-items: center;
+}
+.demo-nav a { color: #E8A93A; text-decoration: none; font-size: 12px; padding: 4px 10px; border: 1px solid #8B6F5E; }
+.demo-nav a:hover { background: #4E342E; }
+.demo-nav .title { color: #E8A93A; font-size: 14px; font-weight: bold; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+.section { margin-bottom: 48px; }
+.section-header {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 20px; letter-spacing: 2px;
+  color: #5B3A29; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 3px solid #E0D5C8;
+}
+.section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.7; }
+.principle { display: inline-block; padding: 2px 10px; background: #FFF8E7; border: 1px solid #E8A93A; font-size: 11px; color: #B8860B; margin-bottom: 12px; }
+
+/* ========== 1. 卡片封面：柔和场景分层 ========== */
+.cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.cover {
+  height: 140px; position: relative; overflow: hidden;
+  border-bottom: 3px solid #E0D5C8;
+}
+
+/* 方案A: 安静的场景氛围 — 只用背景+一层前景+图标 */
+/* 白天：daybg + 底部灌木 */
+.cover-day { background: url('/pixel-icons/ui/daybg.png') center/cover; }
+/* 夜晚 */
+.cover-night { background: url('/pixel-icons/ui/nightbg.png') center/cover; }
+/* 草地 */
+.cover-meadow { background: url('/pixel-icons/backgrounds/bg_meadow.png') repeat center; background-size: 96px; }
+
+/* 底部灌木前景 — 所有场景统一 */
+.cover-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 28px;
+}
+.cover-night .cover-ground { filter: brightness(0.5) saturate(0.6); }
+
+/* 图标：稳稳地站在地面上 */
+.cover-icon-wrap {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  z-index: 2;
+}
+.cover-icon-wrap img { width: 48px; height: 48px; filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2)); }
+.card:hover .cover-icon-wrap img { transform: translateY(-4px); transition: transform 0.3s; }
+
+/* 唯一的微动画：一朵云缓慢飘过（只在白天场景） */
+.cover-cloud {
+  position: absolute; top: 12px; width: 60px; height: 20px;
+  background: url('/pixel-icons/ui/clouds_small.png') no-repeat;
+  background-size: contain;
+  opacity: 0.5;
+  animation: slow-drift 30s linear infinite;
+}
+@keyframes slow-drift { 0% { left: -70px; } 100% { left: calc(100% + 70px); } }
+
+/* 方案B: 更极简 — 纹理渐变 + 角落装饰 */
+.cover-minimal {
+  background: linear-gradient(135deg, #D4E7C5 0%, #B8D4A8 100%);
+  position: relative;
+}
+.cover-minimal::before {
+  content: ''; position: absolute; inset: 0;
+  background: url('/pixel-icons/ui/floor_02.png') repeat; background-size: 24px;
+  opacity: 0.06;
+}
+.cover-minimal .corner-deco {
+  position: absolute; bottom: 8px; right: 8px; opacity: 0.35;
+}
+.cover-minimal .corner-deco img { height: 32px; }
+
+.cover-minimal-blue { background: linear-gradient(135deg, #C5D8E7 0%, #A8C4D4 100%); }
+.cover-minimal-warm { background: linear-gradient(135deg, #E7DFC5 0%, #D4CBB0 100%); }
+
+.body { padding: 12px 16px; }
+.body h3 { font-size: 15px; font-weight: 600; color: #5B3A29; margin-bottom: 4px; }
+.body p { font-size: 12px; color: #8B7355; }
+
+/* ========== 3. 动态：hover 时才活 ========== */
+.hover-card {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: all 0.2s;
+}
+.hover-card:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.hover-cover {
+  height: 150px; position: relative; overflow: hidden;
+  background: url('/pixel-icons/ui/daybg.png') center/cover;
+  border-bottom: 3px solid #E0D5C8;
+}
+.hover-cover .hc-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 28px;
+}
+.hover-cover .hc-icon {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  width: 48px; height: 48px;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2));
+  transition: transform 0.3s;
+}
+/* 静止的小动物 */
+.hover-cover .hc-deco {
+  position: absolute; bottom: 30px; height: 24px;
+  filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15));
+  transition: transform 0.5s ease;
+}
+/* hover 时：图标微微上浮，小动物跳一下 */
+.hover-card:hover .hc-icon { transform: translateX(-50%) translateY(-6px); }
+.hover-card:hover .hc-deco { transform: translateY(-6px); }
+
+/* ========== 6. 登录页：安静但有温度 ========== */
+.login-demo {
+  height: 280px; position: relative; overflow: hidden;
+  border: 3px solid #5B3A29;
+  background: url('/pixel-icons/ui/daybg_hd.png') center top/cover;
+}
+.login-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+  background: url('/pixel-icons/ui/bush_00.png') repeat-x bottom;
+  background-size: auto 28px;
+}
+.login-cloud-slow {
+  position: absolute; top: 8px;
+  background: url('/pixel-icons/ui/clouds_small.png') no-repeat;
+  background-size: contain; width: 80px; height: 30px; opacity: 0.4;
+  animation: slow-drift 40s linear infinite;
+}
+.login-cloud-slow.c2 { top: 25px; width: 50px; opacity: 0.25; animation-duration: 55s; animation-delay: 15s; }
+
+/* 面板 */
+.login-panel {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -52%);
+  background: rgba(255,248,231,0.94);
+  border: 3px solid #5B3A29;
+  padding: 24px 32px; text-align: center;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.12);
+  z-index: 5;
+}
+.login-panel h4 {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 20px;
+  color: #5B3A29; letter-spacing: 2px; margin-bottom: 12px;
+}
+.login-panel .fake-input {
+  width: 180px; height: 30px; border: 2px solid #E0D5C8; background: #FFF; margin: 6px auto;
+}
+.login-panel .fake-btn {
+  display: inline-block; padding: 7px 28px; background: #5C8A4D; color: #fff;
+  border: 2px solid #3E6830; font-size: 13px; margin-top: 10px;
+  box-shadow: 2px 2px 0 #3E2723; transition: all 0.15s;
+}
+.login-panel .fake-btn:hover { transform: translateY(-1px); box-shadow: 2px 3px 0 #3E2723; }
+
+/* 静态装饰 — 树 */
+.login-tree { position: absolute; bottom: 16px; z-index: 2; }
+.login-tree img { height: 72px; opacity: 0.7; }
+
+/* 一只安静的小动物坐在角落 */
+.login-pet {
+  position: absolute; bottom: 30px; z-index: 3;
+}
+.login-pet img { height: 28px; filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15)); }
+
+/* 唯一动画：Junimo 缓慢呼吸感 */
+.login-junimo {
+  position: absolute; bottom: 30px; z-index: 3;
+}
+.login-junimo img { height: 24px; animation: breathe 3s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎨 v3 — 克制精致版</span>
+  <a href="#s1">1.卡片封面</a>
+  <a href="#s3">3.动态交互</a>
+  <a href="#s6">6.登录页</a>
+</div>
+
+<div class="container">
+
+<!-- 1. 卡片封面 -->
+<div class="section" id="s1">
+  <h2 class="section-header">1️⃣ 项目卡片封面</h2>
+  <div class="principle">设计原则：intentionality, not intensity — 克制比花哨更高级</div>
+  <div class="section-desc">
+    两种方案对比。核心思路：<strong>保持安静</strong>，用场景背景营造氛围，不堆砌动态元素。
+  </div>
+
+  <p style="font-size:13px; color:#5B3A29; font-weight:600; margin-bottom:8px;">方案 A：场景背景 + 底部灌木 + 图标</p>
+  <div class="section-desc">用已有的 daybg/nightbg/meadow 做背景，一层灌木做前景层次，图标站在地面上。白天场景有一朵极慢飘动的云（30s 周期），其余安静。</div>
+  <div class="cards-row">
+    <div class="card">
+      <div class="cover cover-day">
+        <div class="cover-cloud"></div>
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/adventure_icon_64px.png"></div>
+        <div class="cover-ground"></div>
+      </div>
+      <div class="body"><h3>图像标注基础</h3><p>白天 — 一朵慢云</p></div>
+    </div>
+    <div class="card">
+      <div class="cover cover-night">
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/gem_icon_64px.png"></div>
+        <div class="cover-ground"></div>
+      </div>
+      <div class="body"><h3>NLP 文本分类</h3><p>夜晚 — 纯静态</p></div>
+    </div>
+    <div class="card">
+      <div class="cover cover-meadow">
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/chestRuby_icon_64px.png"></div>
+      </div>
+      <div class="body"><h3>语音标注进阶</h3><p>草地纹理 — 纯静态</p></div>
+    </div>
+  </div>
+
+  <p style="font-size:13px; color:#5B3A29; font-weight:600; margin: 20px 0 8px;">方案 B：纹理渐变 + 角落小装饰</p>
+  <div class="section-desc">保持现在的渐变色底，叠一层极淡的地板纹理（6% 透明度），角落放一个低透明度的小装饰。比场景版更安静。</div>
+  <div class="cards-row">
+    <div class="card">
+      <div class="cover cover-minimal">
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/adventure_icon_64px.png"></div>
+        <div class="corner-deco"><img src="/pixel-icons/decorations/deco_tree1.png"></div>
+      </div>
+      <div class="body"><h3>图像标注基础</h3><p>绿色 + 角落树影</p></div>
+    </div>
+    <div class="card">
+      <div class="cover cover-minimal cover-minimal-blue">
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/gem_icon_64px.png"></div>
+        <div class="corner-deco"><img src="/pixel-icons/decorations/deco_junimo.png" style="height:24px;"></div>
+      </div>
+      <div class="body"><h3>NLP 文本分类</h3><p>蓝色 + 角落 Junimo</p></div>
+    </div>
+    <div class="card">
+      <div class="cover cover-minimal cover-minimal-warm">
+        <div class="cover-icon-wrap"><img src="/pixel-icons/projects/chestRuby_icon_64px.png"></div>
+        <div class="corner-deco"><img src="/pixel-icons/decorations/deco_chicken.png" style="height:24px;"></div>
+      </div>
+      <div class="body"><h3>语音标注进阶</h3><p>暖色 + 角落小鸡</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. hover 交互 -->
+<div class="section" id="s3">
+  <h2 class="section-header">3️⃣ 动态交互：hover 时才活</h2>
+  <div class="principle">平时安静，鼠标移上去时微微响应 — 图标上浮，装饰物跳一下</div>
+  <div class="section-desc">不做持续动画。把"活"的感觉留给用户主动触发的瞬间。试试 hover 下面的卡片👇</div>
+
+  <div class="cards-row">
+    <div class="hover-card">
+      <div class="hover-cover">
+        <img src="/pixel-icons/projects/adventure_icon_64px.png" class="hc-icon">
+        <img src="/pixel-icons/decorations/deco_chicken.png" class="hc-deco" style="left:15px;">
+        <div class="hc-ground"></div>
+      </div>
+      <div class="body"><h3>hover 我试试</h3><p>图标上浮 + 小鸡微跳</p></div>
+    </div>
+    <div class="hover-card">
+      <div class="hover-cover">
+        <img src="/pixel-icons/projects/gem_icon_64px.png" class="hc-icon">
+        <img src="/pixel-icons/decorations/deco_junimo.png" class="hc-deco" style="right:15px; height:22px;">
+        <div class="hc-ground"></div>
+      </div>
+      <div class="body"><h3>hover 我试试</h3><p>图标上浮 + Junimo 微跳</p></div>
+    </div>
+    <div class="hover-card">
+      <div class="hover-cover">
+        <img src="/pixel-icons/projects/chestRuby_icon_64px.png" class="hc-icon">
+        <img src="/pixel-icons/decorations/deco_cat.png" class="hc-deco" style="left:12px; height:28px;">
+        <div class="hc-ground"></div>
+      </div>
+      <div class="body"><h3>hover 我试试</h3><p>图标上浮 + 猫咪微跳</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. 登录页 -->
+<div class="section" id="s6">
+  <h2 class="section-header">6️⃣ 登录页：安静但有温度</h2>
+  <div class="principle">极慢的云（40s 一朵） + 静态树影 + 角落一只安静的小动物 + Junimo 微呼吸</div>
+  <div class="section-desc">不巡逻、不蹦跳。场景是"清晨刚醒来的牧场"——安静，但有生命存在。</div>
+
+  <div class="login-demo">
+    <div class="login-cloud-slow"></div>
+    <div class="login-cloud-slow c2"></div>
+
+    <div class="login-tree" style="left: 20px;"><img src="/pixel-icons/decorations/deco_tree1.png"></div>
+    <div class="login-tree" style="right: 20px;"><img src="/pixel-icons/decorations/deco_tree2.png"></div>
+
+    <div class="login-panel">
+      <h4>🏰 培训系统</h4>
+      <div class="fake-input"></div>
+      <div class="fake-input"></div>
+      <div class="fake-btn">登 录</div>
+    </div>
+
+    <div class="login-pet" style="right: 28%;"><img src="/pixel-icons/decorations/deco_chicken.png"></div>
+    <div class="login-junimo" style="left: 25%;"><img src="/pixel-icons/decorations/deco_junimo.png"></div>
+
+    <div class="login-ground"></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

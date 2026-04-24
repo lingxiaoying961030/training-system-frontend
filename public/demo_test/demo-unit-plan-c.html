@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案C：右侧滑出抽屉</title>
+<style>
+:root { --border: #8b6914; --card: #fffbf0; --muted: #9e8a76; --link: #4a90d9; --bg: #f5efe0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: #4a3728; overflow: hidden; }
+.banner { background: #5a2e6b; color: #ffd700; padding: 14px 20px; font-size: 14px; font-weight: 600; }
+.banner small { font-weight: 400; color: #c0a0e0; display: block; margin-top: 4px; font-size: 12px; }
+.layout { display: flex; height: calc(100vh - 56px); }
+
+.tree { width: 280px; background: #faf5ea; border-right: 2px solid var(--border); overflow-y: auto; flex-shrink: 0; }
+.tree-hdr { padding: 12px 14px; font-weight: 600; font-size: 13px; border-bottom: 2px solid var(--border); background: #f0e6d2; }
+.t-proj { padding: 10px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #e8dcc8; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-plan { padding: 8px 14px 8px 28px; font-size: 13px; border-bottom: 1px solid #f0e6d2; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-stage { padding: 6px 14px 6px 46px; font-size: 12px; color: var(--muted); border-bottom: 1px solid #f8f2e8; cursor: pointer; }
+.t-stage.active { background: #e0edf8; color: var(--link); font-weight: 600; }
+.badge { font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #e8dcc8; color: var(--muted); margin-left: auto; }
+
+/* 中间主面板 */
+.main { flex: 1; overflow-y: auto; padding: 20px 24px; transition: margin-right 0.3s; }
+.main.drawer-open { margin-right: 0; }
+.crumb { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.crumb a { color: var(--link); cursor: pointer; }
+.dtl-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dtl-hdr h3 { font-size: 16px; }
+.desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.stats { display: flex; gap: 16px; padding: 10px 14px; background: #faf5ea; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 12px; margin-bottom: 16px; }
+.stats strong { color: var(--link); }
+
+/* 单元列表（主面板的简洁版） */
+.unit-section { border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.unit-hdr { padding: 10px 14px; background: #f0e6d2; display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; }
+.unit-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f0e6d2; font-size: 13px; cursor: pointer; }
+.unit-item:last-child { border-bottom: none; }
+.unit-item:hover { background: #faf8f0; }
+.unit-item.selected { background: #e0edf8; border-left: 3px solid var(--link); }
+.drag-h { cursor: grab; color: #ccc; }
+.u-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.u-article { background: #e3f2fd; color: #1976d2; }
+.u-video { background: #e8f5e9; color: #2e7d32; }
+.u-practice { background: #f5f5f5; color: #666; }
+.u-quiz { background: #fff3e0; color: #e65100; }
+.u-practical { background: #fce4ec; color: #c62828; }
+.u-name { flex: 1; }
+.u-req { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #e8f5e9; color: #2e7d32; }
+
+/* 右侧抽屉 */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 100; display: none; }
+.drawer-overlay.open { display: block; }
+.drawer { position: fixed; top: 56px; right: -420px; width: 420px; height: calc(100vh - 56px); background: var(--card); border-left: 3px solid var(--border); z-index: 101; transition: right 0.3s ease; overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.1); }
+.drawer.open { right: 0; }
+.drawer-hdr { padding: 16px 20px; background: #f0e6d2; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.drawer-hdr h3 { font-size: 15px; }
+.drawer-close { cursor: pointer; font-size: 18px; color: var(--muted); padding: 4px 8px; }
+.drawer-close:hover { color: #4a3728; }
+.drawer-body { padding: 16px 20px; }
+
+/* 抽屉内表单 */
+.d-form-row { margin-bottom: 14px; }
+.d-form-row label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.d-form-row input, .d-form-row select, .d-form-row textarea { padding: 8px 10px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 13px; width: 100%; font-family: inherit; }
+
+/* 内容预览块 */
+.content-block { border: 1px dashed #d4c5a0; border-radius: 6px; padding: 12px; background: #faf5ea; margin-top: 12px; }
+.content-block-hdr { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+.content-block-body { font-size: 13px; line-height: 1.6; max-height: 120px; overflow: hidden; }
+.content-block-more { font-size: 11px; color: var(--link); cursor: pointer; margin-top: 6px; }
+
+.d-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8dcc8; }
+.btn { padding: 6px 14px; border: 1px solid #d4c5a0; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.btn:hover { background: #faf5ea; }
+.btn-p { background: var(--link); color: #fff; border-color: #3a7bc8; }
+.btn-d { color: #c0392b; border-color: #e8b4b4; }
+.btn-lg { padding: 8px 16px; font-size: 13px; font-weight: 600; }
+.status-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #e8f5e9; color: #2e7d32; }
+
+/* 导师区 */
+.mentor-section { border: 2px solid #b8a88a; border-radius: 8px; overflow: hidden; }
+.mentor-hdr { padding: 10px 14px; background: #f0e6d2; font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; }
+.mentor-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid #f0e6d2; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  方案C：右侧滑出抽屉
+  <small>核心思路：主面板保持关卡全景（单元列表+导师），点击单元条目时从右侧滑出抽屉面板编辑详情。适合频繁切换编辑不同单元。</small>
+</div>
+
+<div class="layout">
+  <div class="tree">
+    <div class="tree-hdr">📁 项目结构</div>
+    <div class="t-proj">▼ 📁 数据标注培训 <span class="badge">2</span></div>
+    <div class="t-plan">▼ 📋 2026春季班 <span class="badge">3</span></div>
+    <div class="t-stage">🎯 入门基础</div>
+    <div class="t-stage active">📝 文本标注实战</div>
+    <div class="t-stage">🏆 综合考核</div>
+    <div class="t-plan">▸ 📋 2026秋季班 <span class="badge">2</span></div>
+  </div>
+
+  <div class="main" id="mainPanel">
+    <div class="crumb"><a>数据标注培训</a> › <a>2026春季班</a> › 📝 文本标注实战</div>
+    <div class="dtl-hdr">
+      <h3>📝 文本标注实战 <span class="status-tag">已发布</span></h3>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn">✏️ 编辑信息</button>
+        <button class="btn btn-d">🗑</button>
+      </div>
+    </div>
+    <div class="desc">学习文本标注的核心方法，并进行实战练习</div>
+    <div class="stats">
+      <div>单元：<strong>5</strong></div>
+      <div>必学：<strong>4</strong></div>
+      <div>导师：<strong>2</strong></div>
+    </div>
+
+    <div class="unit-section">
+      <div class="unit-hdr">
+        <span>📚 学习单元</span>
+        <button class="btn btn-p" onclick="openDrawer('new')">+ 添加单元</button>
+      </div>
+      <div>
+        <div class="unit-item" onclick="openDrawer('article')">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-article">文章</span>
+          <span class="u-name">1. 文本标注概述</span>
+          <span class="u-req">必学</span>
+          <span style="color: var(--link); font-size: 11px;">点击编辑 →</span>
+        </div>
+        <div class="unit-item selected" onclick="openDrawer('video')">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-video">视频</span>
+          <span class="u-name">2. 标注工具操作演示</span>
+          <span class="u-req">必学</span>
+          <span style="color: var(--link); font-size: 11px;">编辑中</span>
+        </div>
+        <div class="unit-item" onclick="openDrawer('practice')">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practice">练习</span>
+          <span class="u-name">3. 标注练习</span>
+          <span class="u-req">必学</span>
+          <span style="color: var(--link); font-size: 11px;">点击编辑 →</span>
+        </div>
+        <div class="unit-item" onclick="openDrawer('quiz')">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-quiz">测验</span>
+          <span class="u-name">4. 阶段测验</span>
+          <span class="u-req">必学</span>
+          <span style="color: var(--link); font-size: 11px;">点击编辑 →</span>
+        </div>
+        <div class="unit-item" style="opacity: 0.7;" onclick="openDrawer('practical')">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practical">实战</span>
+          <span class="u-name">5. 实战标注任务</span>
+          <span style="font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f5f5f5; color: #999;">选学</span>
+          <span style="color: var(--link); font-size: 11px;">点击编辑 →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mentor-section">
+      <div class="mentor-hdr"><span>👨‍🏫 导师</span> <button class="btn btn-p">+ 添加</button></div>
+      <div class="mentor-item"><span>👤 张老师</span> <span class="badge" style="background: #e3f2fd; color: #1976d2;">导师</span> <span style="margin-left: auto;"><button class="btn btn-d" style="font-size: 10px;">移除</button></span></div>
+      <div class="mentor-item"><span>👤 李老师</span> <span class="badge" style="background: #e3f2fd; color: #1976d2;">导师</span> <span style="margin-left: auto;"><button class="btn btn-d" style="font-size: 10px;">移除</button></span></div>
+    </div>
+  </div>
+
+  <!-- 抽屉遮罩 -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <!-- 右侧抽屉 -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-hdr">
+      <h3>✏️ 编辑单元：标注工具操作演示</h3>
+      <span class="drawer-close" onclick="closeDrawer()">✕</span>
+    </div>
+    <div class="drawer-body">
+      <div class="d-form-row">
+        <label>单元标题</label>
+        <input value="标注工具操作演示">
+      </div>
+      <div class="d-form-row">
+        <label>单元类型</label>
+        <select>
+          <option>文章</option>
+          <option selected>视频</option>
+          <option>练习</option>
+          <option>测验</option>
+          <option>实战演练</option>
+        </select>
+      </div>
+      <div class="d-form-row">
+        <label>必学</label>
+        <select><option selected>是</option><option>否</option></select>
+      </div>
+
+      <!-- 内容预览 -->
+      <div class="content-block">
+        <div class="content-block-hdr">🎬 视频内容</div>
+        <div class="content-block-body">
+          <div style="background: #e8e8e8; height: 80px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 13px;">
+            📹 已上传视频（12:30）
+          </div>
+        </div>
+        <div class="content-block-more">📝 编辑完整内容 →</div>
+      </div>
+
+      <div class="d-actions">
+        <button class="btn btn-p btn-lg" style="flex: 1;">💾 保存</button>
+        <button class="btn btn-d">🗑 删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 初始状态：抽屉打开（演示用）
+setTimeout(() => openDrawer('video'), 500)
+
+function openDrawer(type) {
+  document.getElementById('drawer').classList.add('open')
+  document.getElementById('drawerOverlay').classList.add('open')
+  document.getElementById('mainPanel').classList.add('drawer-open')
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open')
+  document.getElementById('drawerOverlay').classList.remove('open')
+  document.getElementById('mainPanel').classList.remove('drawer-open')
+  document.querySelectorAll('.unit-item').forEach(el => el.classList.remove('selected'))
+}
+</script>
+
+</body>
+</html>

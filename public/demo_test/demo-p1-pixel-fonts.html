@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P1 像素字体 — 修复版</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=ZCOOL+Kuaile&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'zpix';
+    src: url('/fonts/zpix.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+
+  /* ===== 像素字体必须的 CSS ===== */
+  .zpix {
+    font-family: 'zpix', monospace;
+    /* 关闭抗锯齿，保持锐利像素感 */
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+    font-smooth: never;
+    /* 文字渲染优化 */
+    text-rendering: optimizeSpeed;
+    /* 像素缩放保持锐利 */
+    image-rendering: pixelated;
+  }
+
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 10px; padding: 12px 20px; background: #5B3A29; align-items: center;
+  }
+  .demo-nav .title { color: #E8A93A; font-size: 16px; font-weight: bold; }
+  .demo-nav span { color: #C8A882; font-size: 12px; margin-left: 12px; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .tip-box {
+    background: #FFF8E7; border: 2px solid #E8A93A; padding: 12px 16px; margin-bottom: 20px;
+    font-size: 13px; color: #B8860B; line-height: 1.6;
+  }
+
+  .font-card {
+    border: 3px solid #E0D5C8; background: #FFFDF5; margin-bottom: 20px; overflow: hidden;
+  }
+  .font-card:hover { border-color: #E8A93A; }
+  .font-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px; background: #F5EFE0; border-bottom: 2px solid #E0D5C8;
+  }
+  .font-header .num {
+    background: #5B3A29; color: #E8A93A; width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: bold; flex-shrink: 0;
+  }
+  .font-header .num.star { background: #E8A93A; color: #5B3A29; }
+  .font-header .name { font-size: 15px; font-weight: bold; color: #5B3A29; }
+  .font-header .desc { font-size: 12px; color: #8B7355; margin-top: 2px; }
+  .rec-tag { display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: bold; background: #E8F5E9; color: #2E7D32; margin-left: 6px; }
+
+  .font-body { padding: 20px; }
+
+  .banner-sim {
+    background: #E8DFC8; border: 3px solid #5B3A29; padding: 24px; text-align: center; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .banner-sim::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.7); }
+  .banner-sim > * { position: relative; }
+  .banner-sim .sub { font-size: 14px; color: #8B7355; margin-top: 8px; }
+
+  .scenarios { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .scenario { padding: 12px; background: #FAF6EF; border: 2px solid #E0D5C8; }
+  .scenario .ctx { font-size: 10px; color: #B0A090; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .size-demo { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-top: 12px; padding: 16px; background: #FAF6EF; border: 2px solid #E0D5C8; }
+  .size-item { text-align: center; }
+  .size-item .sz { font-size: 10px; color: #B0A090; margin-top: 4px; }
+
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 16px 0; }
+
+  .summary {
+    background: #FFFDF5; border: 3px solid #E8A93A; padding: 20px; text-align: center;
+  }
+  .summary h3 { color: #5B3A29; margin-bottom: 8px; }
+  .summary p { font-size: 13px; color: #8B7355; line-height: 1.8; }
+
+  /* 按钮样式 */
+  .px-btn {
+    display: inline-block; padding: 8px 18px; background: #5C8A4D; color: #fff;
+    border: 2px solid #5B3A29; font-size: 14px; box-shadow: 3px 3px 0 #3E2723;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🔤 P1 像素字体 — 修复版</span>
+  <span>关闭抗锯齿 + 12px 整数倍字号 = 真像素感</span>
+</div>
+
+<div class="container">
+
+  <div class="tip-box">
+    ⚠️ <strong>像素字体关键：</strong>zpix 是 12px 基准点阵字体，必须用 <strong>12 的整数倍</strong>（12/24/36/48px）字号 +
+    <strong>关闭抗锯齿</strong>（-webkit-font-smoothing: none）才能显示锐利的像素点效果。
+  </div>
+
+  <!-- zpix 字号对比 -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num star">!</div>
+      <div>
+        <div class="name">zpix 各字号效果对比</div>
+        <div class="desc">只有 12 的整数倍才完美对齐像素网格</div>
+      </div>
+    </div>
+    <div class="font-body">
+      <div class="size-demo">
+        <div class="size-item">
+          <div class="zpix" style="font-size:12px;">欢迎来到培训</div>
+          <div class="sz">12px ✅</div>
+        </div>
+        <div class="size-item">
+          <div class="zpix" style="font-size:24px;">欢迎来到培训</div>
+          <div class="sz">24px ✅</div>
+        </div>
+        <div class="size-item">
+          <div class="zpix" style="font-size:36px;">欢迎来到</div>
+          <div class="sz">36px ✅</div>
+        </div>
+        <div class="size-item">
+          <div class="zpix" style="font-size:48px;">欢迎来到</div>
+          <div class="sz">48px ✅</div>
+        </div>
+      </div>
+      <div class="size-demo" style="margin-top:8px;">
+        <div class="size-item">
+          <div class="zpix" style="font-size:18px;">欢迎来到培训</div>
+          <div class="sz">18px ⚠️ 非整数倍</div>
+        </div>
+        <div class="size-item">
+          <div class="zpix" style="font-size:28px;">欢迎来到培训</div>
+          <div class="sz">28px ⚠️ 非整数倍</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 0: 对照 -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num">0</div>
+      <div><div class="name">系统默认 PingFang SC（当前）</div></div>
+    </div>
+    <div class="font-body">
+      <div class="banner-sim">
+        <div style="font-size:26px; font-weight:600; color:#5B3A29;">欢迎来到培训系统</div>
+        <div class="sub">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="scenarios">
+        <div class="scenario"><div class="ctx">关卡标题</div><div style="font-size:18px; font-weight:600; color:#5B3A29;">🗺️ 标注基础培训</div></div>
+        <div class="scenario"><div class="ctx">卡片标题</div><div style="font-size:16px; font-weight:600; color:#5B3A29;">图像分类进阶</div></div>
+        <div class="scenario"><div class="ctx">按钮</div><div class="px-btn">进入关卡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- G: zpix 全标题 -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num star">G</div>
+      <div><div class="name">zpix 像素字体 — 全标题 <span class="rec-tag">推荐</span></div>
+      <div class="desc">Banner 用 36px，关卡/卡片用 24px，按钮用 12px — 全部 12 的整数倍</div></div>
+    </div>
+    <div class="font-body">
+      <div class="banner-sim">
+        <div class="zpix" style="font-size:36px; color:#5B3A29; letter-spacing:3px;">欢迎来到培训系统</div>
+        <div class="sub">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="scenarios">
+        <div class="scenario"><div class="ctx">关卡标题 24px</div><div class="zpix" style="font-size:24px; color:#5B3A29; letter-spacing:2px;">🗺️ 标注基础培训</div></div>
+        <div class="scenario"><div class="ctx">卡片标题 24px</div><div class="zpix" style="font-size:24px; color:#5B3A29; letter-spacing:2px;">图像分类进阶</div></div>
+        <div class="scenario"><div class="ctx">按钮 12px</div><div class="px-btn zpix" style="font-size:12px; letter-spacing:1px;">进入关卡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- H: zpix 仅 Banner -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num star">H</div>
+      <div><div class="name">zpix 仅 Banner + 按钮，其余系统字体 <span class="rec-tag">推荐</span></div>
+      <div class="desc">大标题用像素字体点睛，小字用系统字体保证可读性</div></div>
+    </div>
+    <div class="font-body">
+      <div class="banner-sim">
+        <div class="zpix" style="font-size:36px; color:#5B3A29; letter-spacing:3px;">欢迎来到培训系统</div>
+        <div class="sub">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="scenarios">
+        <div class="scenario"><div class="ctx">关卡标题 (系统)</div><div style="font-size:18px; font-weight:600; color:#5B3A29;">🗺️ 标注基础培训</div></div>
+        <div class="scenario"><div class="ctx">卡片标题 (系统)</div><div style="font-size:16px; font-weight:600; color:#5B3A29;">图像分类进阶</div></div>
+        <div class="scenario"><div class="ctx">按钮 (zpix 12px)</div><div class="px-btn zpix" style="font-size:12px; letter-spacing:1px;">进入关卡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A: XiaoWei -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num">A</div>
+      <div><div class="name">站酷小薇 ZCOOL XiaoWei</div>
+      <div class="desc">温暖圆润，和像素风搭配也不违和</div></div>
+    </div>
+    <div class="font-body">
+      <div class="banner-sim">
+        <div style="font-family:'ZCOOL XiaoWei',serif; font-size:28px; color:#5B3A29;">欢迎来到培训系统</div>
+        <div class="sub">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="scenarios">
+        <div class="scenario"><div class="ctx">关卡标题</div><div style="font-family:'ZCOOL XiaoWei',serif; font-size:20px; color:#5B3A29;">🗺️ 标注基础培训</div></div>
+        <div class="scenario"><div class="ctx">卡片标题</div><div style="font-family:'ZCOOL XiaoWei',serif; font-size:18px; color:#5B3A29;">图像分类进阶</div></div>
+        <div class="scenario"><div class="ctx">按钮</div><div class="px-btn" style="font-family:'ZCOOL XiaoWei',serif;">进入关卡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D: Kuaile -->
+  <div class="font-card">
+    <div class="font-header">
+      <div class="num">D</div>
+      <div><div class="name">站酷快乐体 ZCOOL Kuaile</div>
+      <div class="desc">胖胖卡通感，最游戏</div></div>
+    </div>
+    <div class="font-body">
+      <div class="banner-sim">
+        <div style="font-family:'ZCOOL Kuaile',cursive; font-size:28px; color:#5B3A29;">欢迎来到培训系统</div>
+        <div class="sub">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="scenarios">
+        <div class="scenario"><div class="ctx">关卡标题</div><div style="font-family:'ZCOOL Kuaile',cursive; font-size:20px; color:#5B3A29;">🗺️ 标注基础培训</div></div>
+        <div class="scenario"><div class="ctx">卡片标题</div><div style="font-family:'ZCOOL Kuaile',cursive; font-size:18px; color:#5B3A29;">图像分类进阶</div></div>
+        <div class="scenario"><div class="ctx">按钮</div><div class="px-btn" style="font-family:'ZCOOL Kuaile',cursive;">进入关卡</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <h3>💡 关键差异</h3>
+    <p>
+      <strong>G/H (zpix)</strong> — 真·像素点阵，字号必须是 12 的倍数（12/24/36/48），和像素图标浑然一体<br>
+      <strong>A (站酷小薇)</strong> — 温暖手写风，任意字号都好看，但不是"像素"<br>
+      <strong>D (站酷快乐体)</strong> — 卡通胖字，游戏感但也不是"像素"<br>
+      <br>
+      如果顶部那个字号对比区看到了清晰的像素锯齿 → zpix 加载成功 ✅<br>
+      如果看起来还是平滑的 → 可能是浏览器强制抗锯齿（Chrome 对 font-smoothing 支持有限）
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

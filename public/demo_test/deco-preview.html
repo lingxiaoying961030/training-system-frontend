@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><title>地图装饰素材预览</title>
+<style>
+body { font-family: sans-serif; background: #FFF8E7; padding: 24px; color: #3E2723; }
+h1 { margin-bottom: 16px; }
+h2 { margin: 20px 0 10px; color: #5B3A29; }
+.grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px; border: 2px solid #E0D5C8; background: #FFFDF5;
+  min-width: 80px;
+}
+.item img { image-rendering: pixelated; max-height: 120px; }
+.item .name { font-size: 11px; color: #8B7355; }
+.item .size { font-size: 10px; color: #aaa; }
+
+/* 示例地图区域 */
+.map-demo {
+  border: 4px solid #5B3A29; padding: 32px; margin: 16px 0;
+  position: relative; overflow: hidden; min-height: 300px;
+  background-color: #E8E1CC;
+  background-image: url('assets/pixel/ready/bg_meadow.png');
+  background-size: 128px 128px; background-repeat: repeat;
+  image-rendering: pixelated;
+}
+.map-demo .d { position: absolute; image-rendering: pixelated; z-index: 1; }
+.map-demo .content { position: relative; z-index: 2; text-align: center; padding: 40px; color: #5B3A29; }
+</style>
+</head>
+<body>
+
+<h1>🌿 地图装饰素材预览</h1>
+<p style="color:#8B7355; margin-bottom:16px;">从 Stardew Valley 动物/建筑/树/角色里切出来的，挑你喜欢的组合！</p>
+
+<h2>🐔 小动物</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_chicken.png"><div class="name">小鸡</div><div class="size">64x64</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_duck.png"><div class="name">鸭子</div><div class="size">64x64</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_rabbit.png"><div class="name">兔子</div><div class="size">64x64</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_cat.png"><div class="name">猫</div><div class="size">96x96</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_dog.png"><div class="name">狗</div><div class="size">96x96</div></div>
+</div>
+
+<h2>🏠 建筑</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_well.png"><div class="name">水井</div><div class="size">96x96</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_silo.png"><div class="name">谷仓</div><div class="size">96x160</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_coop.png"><div class="name">鸡舍</div><div class="size">192x192</div></div>
+</div>
+
+<h2>🌳 树木</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_tree1.png" style="max-height:160px;"><div class="name">橡树</div><div class="size">96x320</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_tree2.png" style="max-height:160px;"><div class="name">枫树</div><div class="size">96x320</div></div>
+</div>
+
+<h2>👤 角色</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_abigail.png"><div class="name">阿比盖尔</div><div class="size">48x96</div></div>
+</div>
+
+<h2>🗺️ 组合效果预览（方案B草地背景 + 装饰）</h2>
+<div class="map-demo">
+  <!-- 左下角树 -->
+  <img class="d" src="assets/pixel/ready/deco_tree1.png" style="left:-10px; bottom:-20px; height:200px; opacity:0.6;" />
+  <!-- 右下角树 -->
+  <img class="d" src="assets/pixel/ready/deco_tree2.png" style="right:-5px; bottom:-20px; height:180px; opacity:0.5;" />
+  <!-- 左上小鸡 -->
+  <img class="d" src="assets/pixel/ready/deco_chicken.png" style="left:80px; top:20px; height:40px; opacity:0.6;" />
+  <!-- 右边兔子 -->
+  <img class="d" src="assets/pixel/ready/deco_rabbit.png" style="right:100px; bottom:40px; height:36px; opacity:0.6;" />
+  <!-- 右上水井 -->
+  <img class="d" src="assets/pixel/ready/deco_well.png" style="right:20px; top:15px; height:56px; opacity:0.5;" />
+
+  <div class="content">
+    <p style="font-size:18px; font-weight:600;">🗺️ 培训地图区域</p>
+    <p style="font-size:13px; margin-top:8px;">关卡卡片在这里展示<br>装饰物点缀在边缘，不干扰主要内容</p>
+  </div>
+</div>
+
+<h2>🗺️ 组合效果预览 2（方案D羊皮纸 + 建筑装饰）</h2>
+<div class="map-demo" style="background-image: url('assets/pixel/ready/bg_parchment.png'); background-color: #F5EBDB;">
+  <!-- 左边谷仓 -->
+  <img class="d" src="assets/pixel/ready/deco_silo.png" style="left:10px; bottom:10px; height:100px; opacity:0.45;" />
+  <!-- 右边鸡舍 -->
+  <img class="d" src="assets/pixel/ready/deco_coop.png" style="right:-20px; bottom:-10px; height:100px; opacity:0.4;" />
+  <!-- 猫 -->
+  <img class="d" src="assets/pixel/ready/deco_cat.png" style="left:100px; bottom:20px; height:48px; opacity:0.5;" />
+  <!-- 鸭子 -->
+  <img class="d" src="assets/pixel/ready/deco_duck.png" style="right:120px; top:20px; height:36px; opacity:0.5;" />
+
+  <div class="content">
+    <p style="font-size:18px; font-weight:600;">🗺️ 培训地图区域</p>
+    <p style="font-size:13px; margin-top:8px;">羊皮纸 + 农场建筑装饰</p>
+  </div>
+</div>
+
+<p style="margin-top: 24px; color: #8B7355; font-size: 13px;">
+  💡 告诉我哪些装饰你喜欢，我来确定最终搭配。也可以让我再切更多角色/动物出来！
+</p>
+
+</body>
+</html>

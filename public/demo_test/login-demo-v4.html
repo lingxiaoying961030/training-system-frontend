@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录页 + 欢迎动画 Demo v4</title>
+<style>
+:root {
+  --pixel-green: #5C8A4D;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+  --pixel-blue: #4A90B8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden; }
+
+.demo-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: rgba(62,39,35,0.92); padding: 8px 16px;
+  display: flex; gap: 8px; align-items: center;
+}
+.demo-nav span { color: #E8A93A; font-size: 12px; }
+.dbtn { padding: 4px 14px; font-size: 12px; border: 2px solid #8B6F5E; background: #5B3A29; color: #E8A93A; cursor: pointer; }
+.dbtn:hover { background: #8B6F5E; }
+.dbtn.active { background: #E8A93A; color: #3E2723; border-color: #E8A93A; }
+
+/* ===== 5A: Login ===== */
+#page-login {
+  position: fixed; inset: 0; top: 40px;
+  display: flex; align-items: center; justify-content: center;
+  /* 温暖底色 + 渐变 */
+  background: linear-gradient(180deg, #87CEEB 0%, #B8E0F0 30%, #E8DFC8 70%, #D4C9A8 100%);
+  overflow: hidden;
+}
+
+/* 云朵装饰 — 从 clouds.png 切出的大云朵效果 */
+.cloud-deco {
+  position: absolute; z-index: 1; pointer-events: none;
+  image-rendering: pixelated; opacity: 0.6;
+}
+.cloud-1 {
+  width: 320px; top: 8%; left: -5%;
+  animation: cloudDrift 40s linear infinite;
+}
+.cloud-2 {
+  width: 240px; top: 15%; right: -5%;
+  animation: cloudDrift 55s linear infinite reverse;
+  opacity: 0.45;
+}
+.cloud-3 {
+  width: 180px; top: 5%; left: 40%;
+  animation: cloudDrift 65s linear infinite;
+  opacity: 0.35;
+}
+@keyframes cloudDrift {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(60px); }
+  100% { transform: translateX(0); }
+}
+
+/* 底部草丛装饰 */
+.ground-strip {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 80px; z-index: 1;
+  background: linear-gradient(180deg, transparent 0%, #6AAB4E 20%, #5A9A3E 100%);
+}
+.ground-strip::before {
+  content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 16px;
+  background: repeating-linear-gradient(90deg,
+    #6AAB4E 0px, #5A9A3E 8px, #7AB85A 16px, #6AAB4E 24px
+  );
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.login-deco { position: absolute; image-rendering: pixelated; pointer-events: none; z-index: 2; }
+.deco-tree-l { left: 6%; bottom: 50px; width: 100px; opacity: 0.8; }
+.deco-tree-r { right: 7%; bottom: 55px; width: 85px; opacity: 0.7; transform: scaleX(-1); }
+.deco-a1 { left: 18%; bottom: 30px; width: 40px; animation: bob 3s ease-in-out infinite; }
+.deco-a2 { right: 18%; bottom: 35px; width: 36px; animation: bob 3.5s ease-in-out infinite 0.5s; }
+.deco-a3 { left: 50%; bottom: 25px; width: 30px; animation: bob 2.8s ease-in-out infinite 1s; transform: translateX(-50%); }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+/* 登录面板 */
+.login-panel {
+  position: relative; z-index: 10;
+  width: 360px; max-width: 88vw;
+  background: url('frontend/public/pixel-icons/ui/letterBG.png') center / 100% 100% no-repeat;
+  image-rendering: auto;
+  border: 4px solid var(--pixel-brown);
+  box-shadow: 5px 5px 0 rgba(91,58,41,0.3);
+  padding: 28px 26px 22px;
+  animation: panelIn 0.6s ease;
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-logo { text-align: center; margin-bottom: 20px; }
+.login-logo-icon { font-size: 36px; margin-bottom: 2px; }
+.login-logo h1 { font-size: 19px; color: var(--pixel-brown); margin: 0; }
+.login-logo p { font-size: 12px; color: var(--pixel-text-secondary); margin-top: 3px; }
+
+.login-form { display: flex; flex-direction: column; gap: 11px; }
+.form-group { display: flex; flex-direction: column; gap: 3px; }
+.form-group label { font-size: 12px; color: var(--pixel-text-secondary); font-weight: 500; }
+.form-input {
+  padding: 9px 12px; font-size: 14px;
+  border: 2px solid var(--pixel-border); background: rgba(255,253,245,0.8);
+  color: var(--pixel-text); outline: none;
+}
+.form-input:focus { border-color: var(--pixel-gold); background: rgba(255,253,245,0.95); }
+.form-input::placeholder { color: #C5B89A; }
+
+.login-btn {
+  padding: 10px; font-size: 15px; font-weight: 600;
+  border: 3px solid var(--pixel-brown); cursor: pointer;
+  color: #fff; background: var(--pixel-green);
+  transition: all 0.15s; margin-top: 2px;
+}
+.login-btn:hover { background: #4A7A3D; box-shadow: 3px 3px 0 var(--pixel-brown); }
+
+.login-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1px 0; color: var(--pixel-text-secondary); font-size: 12px;
+}
+.login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: #D5C0A5; }
+
+.feishu-btn {
+  padding: 9px; font-size: 14px;
+  border: 2px solid var(--pixel-border); cursor: pointer;
+  color: var(--pixel-brown); background: rgba(255,253,245,0.65);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.feishu-btn:hover { border-color: var(--pixel-blue); background: rgba(240,250,255,0.8); }
+
+.login-footer { text-align: center; margin-top: 12px; font-size: 11px; color: var(--pixel-text-secondary); opacity: 0.7; }
+
+/* ===== 5B: Welcome (v1 style: dark + stars) ===== */
+#page-welcome {
+  position: fixed; inset: 0; top: 40px;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+.star { position: absolute; width: 2px; height: 2px; background: #FFE8A0; animation: twinkle 2s ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+.dialog-box {
+  position: relative; z-index: 10;
+  width: 560px; max-width: 90vw;
+  background: url('frontend/public/pixel-icons/ui/letterBG.png') center / 100% 100% no-repeat;
+  image-rendering: auto;
+  border: 4px solid var(--pixel-brown);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
+  padding: 22px 26px;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.dialog-box.visible { opacity: 1; transform: translateY(0); }
+
+.dialog-speaker {
+  font-size: 14px; font-weight: 600; color: var(--pixel-brown);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.dialog-speaker img { width: 28px; height: 28px; image-rendering: pixelated; }
+
+.dialog-text { font-size: 16px; line-height: 1.8; color: var(--pixel-text); min-height: 68px; }
+.cursor { display: inline-block; width: 2px; height: 18px; background: var(--pixel-brown); margin-left: 2px; animation: blink 0.6s step-end infinite; vertical-align: text-bottom; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.dialog-hint { text-align: right; margin-top: 8px; font-size: 12px; color: var(--pixel-text-secondary); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+.avatar-select {
+  position: relative; z-index: 10;
+  width: 560px; max-width: 90vw; margin-top: 14px;
+  background: url('frontend/public/pixel-icons/ui/letterBG.png') center / 100% 100% no-repeat;
+  image-rendering: auto;
+  border: 4px solid var(--pixel-brown);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
+  padding: 18px 22px;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.avatar-select.visible { opacity: 1; transform: translateY(0); }
+.avatar-select h3 { font-size: 15px; color: var(--pixel-brown); margin: 0 0 12px; text-align: center; }
+
+.avatar-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;
+  max-height: 185px; overflow-y: auto;
+}
+.avatar-grid::-webkit-scrollbar { width: 6px; }
+.avatar-grid::-webkit-scrollbar-thumb { background: var(--pixel-border); border-radius: 3px; }
+
+.avo {
+  aspect-ratio: 1; border: 3px solid var(--pixel-border);
+  cursor: pointer; background: rgba(255,253,245,0.5);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.avo:hover { border-color: var(--pixel-gold); transform: scale(1.08); background: rgba(255,253,245,0.85); }
+.avo.selected { border-color: var(--pixel-green); background: #ECF5E8; box-shadow: 0 0 0 2px var(--pixel-green); }
+.avo img { width: 80%; height: 80%; image-rendering: pixelated; object-fit: contain; }
+
+.confirm-row { margin-top: 14px; text-align: center; }
+.cbtn {
+  padding: 10px 40px; font-size: 14px; font-weight: 600;
+  border: 3px solid var(--pixel-brown); cursor: pointer;
+  color: #fff; background: var(--pixel-green);
+  opacity: 0.35; pointer-events: none; transition: all 0.15s;
+}
+.cbtn.ok { opacity: 1; pointer-events: auto; }
+.cbtn.ok:hover { background: #4A7A3D; box-shadow: 3px 3px 0 var(--pixel-brown); }
+
+.trans {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--pixel-bg);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+}
+.trans.active { display: flex; animation: fadeIO 2.2s ease forwards; }
+@keyframes fadeIO { 0%{opacity:0} 15%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+.trans img { width: 64px; height: 64px; image-rendering: pixelated; animation: walkB 0.4s steps(2) infinite; }
+@keyframes walkB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.trans p { font-size: 16px; color: var(--pixel-brown); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span>🎮 v4:</span>
+  <button class="dbtn active" onclick="showPage('login')">5A 登录页</button>
+  <button class="dbtn" onclick="showPage('welcome')">5B 欢迎动画</button>
+  <button class="dbtn" onclick="playFull()">完整流程</button>
+</div>
+
+<!-- 5A Login -->
+<div id="page-login">
+  <!-- 云朵 -->
+  <img class="cloud-deco cloud-1" src="frontend/public/pixel-icons/ui/clouds.png" />
+  <img class="cloud-deco cloud-2" src="frontend/public/pixel-icons/ui/clouds.png" />
+  <img class="cloud-deco cloud-3" src="frontend/public/pixel-icons/ui/clouds.png" />
+
+  <!-- 底部草地 -->
+  <div class="ground-strip"></div>
+
+  <!-- 装饰 -->
+  <img class="login-deco deco-tree-l" src="frontend/public/pixel-icons/decorations/tree_01.png" />
+  <img class="login-deco deco-tree-r" src="frontend/public/pixel-icons/decorations/tree_02.png" />
+  <img class="login-deco deco-a1" src="frontend/public/pixel-icons/decorations/chicken_white.png" />
+  <img class="login-deco deco-a2" src="frontend/public/pixel-icons/decorations/cat.png" />
+  <img class="login-deco deco-a3" src="frontend/public/pixel-icons/decorations/junimo.png" />
+
+  <div class="login-panel">
+    <div class="login-logo">
+      <div class="login-logo-icon">🏰</div>
+      <h1>培训营地</h1>
+      <p>开启你的学习冒险之旅</p>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label>👤 姓名</label>
+        <input class="form-input" type="text" placeholder="请输入姓名" />
+      </div>
+      <div class="form-group">
+        <label>📱 手机号</label>
+        <input class="form-input" type="tel" placeholder="请输入手机号" />
+      </div>
+      <button class="login-btn" onclick="showPage('welcome')">⚔️ 开始冒险</button>
+      <div class="login-divider">或</div>
+      <button class="feishu-btn" onclick="showPage('welcome')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6.5L10.5 2L21 13.5L13.5 22L3 6.5Z" fill="#4A90B8"/><path d="M3 6.5L13.5 22L10.5 14.5L3 6.5Z" fill="#2D6A9F"/></svg>
+        飞书登录
+      </button>
+    </div>
+    <div class="login-footer">内部培训系统 · 仅限授权人员使用</div>
+  </div>
+</div>
+
+<!-- 5B Welcome -->
+<div id="page-welcome">
+  <div id="starfield"></div>
+  <div class="dialog-box" id="dialogBox">
+    <div class="dialog-speaker">
+      <img src="frontend/public/pixel-icons/decorations/junimo.png" /> Junimo 精灵
+    </div>
+    <div class="dialog-text" id="dialogText"><span class="cursor"></span></div>
+    <div class="dialog-hint" id="dialogHint" style="display:none;">点击任意位置继续 ▶</div>
+  </div>
+  <div class="avatar-select" id="avatarSelect">
+    <h3>✨ 选择你的冒险伙伴</h3>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <div class="confirm-row">
+      <button class="cbtn" id="confirmBtn" onclick="confirmAvatar()">🚀 出发冒险！</button>
+    </div>
+  </div>
+</div>
+
+<div class="trans" id="transOverlay">
+  <img id="transAvatar" src="" />
+  <p>冒险开始...</p>
+</div>
+
+<script>
+const avatars=['abigail','alex','caroline','clint','demetrius','elliott','emily','gunther','gus','haley','harvey','jas','jodi','junimo','kent','krobus','leah','lewis','linus','marnie','maru','pam','penny','pierre','robin','robot','sam','sandy','sebastian','shane','vincent','willy','wizard'];
+const lines=['欢迎来到培训营地！🏕️','在这里，每个项目都是一段冒险旅程...','你将闯过一个个关卡，学习新技能，接受挑战！⚔️','不过在出发之前——你得先选一个冒险伙伴。'];
+let curLine=0,charIdx=0,typing=false,selAvatar=null,phase='dialog';
+function createStars(){const el=document.getElementById('starfield');el.innerHTML='';for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;opacity:${Math.random()*0.5+0.2};width:${Math.random()>0.7?'3px':'2px'};height:${Math.random()>0.7?'3px':'2px'}`;el.appendChild(s)}}
+function typeText(t,el,cb){typing=true;charIdx=0;el.innerHTML='';function tick(){if(!typing)return;if(charIdx<t.length){el.innerHTML=t.substring(0,++charIdx)+'<span class="cursor"></span>';setTimeout(tick,35+Math.random()*25)}else{typing=false;if(cb)cb()}}tick()}
+function advanceDialog(){if(typing){typing=false;document.getElementById('dialogText').innerHTML=lines[curLine]+'<span class="cursor"></span>';document.getElementById('dialogHint').style.display='block';return}curLine++;if(curLine<lines.length){document.getElementById('dialogHint').style.display='none';typeText(lines[curLine],document.getElementById('dialogText'),()=>{document.getElementById('dialogHint').style.display='block'})}else{phase='avatar';document.getElementById('dialogBox').style.display='none';document.getElementById('avatarSelect').classList.add('visible')}}
+function initWelcome(){createStars();const g=document.getElementById('avatarGrid');g.innerHTML='';avatars.forEach(a=>{const d=document.createElement('div');d.className='avo';d.innerHTML=`<img src="frontend/public/pixel-icons/avatars/avatar_${a}_head.png"/>`;d.onclick=()=>{document.querySelectorAll('.avo').forEach(e=>e.classList.remove('selected'));d.classList.add('selected');selAvatar=a;document.getElementById('confirmBtn').classList.add('ok')};g.appendChild(d)});curLine=0;phase='dialog';selAvatar=null;document.getElementById('dialogBox').style.display='';document.getElementById('dialogBox').classList.remove('visible');document.getElementById('avatarSelect').classList.remove('visible');document.getElementById('confirmBtn').classList.remove('ok');document.getElementById('dialogHint').style.display='none';document.getElementById('dialogText').innerHTML='<span class="cursor"></span>';setTimeout(()=>{document.getElementById('dialogBox').classList.add('visible');setTimeout(()=>{typeText(lines[0],document.getElementById('dialogText'),()=>{document.getElementById('dialogHint').style.display='block'})},400)},300)}
+function confirmAvatar(){if(!selAvatar)return;const o=document.getElementById('transOverlay');document.getElementById('transAvatar').src=`frontend/public/pixel-icons/avatars/avatar_${selAvatar}.png`;o.classList.add('active');o.style.display='flex';setTimeout(()=>{o.classList.remove('active');o.style.display='none';showPage('login');alert('🎉 实际会跳转到项目列表页！')},2300)}
+document.addEventListener('click',e=>{if(document.getElementById('page-welcome').style.display!=='flex')return;if(phase!=='dialog')return;if(e.target.closest('.demo-nav'))return;advanceDialog()});
+function showPage(n){document.getElementById('page-login').style.display=n==='login'?'flex':'none';document.getElementById('page-welcome').style.display=n==='welcome'?'flex':'none';document.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('active'));if(event?.target?.classList)event.target.classList.add('active');if(n==='welcome')initWelcome()}
+function playFull(){showPage('login');setTimeout(()=>showPage('welcome'),1500)}
+</script>
+</body>
+</html>

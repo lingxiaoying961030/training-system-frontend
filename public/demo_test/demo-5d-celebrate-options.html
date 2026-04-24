@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5D 全通关动画 — 5种方案对比</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background: #F5EFE0; color: #5B3A29; }
+
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 8px; padding: 12px 20px; background: #5B3A29; flex-wrap: wrap; align-items: center;
+  }
+  .demo-nav .title { color: #E8A93A; font-size: 16px; font-weight: bold; margin-right: 8px; }
+  .demo-nav button {
+    padding: 8px 16px; border: 2px solid #E8A93A; background: #7B5B3A;
+    color: #FFF8E7; font-size: 13px; cursor: pointer;
+  }
+  .demo-nav button:hover { background: #E8A93A; color: #5B3A29; }
+
+  .container { max-width: 750px; margin: 0 auto; padding: 24px 20px; }
+  .plan-label { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+  .plan-desc { font-size: 13px; color: #8B7355; margin-bottom: 12px; }
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 28px 0; }
+
+  /* 通用卡片 */
+  .card {
+    position: relative; text-align: center; padding: 32px 24px;
+    background: #F5EFE0; border: 4px solid #E8A93A; overflow: hidden; min-height: 180px;
+  }
+  .card img.trophy {
+    width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 10px;
+    position: relative; z-index: 2;
+  }
+  .card h2 { font-size: 20px; color: #5B3A29; margin-bottom: 4px; position: relative; z-index: 2; }
+  .card p { font-size: 14px; color: #8B7355; position: relative; z-index: 2; }
+
+  .replay { 
+    display: inline-block; margin-top: 10px; padding: 6px 16px; 
+    border: 2px solid #E8A93A; background: #FFF8E7; color: #5B3A29; font-size: 13px; cursor: pointer; 
+  }
+  .replay:hover { background: #E8A93A; color: #fff; }
+
+  /* ===== A: 烟花爆发（改进版） ===== */
+  .firework {
+    position: absolute; pointer-events: none; z-index: 1; border-radius: 1px;
+    animation: fw-explode var(--dur) ease-out forwards;
+    animation-delay: var(--delay);
+    opacity: 0;
+  }
+  @keyframes fw-explode {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(0.2); }
+  }
+
+  /* ===== B: 像素烟花升空+炸裂 ===== */
+  .rocket {
+    position: absolute; pointer-events: none; z-index: 1;
+    width: 4px; height: 4px; background: #E8A93A; border-radius: 1px;
+    animation: rocket-up var(--rkt-dur) ease-out forwards;
+    animation-delay: var(--delay);
+  }
+  @keyframes rocket-up {
+    0%   { opacity: 1; transform: translateY(0); }
+    70%  { opacity: 1; transform: translateY(var(--rkt-h)); }
+    100% { opacity: 0; transform: translateY(var(--rkt-h)); }
+  }
+  .spark {
+    position: absolute; pointer-events: none; z-index: 1; border-radius: 1px;
+    opacity: 0;
+    animation: spark-out var(--sp-dur) ease-out forwards;
+    animation-delay: var(--sp-delay);
+  }
+  @keyframes spark-out {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0.1); }
+  }
+
+  /* ===== C: 星星喷泉 ===== */
+  .fountain-star {
+    position: absolute; pointer-events: none; z-index: 1;
+    width: 14px; height: 14px; image-rendering: pixelated;
+    opacity: 0;
+    animation: fountain var(--f-dur) ease-out forwards;
+    animation-delay: var(--f-delay);
+  }
+  @keyframes fountain {
+    0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.8); }
+    40%  { opacity: 1; transform: translate(var(--f-x1), var(--f-y1)) rotate(180deg) scale(1); }
+    100% { opacity: 0; transform: translate(var(--f-x2), var(--f-y2)) rotate(360deg) scale(0.3); }
+  }
+
+  /* ===== D: 像素展开光环 ===== */
+  .ring-particle {
+    position: absolute; pointer-events: none; z-index: 1;
+    opacity: 0;
+    animation: ring-expand var(--r-dur) ease-out forwards;
+    animation-delay: var(--r-delay);
+  }
+  @keyframes ring-expand {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    50%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--rx), var(--ry)) scale(0.4); }
+  }
+  .ring-wave {
+    position: absolute; left: 50%; top: 50%; pointer-events: none; z-index: 0;
+    width: 0; height: 0; border: 3px solid #E8A93A; border-radius: 0;
+    transform: translate(-50%, -50%);
+    animation: wave-expand 800ms ease-out forwards;
+    animation-delay: var(--w-delay);
+    opacity: 0;
+  }
+  @keyframes wave-expand {
+    0%   { opacity: 0.8; width: 10px; height: 10px; border-width: 3px; }
+    100% { opacity: 0; width: 250px; height: 250px; border-width: 1px; }
+  }
+
+  /* ===== E: Junimo 庆祝舞 ===== */
+  .junimo-dancer {
+    position: absolute; bottom: 10px; image-rendering: pixelated; z-index: 3;
+    width: 32px; height: 32px;
+    animation: junimo-hop var(--j-dur) ease-in-out infinite;
+    animation-delay: var(--j-delay);
+  }
+  @keyframes junimo-hop {
+    0%, 100% { transform: translateY(0) scaleX(var(--j-dir)); }
+    30% { transform: translateY(-14px) scaleX(var(--j-dir)); }
+    50% { transform: translateY(-2px) scaleX(var(--j-dir)); }
+    70% { transform: translateY(-10px) scaleX(var(--j-dir)); }
+  }
+  .sparkle-dot {
+    position: absolute; pointer-events: none; z-index: 1;
+    width: 4px; height: 4px; background: #E8A93A;
+    animation: sparkle-twinkle var(--sk-dur) ease-in-out infinite;
+    animation-delay: var(--sk-delay);
+  }
+  @keyframes sparkle-twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* trophy 动画 */
+  .trophy-anim {
+    animation: trophy-bounce 500ms ease-out forwards;
+  }
+  @keyframes trophy-bounce {
+    0%   { opacity: 0; transform: scale(0); }
+    60%  { opacity: 1; transform: scale(1.25); }
+    80%  { transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .trophy-glow {
+    animation: trophy-bounce 500ms ease-out forwards, glow-pulse 1.5s ease-in-out 0.6s infinite;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(232,169,58,0.3)); }
+    50%      { filter: drop-shadow(0 0 18px rgba(232,169,58,0.85)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎮 全通关动画 · 5种方案对比</span>
+  <button onclick="replayAll()">🔄 全部重播</button>
+</div>
+
+<div class="container">
+
+  <!-- A: 改进版爆发 -->
+  <div class="plan-label">方案 A：多点烟花爆发（改进版）</div>
+  <p class="plan-desc">3 个爆发中心错开时机，粒子更多更密、颜色丰富、有层次感</p>
+  <div id="card-a" class="card">
+    <img class="trophy trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+    <h2>🎊 恭喜通关！</h2>
+    <p>本关卡全部完成！</p>
+  </div>
+  <button class="replay" onclick="playA()">🔄 重播方案 A</button>
+
+  <hr>
+
+  <!-- B: 升空+炸裂 -->
+  <div class="plan-label">方案 B：像素烟花升空 + 炸裂</div>
+  <p class="plan-desc">3 发小火箭从底部升空，到达高点后炸开成星形粒子（类似真实烟花）</p>
+  <div id="card-b" class="card">
+    <img class="trophy trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+    <h2>🎊 恭喜通关！</h2>
+    <p>本关卡全部完成！</p>
+  </div>
+  <button class="replay" onclick="playB()">🔄 重播方案 B</button>
+
+  <hr>
+
+  <!-- C: 星星喷泉 -->
+  <div class="plan-label">方案 C：星星喷泉</div>
+  <p class="plan-desc">从 trophy 底部喷出大量小星星，先上升再抛物线落下（喷泉效果）</p>
+  <div id="card-c" class="card">
+    <img class="trophy trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+    <h2>🎊 恭喜通关！</h2>
+    <p>本关卡全部完成！</p>
+  </div>
+  <button class="replay" onclick="playC()">🔄 重播方案 C</button>
+
+  <hr>
+
+  <!-- D: 光环扩散 -->
+  <div class="plan-label">方案 D：像素光环扩散</div>
+  <p class="plan-desc">从中心向外扩散 2 圈方形光环 + 沿环飞出金色/彩色方块粒子</p>
+  <div id="card-d" class="card">
+    <img class="trophy trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+    <h2>🎊 恭喜通关！</h2>
+    <p>本关卡全部完成！</p>
+  </div>
+  <button class="replay" onclick="playD()">🔄 重播方案 D</button>
+
+  <hr>
+
+  <!-- E: Junimo 庆祝 -->
+  <div class="plan-label">方案 E：Junimo 庆祝舞 + 闪光点</div>
+  <p class="plan-desc">3-4 个 junimo 在卡片底部蹦跳庆祝 + 背景随机闪光点（星露谷风味最浓）</p>
+  <div id="card-e" class="card" style="min-height: 210px;">
+    <img class="trophy trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+    <h2>🎊 恭喜通关！</h2>
+    <p>本关卡全部完成！</p>
+  </div>
+  <button class="replay" onclick="playE()">🔄 重播方案 E</button>
+
+</div>
+
+<script>
+const COLORS = ['#E8A93A','#5C8A4D','#4A90B8','#E88BA5','#C27ADB','#FF8C42','#F0C060'];
+function rnd(a,b){ return a + Math.random()*(b-a); }
+function clearFx(id, selectors) {
+  const card = document.getElementById(id);
+  selectors.forEach(s => card.querySelectorAll(s).forEach(e => e.remove()));
+  // re-trigger trophy
+  const t = card.querySelector('.trophy');
+  t.style.animation = 'none'; t.offsetHeight;
+  t.style.animation = 'trophy-bounce 500ms ease-out forwards, glow-pulse 1.5s ease-in-out 0.6s infinite';
+}
+
+// ===== A: 多点爆发 =====
+function playA() {
+  clearFx('card-a', ['.firework']);
+  const card = document.getElementById('card-a');
+  const centers = [
+    { x: 25, y: 35, delay: 0 },
+    { x: 70, y: 30, delay: 200 },
+    { x: 50, y: 55, delay: 400 },
+  ];
+  centers.forEach(c => {
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'firework';
+      const size = 3 + Math.floor(Math.random() * 5);
+      const angle = (Math.PI * 2 / 18) * i + rnd(-0.3, 0.3);
+      const dist = rnd(40, 100);
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      p.style.cssText = `
+        width:${size}px; height:${size}px; background:${color};
+        left:${c.x}%; top:${c.y}%;
+        --fx:${Math.cos(angle)*dist}px; --fy:${Math.sin(angle)*dist}px;
+        --dur:${rnd(500,800)}ms; --delay:${c.delay + rnd(0,100)}ms;
+      `;
+      card.appendChild(p);
+      p.addEventListener('animationend', () => p.remove());
+    }
+  });
+}
+
+// ===== B: 升空+炸裂 =====
+function playB() {
+  clearFx('card-b', ['.rocket','.spark']);
+  const card = document.getElementById('card-b');
+  const H = card.offsetHeight;
+  const launches = [
+    { x: 20, delay: 0 },
+    { x: 55, delay: 350 },
+    { x: 80, delay: 650 },
+  ];
+  launches.forEach(l => {
+    // 火箭
+    const rkt = document.createElement('div');
+    rkt.className = 'rocket';
+    const rktH = -(H * 0.5 + rnd(20, 50));
+    rkt.style.cssText = `left:${l.x}%; bottom:8px; --rkt-h:${rktH}px; --rkt-dur:500ms; --delay:${l.delay}ms;`;
+    card.appendChild(rkt);
+    rkt.addEventListener('animationend', () => rkt.remove());
+
+    // 炸裂
+    const burstDelay = l.delay + 420;
+    const burstY = H + rktH + 8; // top-based
+    for (let i = 0; i < 16; i++) {
+      const sp = document.createElement('div');
+      sp.className = 'spark';
+      const size = 3 + Math.floor(Math.random() * 4);
+      const angle = (Math.PI * 2 / 16) * i + rnd(-0.2, 0.2);
+      const dist = rnd(30, 80);
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      sp.style.cssText = `
+        width:${size}px; height:${size}px; background:${color};
+        left:${l.x}%; top:${burstY}px;
+        --sx:${Math.cos(angle)*dist}px; --sy:${Math.sin(angle)*dist}px;
+        --sp-dur:${rnd(500,800)}ms; --sp-delay:${burstDelay}ms;
+      `;
+      card.appendChild(sp);
+      sp.addEventListener('animationend', () => sp.remove());
+    }
+  });
+}
+
+// ===== C: 星星喷泉 =====
+function playC() {
+  clearFx('card-c', ['.fountain-star']);
+  const card = document.getElementById('card-c');
+  const count = 20;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('img');
+    s.className = 'fountain-star';
+    s.src = 'frontend/public/pixel-icons/ui/star_gold.png';
+    s.onerror = () => { s.style.background = '#E8A93A'; s.style.width = '8px'; s.style.height = '8px'; };
+    
+    const x1 = rnd(-30, 30);
+    const y1 = rnd(-70, -120);
+    const x2 = x1 + rnd(-40, 40);
+    const y2 = rnd(20, 60);
+    
+    s.style.cssText = `
+      left:50%; top:35%;
+      --f-x1:${x1}px; --f-y1:${y1}px;
+      --f-x2:${x2}px; --f-y2:${y2}px;
+      --f-dur:${rnd(800,1200)}ms; --f-delay:${rnd(0,500)}ms;
+    `;
+    card.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+// ===== D: 光环扩散 =====
+function playD() {
+  clearFx('card-d', ['.ring-particle','.ring-wave']);
+  const card = document.getElementById('card-d');
+  
+  // 方形光环
+  for (let w = 0; w < 2; w++) {
+    const wave = document.createElement('div');
+    wave.className = 'ring-wave';
+    wave.style.cssText = `--w-delay:${w * 400}ms;`;
+    card.appendChild(wave);
+    wave.addEventListener('animationend', () => wave.remove());
+  }
+  
+  // 环形粒子
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'ring-particle';
+    const size = 4 + Math.floor(Math.random() * 4);
+    const angle = (Math.PI * 2 / 24) * i;
+    const dist = rnd(70, 120);
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    p.style.cssText = `
+      width:${size}px; height:${size}px; background:${color};
+      left:50%; top:50%;
+      --rx:${Math.cos(angle)*dist}px; --ry:${Math.sin(angle)*dist}px;
+      --r-dur:${rnd(600,900)}ms; --r-delay:${200 + rnd(0,300)}ms;
+    `;
+    card.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ===== E: Junimo 庆祝 =====
+function playE() {
+  clearFx('card-e', ['.junimo-dancer','.sparkle-dot']);
+  const card = document.getElementById('card-e');
+  
+  const positions = [15, 35, 65, 85];
+  const junColors = ['deco_junimo.png'];
+  
+  positions.forEach((x, i) => {
+    const j = document.createElement('img');
+    j.className = 'junimo-dancer';
+    j.src = 'frontend/public/pixel-icons/decorations/deco_junimo.png';
+    j.onerror = () => { j.style.background = '#6BBF4E'; j.style.borderRadius = '50%'; };
+    const dir = i % 2 === 0 ? 1 : -1;
+    j.style.cssText = `left:${x}%; --j-dur:${rnd(600,900)}ms; --j-delay:${i * 150}ms; --j-dir:${dir};`;
+    card.appendChild(j);
+  });
+  
+  // 闪光点
+  for (let i = 0; i < 12; i++) {
+    const d = document.createElement('div');
+    d.className = 'sparkle-dot';
+    const shades = ['#E8A93A','#F0C060','#FFF8E7','#FFEB3B'];
+    d.style.cssText = `
+      left:${rnd(5,95)}%; top:${rnd(10,80)}%;
+      background:${shades[Math.floor(Math.random()*shades.length)]};
+      --sk-dur:${rnd(800,1400)}ms; --sk-delay:${rnd(0,1000)}ms;
+    `;
+    card.appendChild(d);
+  }
+  
+  // 5秒后清理 junimo（持续动画需要手动停）
+  setTimeout(() => {
+    card.querySelectorAll('.junimo-dancer,.sparkle-dot').forEach(e => {
+      e.style.animation = 'none';
+      e.style.opacity = '0';
+      e.style.transition = 'opacity 0.5s';
+      setTimeout(() => e.remove(), 500);
+    });
+  }, 5000);
+}
+
+function replayAll() {
+  playA(); playB(); playC(); playD(); playE();
+}
+
+window.addEventListener('load', () => setTimeout(replayAll, 400));
+</script>
+</body>
+</html>

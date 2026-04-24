@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><title>角色 & 装饰素材全览</title>
+<style>
+body { font-family: sans-serif; background: #FFF8E7; padding: 24px; color: #3E2723; }
+h1 { margin-bottom: 8px; }
+h2 { margin: 24px 0 10px; color: #5B3A29; font-size: 18px; }
+.desc { color: #8B7355; font-size: 13px; margin-bottom: 16px; }
+.grid { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px; border: 2px solid #E0D5C8; background: #FFFDF5;
+  min-width: 64px; max-width: 80px;
+}
+.item:hover { border-color: #E8A93A; }
+.item img { image-rendering: pixelated; }
+.item .name { font-size: 10px; color: #8B7355; text-align: center; line-height: 1.2; }
+
+.avatar-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.avatar-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 6px; border: 2px solid #E0D5C8; background: #FFFDF5;
+  width: 72px; cursor: pointer;
+}
+.avatar-item:hover { border-color: #5C8A4D; background: #F0F8EC; }
+.avatar-item img { image-rendering: pixelated; }
+.avatar-item .name { font-size: 9px; color: #8B7355; text-align: center; }
+
+/* 角色选择器 demo */
+.picker-demo {
+  border: 4px solid #5B3A29; background: #FFFDF5; padding: 20px;
+  max-width: 500px; margin: 16px 0;
+}
+.picker-demo h3 { font-size: 15px; color: #5B3A29; margin-bottom: 12px; }
+.picker-selected {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border: 2px solid #E8A93A; background: #FFF8E7;
+  margin-bottom: 16px;
+}
+.picker-selected img { image-rendering: pixelated; }
+.picker-selected .info { font-size: 13px; color: #5B3A29; }
+</style>
+</head>
+<body>
+
+<h1>🎮 角色 & 装饰素材全览</h1>
+<p class="desc">从 Stardew Valley 切出的 32 个角色头像 + 22 个装饰素材</p>
+
+<h2>👤 可选角色头像（32个 + 特殊角色）</h2>
+<p class="desc">学员登录后在个人中心选择，作为自己的像素头像显示在培训地图上</p>
+
+<div class="avatar-grid">
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_abigail_head.png" width="40"><div class="name">阿比盖尔</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_alex_head.png" width="40"><div class="name">亚历克斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_caroline_head.png" width="40"><div class="name">卡洛琳</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_clint_head.png" width="40"><div class="name">克林特</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_demetrius_head.png" width="40"><div class="name">德米特里</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_elliott_head.png" width="40"><div class="name">艾利欧特</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_emily_head.png" width="40"><div class="name">艾米丽</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_haley_head.png" width="40"><div class="name">海莉</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_harvey_head.png" width="40"><div class="name">哈维</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_jas_head.png" width="40"><div class="name">贾斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_jodi_head.png" width="40"><div class="name">乔迪</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_kent_head.png" width="40"><div class="name">肯特</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_leah_head.png" width="40"><div class="name">莉亚</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_lewis_head.png" width="40"><div class="name">刘易斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_linus_head.png" width="40"><div class="name">莱纳斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_marnie_head.png" width="40"><div class="name">玛妮</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_maru_head.png" width="40"><div class="name">玛鲁</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_pam_head.png" width="40"><div class="name">帕姆</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_penny_head.png" width="40"><div class="name">潘妮</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_pierre_head.png" width="40"><div class="name">皮埃尔</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_robin_head.png" width="40"><div class="name">罗宾</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_sam_head.png" width="40"><div class="name">山姆</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_sandy_head.png" width="40"><div class="name">桑迪</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_sebastian_head.png" width="40"><div class="name">塞巴斯蒂安</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_shane_head.png" width="40"><div class="name">谢恩</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_vincent_head.png" width="40"><div class="name">文森特</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_willy_head.png" width="40"><div class="name">威利</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_wizard_head.png" width="40"><div class="name">巫师</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_gus_head.png" width="40"><div class="name">格斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_gunther_head.png" width="40"><div class="name">冈瑟</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_krobus_head.png" width="40"><div class="name">科罗布斯</div></div>
+  <div class="avatar-item"><img src="assets/pixel/ready/avatar_dwarf_head.png" width="40"><div class="name">矮人</div></div>
+  <div class="avatar-item" style="border-color: #E8A93A;"><img src="assets/pixel/ready/avatar_junimo_head.png" width="40"><div class="name">祝尼魔 ⭐</div></div>
+  <div class="avatar-item" style="border-color: #E8A93A;"><img src="assets/pixel/ready/avatar_robot_head.png" width="40"><div class="name">机器人 ⭐</div></div>
+</div>
+
+<h2>🎯 角色选择器效果 Demo</h2>
+<div class="picker-demo">
+  <h3>选择你的冒险角色</h3>
+  <div class="picker-selected">
+    <img src="assets/pixel/ready/avatar_abigail.png" height="80" />
+    <div class="info">
+      <strong>阿比盖尔</strong><br>
+      <span style="font-size:12px; color:#8B7355;">勇敢的冒险家，喜欢探索矿洞</span>
+    </div>
+  </div>
+  <p style="font-size:12px; color:#8B7355;">点击上方头像切换角色，所选角色将显示在你的培训地图和个人主页上</p>
+</div>
+
+<h2>🐾 装饰动物</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_chicken.png" width="48"><div class="name">白鸡</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_brown_chicken.png" width="48"><div class="name">棕鸡</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_void_chicken.png" width="48"><div class="name">虚空鸡</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_duck.png" width="48"><div class="name">鸭子</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_cat.png" width="48"><div class="name">猫</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_dog.png" width="48"><div class="name">狗</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_goat.png" width="48"><div class="name">山羊</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_sheep.png" width="48"><div class="name">绵羊</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_pig.png" width="48"><div class="name">猪</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_brown_cow.png" width="48"><div class="name">棕牛</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_white_cow.png" width="48"><div class="name">白牛</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_horse.png" width="48"><div class="name">马</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_junimo.png" width="48"><div class="name">祝尼魔</div></div>
+</div>
+
+<h2>🏠 建筑 & 🌳 树木</h2>
+<div class="grid">
+  <div class="item"><img src="assets/pixel/ready/deco_well.png" width="52"><div class="name">水井</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_silo.png" height="80"><div class="name">谷仓</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_coop.png" width="80"><div class="name">鸡舍</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_tree1.png" height="100"><div class="name">橡树</div></div>
+  <div class="item"><img src="assets/pixel/ready/deco_tree2.png" height="100"><div class="name">枫树</div></div>
+</div>
+
+<p style="margin-top:24px; color:#8B7355; font-size:13px;">
+  💡 总计：34 个角色头像 + 16 个动物装饰 + 5 个建筑/树木装饰 = 55 个像素素材
+</p>
+</body>
+</html>

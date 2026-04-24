@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, max-width=800">
+<title>Markdown 渲染效果预览 - 培训系统</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --pixel-green: #5C8A4D;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-red: #C24A3A;
+  --pixel-blue: #4A90B8;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--pixel-bg);
+  padding: 0;
+  color: var(--pixel-text);
+  /* 纸质纹理 */
+  background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4c5a9' fill-opacity='0.08'%3E%3Cpath d='M5 0h1L0 5V4zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.page-wrapper { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* 场景切换 tabs */
+.demo-tabs {
+  display: flex; gap: 0; margin-bottom: 20px;
+  border: 3px solid var(--pixel-brown); background: var(--pixel-card);
+}
+.demo-tab {
+  flex: 1; padding: 10px 16px; text-align: center; font-size: 14px; font-weight: 600;
+  cursor: pointer; color: var(--pixel-text-secondary); border: none; background: transparent;
+  border-right: 2px solid var(--pixel-border); transition: all 0.15s;
+}
+.demo-tab:last-child { border-right: none; }
+.demo-tab.active { background: var(--pixel-gold); color: #fff; }
+.demo-tab:hover:not(.active) { background: #F5EFE0; }
+
+.demo-scene { display: none; }
+.demo-scene.active { display: block; }
+
+/* ===== 关卡头部 ===== */
+.stage-header {
+  padding: 20px 24px 24px; margin-bottom: 24px;
+  background: var(--pixel-card); border: 3px solid var(--pixel-brown);
+}
+.back-link { font-size: 13px; color: var(--pixel-blue); text-decoration: none; }
+.stage-header h1 { font-size: 20px; color: var(--pixel-brown); margin: 8px 0 10px; }
+.progress-row { display: flex; align-items: center; gap: 10px; }
+.progress-bar-px { flex: 1; max-width: 300px; height: 14px; background: #E0D5C8; border: 2px solid var(--pixel-brown); }
+.progress-fill-yellow { height: 100%; width: 33%; background: repeating-linear-gradient(90deg, var(--pixel-gold) 0px, var(--pixel-gold) 4px, #f0c060 4px, #f0c060 6px); }
+.progress-label { font-size: 13px; color: var(--pixel-text-secondary); white-space: nowrap; }
+
+/* ===== 单元卡片 ===== */
+.unit-card {
+  background: var(--pixel-card); border: 3px solid var(--pixel-brown);
+  margin-bottom: 10px; box-shadow: 3px 3px 0 rgba(91,58,41,0.12);
+}
+.unit-summary { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.unit-icon { width: 28px; height: 28px; image-rendering: pixelated; }
+.unit-meta { flex: 1; }
+.unit-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.unit-title-row h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--pixel-brown); }
+.unit-type-label { font-size: 11px; color: var(--pixel-text-secondary); margin: 0; }
+.px-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 1px 6px; font-weight: 500; border: 2px solid; background: var(--pixel-card); }
+.px-tag.active { border-color: #FFCC80; color: #E65100; }
+.px-tag.completed { border-color: #A5D6A7; color: #2E7D32; }
+.expand-arrow { font-size: 11px; color: var(--pixel-text-secondary); }
+
+/* ===== 题目展开区 ===== */
+.unit-detail {
+  padding: 0 16px 16px; border-top: 2px solid var(--pixel-border); padding-top: 14px;
+}
+.quiz-progress { font-size: 13px; color: var(--pixel-text-secondary); margin-bottom: 10px; }
+.question-item { padding: 14px 0; }
+.q-text { font-size: 14px; font-weight: 500; color: var(--pixel-brown); margin-bottom: 4px; white-space: pre-wrap; }
+.q-type { font-size: 11px; color: var(--pixel-blue); font-weight: normal; margin-left: 4px; }
+
+/* Markdown 渲染区 */
+.q-text-md { font-size: 14px; font-weight: 500; color: var(--pixel-brown); margin-bottom: 4px; }
+.q-text-md h1 { font-size: 18px; margin: 16px 0 8px; color: var(--pixel-brown); }
+.q-text-md h2 { font-size: 16px; margin: 14px 0 6px; color: var(--pixel-brown); }
+.q-text-md h3 { font-size: 15px; margin: 12px 0 6px; color: var(--pixel-brown); }
+.q-text-md h4 { font-size: 14px; margin: 10px 0 4px; color: var(--pixel-text); }
+.q-text-md h5 { font-size: 13px; margin: 8px 0 4px; color: var(--pixel-text); }
+.q-text-md p { margin: 6px 0; line-height: 1.7; }
+.q-text-md ul, .q-text-md ol { padding-left: 22px; margin: 6px 0; }
+.q-text-md li { margin: 3px 0; line-height: 1.6; }
+.q-text-md strong { color: var(--pixel-brown); }
+.q-text-md em { color: var(--pixel-text-secondary); }
+.q-text-md hr { border: none; border-top: 2px solid var(--pixel-border); margin: 16px 0; }
+.q-text-md code { background: #F5EFE0; padding: 1px 5px; font-size: 12px; border: 1px solid var(--pixel-border); }
+.q-text-md blockquote { border-left: 3px solid var(--pixel-gold); background: #FFF8E7; padding: 6px 14px; margin: 8px 0; }
+
+/* 题目内容区块（prompt + response 区分） */
+.content-block { margin: 12px 0; padding: 16px; background: #FDFAF0; border: 2px solid var(--pixel-border); }
+.content-block-label { font-size: 12px; font-weight: 600; color: var(--pixel-text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+
+/* 选项 */
+.options { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border: 2px solid var(--pixel-border);
+  cursor: pointer; font-size: 14px; background: var(--pixel-card); transition: all 0.15s;
+}
+.opt:hover { border-color: var(--pixel-gold); background: #FFFBF2; }
+.opt.selected { border-color: var(--pixel-blue); background: #F0F5FA; }
+.opt input { accent-color: var(--pixel-brown); }
+
+/* 按钮 */
+.px-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 20px; font-size: 13px; font-weight: 500;
+  border: 2px solid var(--pixel-brown); cursor: pointer; color: #fff; transition: box-shadow 0.1s;
+}
+.px-btn.green { background: var(--pixel-green); }
+.px-btn.green:hover { background: #4A7A3D; box-shadow: 2px 2px 0 var(--pixel-brown); }
+.unit-action { margin-top: 12px; }
+
+/* 纯文本对比提示 */
+.compare-banner {
+  text-align: center; padding: 16px; margin: 20px 0 16px;
+  border: 3px dashed var(--pixel-gold); background: #FFF8E7; color: var(--pixel-brown);
+}
+.compare-banner h3 { font-size: 16px; margin-bottom: 4px; }
+.compare-banner p { font-size: 13px; color: var(--pixel-text-secondary); }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+  <!-- 场景切换 -->
+  <div class="demo-tabs">
+    <button class="demo-tab active" onclick="switchTab(0)">✨ Markdown 渲染</button>
+    <button class="demo-tab" onclick="switchTab(1)">📝 纯文本（当前效果）</button>
+  </div>
+
+  <!-- ===== 场景1: Markdown 渲染 ===== -->
+  <div class="demo-scene active" id="scene-0">
+    <div class="stage-header">
+      <a href="#" class="back-link">← 返回地图</a>
+      <h1>📖 第3关：模型输出评估</h1>
+      <div class="progress-row">
+        <div class="progress-bar-px"><div class="progress-fill-yellow"></div></div>
+        <span class="progress-label">⭐ 1 / 3 已完成</span>
+      </div>
+    </div>
+
+    <!-- 已完成的单元 -->
+    <div class="unit-card">
+      <div class="unit-summary">
+        <span class="unit-icon">📖</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估基础知识</h3>
+            <span class="px-tag completed">✅ 已完成</span>
+          </div>
+          <p class="unit-type-label">【文章】</p>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+    </div>
+
+    <!-- 当前练习单元 - Markdown 渲染版 -->
+    <div class="unit-card">
+      <div class="unit-summary">
+        <span class="unit-icon">⚔️</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估练习</h3>
+            <span class="px-tag active">🏁 进行中</span>
+          </div>
+          <p class="unit-type-label">【练习】</p>
+        </div>
+        <span class="expand-arrow">▲</span>
+      </div>
+      <div class="unit-detail">
+        <p class="quiz-progress">第 1 / 5 题</p>
+        <div class="question-item">
+          <div class="q-text-md">
+            <p>1. 以下模型回复存在什么问题？ <span class="q-type">[单选]</span></p>
+          </div>
+
+          <div class="content-block">
+            <div class="content-block-label">📒 Prompt</div>
+            <div class="q-text-md" id="md-prompt"></div>
+          </div>
+
+          <div class="content-block">
+            <div class="content-block-label">🖊️ Response</div>
+            <div class="q-text-md" id="md-response"></div>
+          </div>
+
+          <div class="options">
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q1" value="A"> A. 未遵循指令</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q1" value="B"> B. 存在内部逻辑问题</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q1" value="C"> C. 存在流畅性问题</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q1" value="D"> D. 存在事实错误</label>
+          </div>
+          <div class="unit-action">
+            <button class="px-btn green">提交答案</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 锁定的单元 -->
+    <div class="unit-card" style="opacity: 0.5; filter: saturate(0.3);">
+      <div class="unit-summary">
+        <span class="unit-icon">⚡</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估测验</h3>
+            <span class="px-tag" style="border-color:#D5C9B8; color:#8B7355;">🔒 未解锁</span>
+          </div>
+          <p class="unit-type-label">【测验】</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 场景2: 纯文本 ===== -->
+  <div class="demo-scene" id="scene-1">
+    <div class="stage-header">
+      <a href="#" class="back-link">← 返回地图</a>
+      <h1>📖 第3关：模型输出评估</h1>
+      <div class="progress-row">
+        <div class="progress-bar-px"><div class="progress-fill-yellow"></div></div>
+        <span class="progress-label">⭐ 1 / 3 已完成</span>
+      </div>
+    </div>
+
+    <div class="unit-card">
+      <div class="unit-summary">
+        <span class="unit-icon">📖</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估基础知识</h3>
+            <span class="px-tag completed">✅ 已完成</span>
+          </div>
+          <p class="unit-type-label">【文章】</p>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+    </div>
+
+    <div class="unit-card">
+      <div class="unit-summary">
+        <span class="unit-icon">⚔️</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估练习</h3>
+            <span class="px-tag active">🏁 进行中</span>
+          </div>
+          <p class="unit-type-label">【练习】</p>
+        </div>
+        <span class="expand-arrow">▲</span>
+      </div>
+      <div class="unit-detail">
+        <p class="quiz-progress">第 1 / 5 题</p>
+        <div class="question-item">
+          <p class="q-text">1. 以下模型回复存在什么问题？ <span class="q-type">[单选]</span></p>
+          <div class="content-block">
+            <div id="plain-content" style="font-size: 14px; line-height: 1.7; color: var(--pixel-text); white-space: pre-wrap; word-wrap: break-word;"></div>
+          </div>
+          <div class="options">
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q2" value="A"> A. 未遵循指令</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q2" value="B"> B. 存在内部逻辑问题</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q2" value="C"> C. 存在流畅性问题</label>
+            <label class="opt" onclick="selectOpt(this)"><input type="radio" name="q2" value="D"> D. 存在事实错误</label>
+          </div>
+          <div class="unit-action">
+            <button class="px-btn green">提交答案</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="unit-card" style="opacity: 0.5; filter: saturate(0.3);">
+      <div class="unit-summary">
+        <span class="unit-icon">⚡</span>
+        <div class="unit-meta">
+          <div class="unit-title-row">
+            <h3>模型评估测验</h3>
+            <span class="px-tag" style="border-color:#D5C9B8; color:#8B7355;">🔒 未解锁</span>
+          </div>
+          <p class="unit-type-label">【测验】</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const promptMd = `请为社区健康教育活动设计一份"全家人的健康指南"，包括儿童、青少年、中年人和老年人四个不同年龄段的健康建议。
+
+在设计这份健康指南时，请按照以下特殊顺序安排内容：
+1. 首先介绍所有年龄段共同需要注意的健康问题
+2. 然后按照年龄从小到大的顺序依次介绍各年龄段特有的健康风险：先儿童，然后青少年，再到中年人，最后是老年人
+3. 接着按照年龄从大到小的顺序依次介绍各年龄段的健康保健方法：先老年人，然后中年人，再到青少年，最后是儿童
+4. 最后综合介绍全家人可以一起参与的健康活动
+
+对于每个年龄段，请分别从以下四个方面提供健康建议：
+- 合理饮食
+- 适当运动
+- 心理健康
+- 疾病预防
+
+请确保内容科学准确，实用性强，语言通俗易懂，适合社区居民阅读理解和实践。`;
+
+const responseMd = `好的，遵照您的特殊要求，为您精心设计一份面向社区居民的"全家人的健康指南"。
+
+### **全家人的健康指南**
+**——健康生活，幸福一生**
+
+大家好！
+
+健康是家庭最宝贵的财富。为了让每个家庭成员——无论是活泼的孩子、朝气蓬勃的青少年、肩负重任的中年人，还是安享晚年的长者——都能拥有健康的体魄和阳光的心态，我们特别编写了这份健康指南。让我们一起学习，共同实践，为自己和家人的幸福生活打下坚实基础！
+
+---
+
+#### **第一部分：所有年龄段的共同健康基石**
+
+无论年龄几何，有些健康习惯是我们每个人都应遵循的。它们是全家健康的共同"公约数"。
+
+*   **均衡膳食**：保证食物多样化，主食、蔬菜、水果、肉蛋奶、豆制品和坚果都要适量摄入。减少高盐、高油、高糖食物的摄入，多喝水。
+*   **充足睡眠**：保证每晚有7-9小时的高质量睡眠（儿童和青少年需要更长）。规律作息，建立固定的生物钟。
+*   **良好心态**：学会管理压力，保持乐观积极的心态。与家人朋友多沟通，分享喜怒哀乐。
+*   **戒烟限酒**：吸烟百害无一利，坚决戒烟。成年人如需饮酒，应严格限量。
+*   **环境与卫生**：保持居家环境整洁通风，勤洗手，注意个人卫生，预防感染。
+
+---
+
+#### **第二部分：分年龄段健康风险警示（从小到大）**
+
+了解不同年龄段的健康"雷区"，才能有效规避风险。
+
+##### **1. 儿童期（3-11岁）——"成长的烦恼"**
+*   **合理饮食风险**：挑食、偏食导致营养不均；过多摄入零食、甜饮料和油炸食品，引发肥胖和龋齿。
+*   **适当运动风险**：屏幕时间（看电视、玩电子产品）过长，户外活动不足，影响视力发育和骨骼生长。
+*   **心理健康风险**：因升学压力、同伴关系等问题产生焦虑、自卑或情绪波动。
+*   - **疾病预防风险**：易发感冒、手足口等传染性疾病；意外伤害（如摔伤、烫伤、误食）风险高。
+
+##### **2. 青少年期（12-18岁）——"青春的迷茫"**
+*   **合理饮食风险**：为了追求身材而节食，或常吃外卖、快餐，导致营养失衡或肥胖。
+*   **适当运动风险**：学业繁重，久坐不动，身体素质下降。
+*   **心理健康风险**：面临学业、人际、自我认同等多重压力，易出现焦虑、抑郁、网络成瘾等问题。
+*   **疾病预防风险**：近视加深迅速；可能出现青春痘；需要建立良好的健康意识，避免沾染吸烟、饮酒等不良习惯。
+
+##### **3. 中年期（19-59岁）——"健康的转折点"**
+*   **合理饮食风险**：工作应酬多，饮食不规律，高热量、高脂肪饮食易导致"三高"（高血压、高血脂、高血糖）和中心性肥胖（啤酒肚）。
+*   **适当运动风险**：工作忙，家庭负担重，缺乏固定锻炼时间，肌肉流失，体能下降，慢性疲劳。
+*   **心理健康风险**：事业、家庭、经济"三座大山"压力巨大，易出现职业倦怠、焦虑、失眠等问题，即"中年危机"。
+*   **疾病预防风险**：心脑血管疾病、糖尿病、脂肪肝等慢性病开始"找上门"，是癌症风险逐渐增高的时期。
+
+##### **4. 老年期（60岁及以上）——"岁月的考验"**
+*   **合理饮食风险**：消化功能减弱，牙口不好，可能导致营养吸收不良；味觉减退，容易不自觉地吃得更咸。
+*   **适当运动风险**：肌肉力量和平衡能力下降，易发生跌倒；担心"伤筋动骨"，不敢活动，加剧身体机能衰退。
+*   **心理健康风险**：退休后的失落感、子女离家后的孤独感，以及对疾病和死亡的恐惧，易引发抑郁和焦虑。
+*   **疾病预防风险**：骨质疏松症、骨关节炎、阿尔茨海默病、白内障等老年性疾病高发，是多种慢性病的管理和维护期。
+
+---
+
+#### **第三部分：分年龄段健康保健方法（从大到小）**
+
+掌握科学的保健方法，为健康"充电加油"。
+
+##### **1. 老年人——"安享健康晚年"**
+*   **合理饮食**：食物宜软烂、清淡。保证优质蛋白（鱼、蛋、奶、豆制品）摄入以延缓肌肉流失。多吃富含钙质和维生素D的食物（如牛奶、绿叶菜）预防骨质疏松，并适当补充。
+*   **适当运动**：选择舒缓、安全的有氧运动，如**散步、打太极拳、游泳、做养生操**。重点进行平衡能力和腿部力量锻炼，以防跌倒。
+*   **心理健康**：积极培养兴趣爱好，如下棋、书法、园艺、参加老年大学。多与家人朋友联系，多出门社交。保持学习的热情，接受新事物。
+*   **疾病预防**：每年至少进行一次全面体检，重点关注血压、血糖、血脂和骨密度。按时服用慢性病药物，定期复查。注意居家安全，安装扶手、防滑垫。
+
+##### **2. 中年人——"承上启下的健康投资"**
+*   **合理饮食**：三餐定时定量，早餐吃好，晚餐吃少。增加全谷物、蔬菜和水果摄入，用白肉（鱼、禽）代替部分红肉。在外就餐时注意清淡选择。
+*   **适当运动**：每周至少进行150分钟中等强度有氧运动（如快走、慢跑、骑车），并结合2次力量训练（如哑铃、俯卧撑、平板支撑）来保持肌肉量和基础代谢。
+*   **心理健康**：学会"张弛有度"，利用深呼吸、冥想、听音乐等方式缓解压力。保证充足的休息和娱乐时间，发展个人爱好，找到工作与生活的平衡点。
+*   **疾病预防**：每年进行一次体检，重点关注心脑血管、血糖、肝肾功能和癌症筛查。有"三高"风险的人群要密切关注并积极干预。不要"硬扛"，身体不适及时就医。
+
+##### **3. 青少年——"筑牢青春健康长城"**
+*   **合理饮食**：保证一日三餐营养均衡，多吃奶制品保证骨骼发育，多吃富含铁和维生素的食物。用水果、原味坚果代替高糖零食，多喝白开水，少喝含糖饮料。
+*   **适当运动**：每天保证至少60分钟的体育锻炼，可以是体育课、跑步、球类运动等。减少不必要的久坐，每隔一小时起身活动一下。
+*   **心理健康**：正视并接纳自己的情绪变化，与父母、老师或信任的朋友倾诉。培养健康的解压方式，如运动、听音乐、阅读。树立正确的自我认知，不盲目攀比。
+*   **疾病预防**：坚持每天做眼保健操，保持正确读写姿势，控制电子产品使用时间。注意个人卫生，预防青春期常见皮肤问题。了解并远离烟草、酒精和毒品。
+
+##### **4. 儿童——"播撒健康的第一颗种子"**
+*   **合理饮食**：家长帮助儿童建立不挑食、不偏食的好习惯，提供丰富多样的食物。严格控制糖果、巧克力、蛋糕的摄入频率和量。
+*   **适当运动**：鼓励儿童每天进行至少60分钟的户外活动，如跑、跳、攀爬、球类游戏等，以促进生长和发育。
+*   **心理健康**：家长要多陪伴、多鼓励，建立亲密的亲子关系。关注孩子的情绪变化，耐心倾听他们的心声。教会孩子如何表达和管理自己的情绪。
+*   **疾病预防**：按时完成国家免疫规划内的所有疫苗接种。养成良好的卫生习惯（饭前便后洗手）。教给孩子基本的安全常识，如不玩火、不摸电、遵守交通规则。
+
+---
+
+#### **第四部分：全家人的健康联动**
+
+健康不是一个人的事，而是全家共同的幸福事业。让我们一起动起来！
+
+*   **周末家庭健康日**：每周设定一天为"家庭健康日"。全家一起去公园**徒步、骑行**，或者进行一场**羽毛球、踢毽子**比赛。
+*   **健康厨艺大比拼**：全家一起研究健康菜谱，分工合作，每周做一顿"健康主题"晚餐，如"地中海风味之夜"或"粗粮美食节"。
+*   **亲子运动时光**：家长可以和孩子一起做**亲子瑜伽**、玩室内游戏（如跳房子、真人飞行棋），或者晚上一同出门散步、跳绳。
+*   **家庭健康监督员**：让孩子轮流担任"家庭健康监督员"，提醒大家多喝水、少看手机、一起劳动，在趣味中增强全家人的健康意识。
+*   **情感交流的"家庭会议"**：定期（如每周日晚）开一个简短的家庭会议，分享彼此的开心事和烦恼，互相支持和鼓励，营造温暖、开放的家庭氛围。
+
+**结语**
+
+家人的健康，是我们最大的牵挂。让我们从今天开始，将这份指南中的知识融入日常生活，互相关爱，彼此督促，用点点滴滴的健康行动，共同构筑一个充满活力、幸福美满的家庭！`;
+
+const fullPlain = '# 📒 Prompt\n' + promptMd + '\n\n# 🖊️ Response\n' + responseMd + '\n\n选项\nA. 未遵循指令\nB. 存在内部逻辑问题\nC. 存在流畅性问题\nD. 存在事实错误';
+
+// Render
+document.getElementById('md-prompt').innerHTML = marked.parse(promptMd);
+document.getElementById('md-response').innerHTML = marked.parse(responseMd);
+document.getElementById('plain-content').textContent = fullPlain;
+
+function selectOpt(el) {
+  el.closest('.options').querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.demo-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.demo-scene').forEach((s, i) => s.classList.toggle('active', i === idx));
+}
+</script>
+</body>
+</html>

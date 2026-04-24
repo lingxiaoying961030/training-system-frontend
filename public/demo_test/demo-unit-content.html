@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容编辑页 - 像素风格改造方案</title>
+<style>
+:root { --border: #8b6914; --card: #fffbf0; --muted: #9e8a76; --link: #4a90d9; --bg: #f5efe0; --text: #4a3728; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+/* 顶栏 */
+.top-bar { background: #f0e6d2; border-bottom: 2px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+.breadcrumb { font-size: 12px; color: var(--muted); }
+.breadcrumb a { color: var(--link); cursor: pointer; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+/* 单元信息条 */
+.unit-info-bar { padding: 14px 24px; background: var(--card); border-bottom: 1px solid #e8dcc8; display: flex; align-items: center; gap: 12px; }
+.unit-icon { font-size: 24px; }
+.unit-title { font-size: 16px; font-weight: 600; }
+.unit-meta { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.tag-article { background: #e3f2fd; color: #1976d2; }
+.tag-video { background: #e8f5e9; color: #2e7d32; }
+.tag-practice { background: #f5f5f5; color: #666; }
+.tag-quiz { background: #fff3e0; color: #e65100; }
+.tag-practical { background: #fce4ec; color: #c62828; }
+.tag-req { background: #e8f5e9; color: #2e7d32; }
+
+/* 主内容区 */
+.content-area { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+/* 像素卡片 */
+.px-card { border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; background: var(--card); }
+.px-card-hdr { padding: 10px 16px; background: #f0e6d2; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0d5c0; }
+.px-card-body { padding: 16px; }
+
+/* 编辑器模拟 */
+.editor-toolbar { background: #faf5ea; border: 1px solid #d4c5a0; border-bottom: none; border-radius: 6px 6px 0 0; padding: 8px 12px; display: flex; gap: 4px; flex-wrap: wrap; }
+.editor-toolbar span { padding: 4px 8px; border: 1px solid #e0d5c0; border-radius: 3px; font-size: 12px; cursor: pointer; background: #fff; }
+.editor-toolbar span:hover { background: #f0e6d2; border-color: var(--border); }
+.editor-body { border: 1px solid #d4c5a0; border-radius: 0 0 6px 6px; min-height: 350px; padding: 16px; background: #fff; font-size: 14px; line-height: 1.8; color: #333; }
+.editor-body h2 { font-size: 18px; margin-bottom: 10px; color: var(--text); }
+.editor-body p { margin-bottom: 10px; }
+.editor-body .placeholder { color: #ccc; }
+
+/* 操作栏 */
+.action-bar { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+.action-bar .hint { margin-left: auto; font-size: 11px; color: var(--muted); }
+
+/* 视频预览 */
+.video-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.video-input-row input { flex: 1; padding: 10px 12px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 13px; }
+.video-preview { background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; }
+.video-placeholder { height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; gap: 8px; }
+.video-placeholder .play-btn { width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+/* 测验配置 */
+.config-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 14px; align-items: center; max-width: 400px; font-size: 13px; }
+.config-grid label { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; }
+.config-grid input { padding: 7px 10px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 13px; width: 100px; text-align: center; }
+.pool-info { margin-top: 14px; padding: 10px 14px; background: #faf5ea; border: 1px solid #e8dcc8; border-radius: 6px; font-size: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+.pool-info strong { color: var(--link); }
+.pool-warn { margin-top: 8px; padding: 8px 12px; background: #fff8f0; border: 1px solid #f0d4a0; border-radius: 4px; font-size: 12px; color: #d4882a; }
+.pool-ok { margin-top: 8px; padding: 8px 12px; background: #f0faf0; border: 1px solid #b8e0b8; border-radius: 4px; font-size: 12px; color: #2e7d32; }
+
+/* 实战配置 */
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.form-row input, .form-row textarea { padding: 8px 10px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 13px; width: 100%; font-family: inherit; }
+.form-row .toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.toggle-switch { width: 40px; height: 22px; background: #b8e0b8; border-radius: 11px; position: relative; cursor: pointer; }
+.toggle-switch::after { content: ''; width: 18px; height: 18px; background: #fff; border-radius: 50%; position: absolute; top: 2px; right: 2px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+/* 按钮 */
+.btn { padding: 8px 16px; border: 2px solid #d4c5a0; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn:hover { background: #faf5ea; border-color: var(--border); }
+.btn-p { background: var(--link); color: #fff; border-color: #3a7bc8; }
+.btn-p:hover { background: #3a7bc8; }
+.btn-outline { background: transparent; }
+
+/* 预览弹窗 */
+.preview-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.preview-modal { background: var(--card); border: 3px solid var(--border); border-radius: 12px; width: 640px; max-width: 90vw; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+.preview-modal-hdr { padding: 12px 16px; background: #f0e6d2; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+.preview-modal-body { flex: 1; overflow-y: auto; padding: 20px; font-size: 15px; line-height: 1.8; }
+.preview-modal-footer { padding: 10px 16px; border-top: 1px solid #e8dcc8; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 13px; }
+
+/* 场景切换 */
+.scene-tabs { position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: #4a3728; display: flex; }
+.scene-tab { padding: 10px 20px; color: #d4c090; cursor: pointer; font-size: 13px; border-bottom: 3px solid transparent; }
+.scene-tab:hover { color: #ffd700; }
+.scene-tab.active { color: #ffd700; border-bottom-color: #ffd700; }
+.scene-tab small { display: block; font-size: 10px; opacity: 0.7; }
+.page-offset { margin-top: 48px; }
+</style>
+</head>
+<body>
+
+<!-- 场景切换 -->
+<div class="scene-tabs">
+  <div class="scene-tab active" onclick="showScene('article')">📖 文章编辑<small>富文本</small></div>
+  <div class="scene-tab" onclick="showScene('video')">🎬 视频设置<small>B站链接</small></div>
+  <div class="scene-tab" onclick="showScene('quiz')">🎯 测验配置<small>抽题规则</small></div>
+  <div class="scene-tab" onclick="showScene('practical')">🔧 实战演练<small>外链+审核</small></div>
+  <div class="scene-tab" onclick="showScene('preview')">👁 预览弹窗<small>学员视角</small></div>
+</div>
+
+<div class="page-offset">
+<!-- ===== 文章编辑场景 ===== -->
+<div id="scene-article">
+  <div class="top-bar">
+    <div class="breadcrumb">
+      <a>📁 项目管理</a> ›
+      <a>数据标注培训</a> ›
+      <a>2026春季班</a> ›
+      <a>文本标注实战</a> ›
+      文本标注概述
+    </div>
+  </div>
+  <div class="unit-info-bar">
+    <span class="unit-icon">📖</span>
+    <div>
+      <div class="unit-title">文本标注概述</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">文本标注实战 › 第 1 个单元</div>
+    </div>
+    <div class="unit-meta">
+      <span class="tag tag-article">文章</span>
+      <span class="tag tag-req">必学</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="px-card">
+      <div class="px-card-hdr">
+        <span>📝 文章内容</span>
+        <span style="font-size: 11px; font-weight: 400; color: var(--muted);">支持富文本 · 用分割线（---）分页</span>
+      </div>
+      <div class="px-card-body" style="padding: 0;">
+        <div class="editor-toolbar">
+          <span><b>B</b></span>
+          <span><i>I</i></span>
+          <span><u>U</u></span>
+          <span>H1</span>
+          <span>H2</span>
+          <span>H3</span>
+          <span>引用</span>
+          <span>代码</span>
+          <span>—</span>
+          <span>• 列表</span>
+          <span>1. 列表</span>
+          <span>🖼 图片</span>
+          <span>🔗 链接</span>
+          <span>📊 表格</span>
+        </div>
+        <div class="editor-body" contenteditable="true">
+          <h2>什么是文本标注？</h2>
+          <p>文本标注是自然语言处理（NLP）领域中的一项基础工作，通过人工或半自动的方式为文本数据添加标签信息。</p>
+          <p>常见的文本标注类型包括：</p>
+          <p>1. <b>实体标注</b>：识别文本中的命名实体（如人名、地名、机构名）</p>
+          <p>2. <b>情感标注</b>：判断文本的情感倾向（正面、负面、中性）</p>
+          <p>3. <b>分类标注</b>：将文本归入预定义的类别</p>
+          <p>4. <b>关系标注</b>：标注实体之间的语义关系</p>
+          <hr style="margin: 16px 0; border: none; border-top: 2px dashed #d4c5a0;">
+          <p style="color: var(--muted); font-size: 12px;">↑ 分割线上方是第1页 · 下方是第2页（学员端会自动分页显示）</p>
+          <p>在实际工作中，标注质量直接影响模型训练效果。以下是提高标注质量的几个关键原则：</p>
+          <p>• 严格遵循标注规范</p>
+          <p>• 遇到模糊情况及时反馈</p>
+          <p>• 保持标注一致性</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-p">💾 保存内容</button>
+      <button class="btn" onclick="document.getElementById('preview-modal').style.display='flex'">👁 预览学员视角</button>
+      <span class="hint">上次保存：2 分钟前</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 视频设置场景 ===== -->
+<div id="scene-video" style="display:none;">
+  <div class="top-bar">
+    <div class="breadcrumb">
+      <a>📁 项目管理</a> › <a>数据标注培训</a> › <a>2026春季班</a> › <a>文本标注实战</a> › 标注工具操作演示
+    </div>
+  </div>
+  <div class="unit-info-bar">
+    <span class="unit-icon">🎬</span>
+    <div>
+      <div class="unit-title">标注工具操作演示</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">文本标注实战 › 第 2 个单元</div>
+    </div>
+    <div class="unit-meta">
+      <span class="tag tag-video">视频</span>
+      <span class="tag tag-req">必学</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="px-card">
+      <div class="px-card-hdr">
+        <span>🎬 视频设置</span>
+        <span style="font-size: 11px; font-weight: 400; color: var(--muted);">支持B站视频链接</span>
+      </div>
+      <div class="px-card-body">
+        <div style="margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--muted);">视频链接</div>
+        <div class="video-input-row">
+          <input value="https://www.bilibili.com/video/BV1Hx4y1F7tU" placeholder="粘贴 B站视频链接，如 https://www.bilibili.com/video/BV1xxxxx">
+          <button class="btn btn-p">💾 保存</button>
+        </div>
+
+        <div style="margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--muted);">📺 视频预览</div>
+        <div class="video-preview">
+          <div class="video-placeholder">
+            <div class="play-btn">▶</div>
+            <span style="font-size: 13px;">BV1Hx4y1F7tU</span>
+            <span style="font-size: 11px;">点击播放预览 · 时长 12:30</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 测验配置场景 ===== -->
+<div id="scene-quiz" style="display:none;">
+  <div class="top-bar">
+    <div class="breadcrumb">
+      <a>📁 项目管理</a> › <a>数据标注培训</a> › <a>2026春季班</a> › <a>文本标注实战</a> › 阶段测验
+    </div>
+  </div>
+  <div class="unit-info-bar">
+    <span class="unit-icon">🎯</span>
+    <div>
+      <div class="unit-title">阶段测验</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">文本标注实战 › 第 4 个单元</div>
+    </div>
+    <div class="unit-meta">
+      <span class="tag tag-quiz">测验</span>
+      <span class="tag tag-req">必学</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="px-card">
+      <div class="px-card-hdr">
+        <span>🎯 测验抽题配置</span>
+      </div>
+      <div class="px-card-body">
+        <div class="config-grid">
+          <label>单选题数量</label><input type="number" value="10">
+          <label>多选题数量</label><input type="number" value="5">
+          <label>判断题数量</label><input type="number" value="5">
+        </div>
+
+        <div class="pool-info">
+          测验池总量：<strong>60</strong> 题 ·
+          单选 <strong>30</strong> ·
+          多选 <strong>18</strong> ·
+          判断 <strong>12</strong>
+        </div>
+
+        <div class="pool-ok">✅ 题目充足，可正常抽题</div>
+
+        <div style="margin-top: 14px;">
+          <button class="btn" style="font-size: 12px;">🔍 验证题目充足性</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-p">💾 保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 实战演练场景 ===== -->
+<div id="scene-practical" style="display:none;">
+  <div class="top-bar">
+    <div class="breadcrumb">
+      <a>📁 项目管理</a> › <a>数据标注培训</a> › <a>2026春季班</a> › <a>文本标注实战</a> › 实战标注任务
+    </div>
+  </div>
+  <div class="unit-info-bar">
+    <span class="unit-icon">🔧</span>
+    <div>
+      <div class="unit-title">实战标注任务</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">文本标注实战 › 第 5 个单元</div>
+    </div>
+    <div class="unit-meta">
+      <span class="tag tag-practical">实战</span>
+      <span style="font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #f5f5f5; color: #999;">选学</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="px-card">
+      <div class="px-card-hdr"><span>🔧 实战演练配置</span></div>
+      <div class="px-card-body">
+        <div class="form-row">
+          <label>外链地址 *</label>
+          <input value="https://label-studio.example.com/project/42" placeholder="https://标注平台链接...">
+        </div>
+        <div class="form-row">
+          <label>任务说明</label>
+          <textarea rows="4" placeholder="给学员看的任务说明...">请在标注平台完成10条数据标注，确认无误后申报完成。
+
+注意事项：
+1. 遵循标注规范文档
+2. 每条数据至少包含3个实体标注
+3. 完成后截图上传作为佐证</textarea>
+        </div>
+        <div class="form-row">
+          <label>需要审核</label>
+          <div class="toggle">
+            <div class="toggle-switch"></div>
+            <span>开启后，学员提交需要导师审核通过才算完成</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-p">💾 保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 预览弹窗 ===== -->
+<div id="scene-preview" style="display:none;">
+  <div class="top-bar"><div class="breadcrumb">预览弹窗演示（点击「👁 预览学员视角」时弹出）</div></div>
+  <div style="padding: 40px; text-align: center; color: var(--muted);">
+    <p>预览弹窗覆盖在文章编辑页上方</p>
+    <p style="margin-top: 12px;">👇 效果如下</p>
+  </div>
+  <div class="preview-overlay" style="position: relative; height: 500px;">
+    <div class="preview-modal" style="position: relative; margin: 0 auto;">
+      <div class="preview-modal-hdr">
+        <span>📖 学员视角预览</span>
+        <span style="cursor: pointer; color: var(--muted);">✕ 关闭</span>
+      </div>
+      <div class="preview-modal-body">
+        <h2 style="font-size: 18px; margin-bottom: 12px;">什么是文本标注？</h2>
+        <p style="margin-bottom: 10px;">文本标注是自然语言处理（NLP）领域中的一项基础工作，通过人工或半自动的方式为文本数据添加标签信息。</p>
+        <p style="margin-bottom: 10px;">常见的文本标注类型包括：</p>
+        <p style="margin-bottom: 8px;">1. <b>实体标注</b>：识别文本中的命名实体</p>
+        <p style="margin-bottom: 8px;">2. <b>情感标注</b>：判断文本的情感倾向</p>
+        <p style="margin-bottom: 8px;">3. <b>分类标注</b>：将文本归入预定义的类别</p>
+        <p style="margin-bottom: 8px;">4. <b>关系标注</b>：标注实体之间的语义关系</p>
+      </div>
+      <div class="preview-modal-footer">
+        <button class="btn" style="opacity: 0.4;">← 上一页</button>
+        <span style="color: var(--muted);">1 / 2</span>
+        <button class="btn">下一页 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 隐藏的预览弹窗（文章编辑场景用） -->
+<div id="preview-modal" class="preview-overlay" style="display: none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="preview-modal">
+    <div class="preview-modal-hdr">
+      <span>📖 学员视角预览</span>
+      <span style="cursor: pointer; color: var(--muted);" onclick="document.getElementById('preview-modal').style.display='none'">✕ 关闭</span>
+    </div>
+    <div class="preview-modal-body">
+      <h2 style="font-size: 18px; margin-bottom: 12px;">什么是文本标注？</h2>
+      <p style="margin-bottom: 10px;">文本标注是自然语言处理（NLP）领域中的一项基础工作...</p>
+    </div>
+    <div class="preview-modal-footer">
+      <button class="btn" style="opacity: 0.4;">← 上一页</button>
+      <span style="color: var(--muted);">1 / 2</span>
+      <button class="btn">下一页 →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showScene(name) {
+  ['article','video','quiz','practical','preview'].forEach(s => {
+    document.getElementById('scene-' + s).style.display = s === name ? '' : 'none'
+  })
+  document.querySelectorAll('.scene-tab').forEach((t, i) => {
+    const names = ['article','video','quiz','practical','preview']
+    t.classList.toggle('active', names[i] === name)
+  })
+}
+</script>
+</body>
+</html>

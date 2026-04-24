@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banner 配色方案对比</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+.demo-nav { position: sticky; top: 0; z-index: 100; padding: 10px 20px; background: #5B3A29; color: #E8A93A; font-size: 14px; font-weight: bold; }
+.container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.desc { font-size: 13px; color: #8B7355; margin-bottom: 20px; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+.banner {
+  position: relative; text-align: center; padding: 36px 24px; overflow: hidden;
+}
+.banner .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+.banner > *:not(.bg) { position: relative; z-index: 1; }
+.banner .icon { width: 44px; height: 44px; image-rendering: pixelated; margin-bottom: 8px; }
+.banner h2 {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 22px; letter-spacing: 2px;
+  color: #5B3A29; text-shadow: 0 1px 3px rgba(255,255,255,0.5);
+}
+.banner p { font-size: 13px; color: #5B3A29; margin-top: 6px; opacity: 0.65; }
+.label { font-size: 12px; color: #8B7355; margin-bottom: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">🎨 Banner panel 配色方案 — 简约款(panel_xxx)</div>
+
+<div class="container">
+  <div class="desc">全部用简约款 panel 素材，不同配色。看哪个和整体暖色主题最搭。</div>
+
+  <div class="grid">
+    <div>
+      <div class="label">panel_white — 白色（干净）</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_white.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">panel_cream — 奶油色</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_cream.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">panel_green — 绿色（和主题色呼应）</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_green.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">panel_yellow — 黄色（和金色调呼应）</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_yellow.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">panel_blue — 蓝色</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_blue.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">panel_cyan — 青色</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_cyan.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">panel_pink — 粉色</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_pink.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">panel_purple — 紫色</div>
+      <div class="banner"><img src="/pixel-icons/dobo/panel_purple.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

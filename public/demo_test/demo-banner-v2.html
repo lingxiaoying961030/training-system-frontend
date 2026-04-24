@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banner 配色 v2 — 暖色系素材</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+.demo-nav { position: sticky; top: 0; z-index: 100; padding: 10px 20px; background: #5B3A29; color: #E8A93A; font-size: 14px; font-weight: bold; }
+.container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.desc { font-size: 13px; color: #8B7355; margin-bottom: 20px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.label { font-size: 12px; color: #8B7355; margin-bottom: 4px; font-weight: 600; }
+
+.banner {
+  position: relative; text-align: center; padding: 36px 24px; overflow: hidden;
+}
+.banner .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+.banner > *:not(.bg) { position: relative; z-index: 1; }
+.banner .icon { width: 44px; height: 44px; image-rendering: pixelated; margin-bottom: 8px; }
+.banner h2 {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 22px; letter-spacing: 2px;
+  color: #5B3A29; text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+}
+.banner p { font-size: 13px; color: #5B3A29; margin-top: 6px; opacity: 0.65; }
+
+/* 当前方案 */
+.banner-current {
+  text-align: center; padding: 40px 24px; border: 4px solid #5B3A29;
+  background-color: #E8DFC8; background-image: url('/pixel-icons/ui/floor_02.png');
+  background-size: 32px; position: relative; overflow: hidden; image-rendering: pixelated;
+}
+.banner-current::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.75); }
+.banner-current::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 32px; background-image: url('/pixel-icons/ui/bush_00.png'); background-size: auto 32px; background-repeat: repeat-x; image-rendering: pixelated; opacity: 0.5; }
+.banner-current > * { position: relative; z-index: 1; }
+.banner-current h2 { font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 22px; letter-spacing: 2px; color: #5B3A29; }
+.banner-current p { font-size: 13px; color: #8B7355; margin-top: 6px; }
+.banner-current .icon { width: 44px; height: 44px; image-rendering: pixelated; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">🎨 Banner v2 — 暖色系素材（信封/笔记本/羊皮纸）</div>
+
+<div class="container">
+  <div class="desc">全部暖色调，和木质条 + 奶油背景统一。</div>
+
+  <div class="grid">
+    <div>
+      <div class="label">当前 — 地板纹理+灌木</div>
+      <div class="banner-current">
+        <img src="/pixel-icons/ui/trophy.png" class="icon">
+        <h2>欢迎来到培训系统</h2>
+        <p>选择一个项目，开始你的冒险之旅！</p>
+      </div>
+    </div>
+    <div>
+      <div class="label">A. mail_cream — 信封奶油色 ⭐</div>
+      <div class="banner"><img src="/pixel-icons/dobo/mail_cream.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">B. mail_yellow — 信封暖黄</div>
+      <div class="banner"><img src="/pixel-icons/dobo/mail_yellow.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">C. mail_green — 信封绿</div>
+      <div class="banner"><img src="/pixel-icons/dobo/mail_green.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">D. mail_white — 信封白</div>
+      <div class="banner"><img src="/pixel-icons/dobo/mail_white.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">E. letterBG（已有素材）</div>
+      <div class="banner"><img src="/pixel-icons/ui/letterBG_clean.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="label">F. notebookModal_v1 — 笔记本</div>
+      <div class="banner" style="padding:48px 24px;"><img src="/pixel-icons/dobo/notebookModal_v1.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+    <div>
+      <div class="label">G. notebookModal_v2 — 笔记本v2</div>
+      <div class="banner" style="padding:48px 24px;"><img src="/pixel-icons/dobo/notebookModal_v2.png" class="bg"><img src="/pixel-icons/ui/trophy.png" class="icon"><h2>欢迎来到培训系统</h2><p>选择一个项目，开始你的冒险之旅！</p></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

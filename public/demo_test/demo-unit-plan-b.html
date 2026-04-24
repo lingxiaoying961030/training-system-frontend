@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案B：右侧 Tabs 面板</title>
+<style>
+:root { --border: #8b6914; --card: #fffbf0; --muted: #9e8a76; --link: #4a90d9; --bg: #f5efe0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: #4a3728; }
+.banner { background: #2e5a6b; color: #ffd700; padding: 14px 20px; font-size: 14px; font-weight: 600; }
+.banner small { font-weight: 400; color: #a0cce0; display: block; margin-top: 4px; font-size: 12px; }
+.layout { display: flex; height: calc(100vh - 56px); }
+.tree { width: 280px; background: #faf5ea; border-right: 2px solid var(--border); overflow-y: auto; }
+.tree-hdr { padding: 12px 14px; font-weight: 600; font-size: 13px; border-bottom: 2px solid var(--border); background: #f0e6d2; display: flex; justify-content: space-between; }
+.t-proj { padding: 10px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #e8dcc8; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-plan { padding: 8px 14px 8px 28px; font-size: 13px; border-bottom: 1px solid #f0e6d2; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.t-stage { padding: 6px 14px 6px 46px; font-size: 12px; color: var(--muted); border-bottom: 1px solid #f8f2e8; cursor: pointer; }
+.t-stage.active { background: #e0edf8; color: var(--link); font-weight: 600; }
+.badge { font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #e8dcc8; color: var(--muted); margin-left: auto; }
+.detail { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+/* Tabs */
+.tabs { display: flex; background: #f0e6d2; border-bottom: 2px solid var(--border); }
+.tab { padding: 12px 20px; font-size: 13px; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; color: var(--muted); }
+.tab:hover { color: #4a3728; }
+.tab.active { color: var(--link); border-bottom-color: var(--link); font-weight: 600; background: var(--card); }
+.tab-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 信息面板 */
+.info-grid { display: grid; grid-template-columns: 80px 1fr; gap: 8px 12px; font-size: 13px; padding: 16px; background: var(--card); border: 1px solid #e8dcc8; border-radius: 8px; }
+.info-label { color: var(--muted); text-align: right; font-weight: 600; }
+.info-val { }
+.status-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #e8f5e9; color: #2e7d32; }
+
+/* 单元 */
+.unit-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #e8dcc8; border-radius: 6px; margin-bottom: 8px; background: var(--card); font-size: 13px; transition: all 0.15s; }
+.unit-item:hover { border-color: var(--link); box-shadow: 0 1px 4px rgba(74,144,217,0.1); }
+.drag-h { cursor: grab; color: #ccc; }
+.u-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+.u-article { background: #e3f2fd; color: #1976d2; }
+.u-video { background: #e8f5e9; color: #2e7d32; }
+.u-practice { background: #f5f5f5; color: #666; }
+.u-quiz { background: #fff3e0; color: #e65100; }
+.u-practical { background: #fce4ec; color: #c62828; }
+.u-name { flex: 1; font-weight: 500; }
+.u-meta { font-size: 11px; color: var(--muted); }
+.u-actions { display: flex; gap: 4px; }
+
+/* 练习/测验配置 */
+.quiz-config { border: 2px solid #e8dcc8; border-radius: 8px; overflow: hidden; margin-top: 12px; }
+.quiz-hdr { padding: 10px 14px; background: #f0e6d2; font-weight: 600; font-size: 13px; }
+.quiz-body { padding: 14px; background: var(--card); }
+.qc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 13px; }
+.qc-row label { width: 80px; text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; }
+.qc-row input { width: 80px; padding: 5px 8px; border: 1px solid #d4c5a0; border-radius: 4px; font-size: 13px; }
+.qc-row .hint { font-size: 11px; color: var(--muted); }
+.qc-pool { display: flex; gap: 10px; margin-top: 12px; padding: 10px; background: #faf5ea; border-radius: 4px; font-size: 12px; }
+.qc-pool strong { color: var(--link); }
+
+/* 导师 */
+.mentor-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #e8dcc8; border-radius: 6px; margin-bottom: 8px; background: var(--card); }
+.mentor-avatar { width: 36px; height: 36px; background: #f0e6d2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.mentor-info { flex: 1; }
+.mentor-name { font-size: 13px; font-weight: 600; }
+.mentor-role { font-size: 11px; color: var(--muted); }
+
+.btn { padding: 5px 12px; border: 1px solid #d4c5a0; background: #fff; border-radius: 4px; cursor: pointer; font-size: 11px; }
+.btn:hover { background: #faf5ea; }
+.btn-p { background: var(--link); color: #fff; border-color: #3a7bc8; }
+.btn-d { color: #c0392b; border-color: #e8b4b4; }
+.btn-sm { padding: 3px 8px; font-size: 10px; }
+
+.crumb { font-size: 12px; color: var(--muted); padding: 12px 24px 0; }
+.crumb a { color: var(--link); cursor: pointer; }
+h3 { font-size: 16px; padding: 8px 24px 12px; display: flex; align-items: center; gap: 8px; }
+h3 .status-tag { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  方案B：右侧 Tabs 面板
+  <small>核心思路：选中关卡后，右侧变为 Tab 面板（概览 / 学习单元 / 练习测验配置 / 导师），不同管理维度用 Tab 切换。适合内容多的关卡。</small>
+</div>
+
+<div class="layout">
+  <div class="tree">
+    <div class="tree-hdr"><span>📁 项目结构</span> <button class="btn">+</button></div>
+    <div class="t-proj">▼ 📁 数据标注培训 <span class="badge">2</span></div>
+    <div class="t-plan">▼ 📋 2026春季班 <span class="badge">3</span></div>
+    <div class="t-stage">🎯 入门基础</div>
+    <div class="t-stage active">📝 文本标注实战</div>
+    <div class="t-stage">🏆 综合考核</div>
+    <div class="t-plan">▸ 📋 2026秋季班 <span class="badge">2</span></div>
+  </div>
+
+  <div class="detail">
+    <div class="crumb"><a>数据标注培训</a> › <a>2026春季班</a> › 📝 文本标注实战</div>
+    <h3>📝 文本标注实战 <span class="status-tag">已发布</span></h3>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">📋 概览</div>
+      <div class="tab" onclick="switchTab(1)">📚 学习单元</div>
+      <div class="tab" onclick="switchTab(2)">📝 练习/测验配置</div>
+      <div class="tab" onclick="switchTab(3)">👨‍🏫 导师</div>
+    </div>
+
+    <div class="tab-content">
+      <!-- 概览 -->
+      <div class="tab-panel active">
+        <div class="info-grid">
+          <span class="info-label">关卡标题</span><span class="info-val">文本标注实战</span>
+          <span class="info-label">描述</span><span class="info-val">学习文本标注的核心方法，并进行实战练习</span>
+          <span class="info-label">图标</span><span class="info-val">📝</span>
+          <span class="info-label">状态</span><span class="info-val"><span class="status-tag">已发布</span></span>
+          <span class="info-label">排序</span><span class="info-val">2</span>
+          <span class="info-label">单元数</span><span class="info-val">5 个（4 必学 + 1 选学）</span>
+          <span class="info-label">导师</span><span class="info-val">张老师、李老师</span>
+        </div>
+        <div style="margin-top: 16px; display: flex; gap: 8px;">
+          <button class="btn btn-p">✏️ 编辑基础信息</button>
+        </div>
+      </div>
+
+      <!-- 学习单元 -->
+      <div class="tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 12px; color: var(--muted);">拖拽调整顺序 · 共 5 个单元</span>
+          <button class="btn btn-p">+ 添加单元</button>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-article">文章</span>
+          <span class="u-name">1. 文本标注概述</span>
+          <span class="u-meta">1200字 · 必学</span>
+          <div class="u-actions">
+            <button class="btn btn-sm">📝 内容</button>
+            <button class="btn btn-sm">⚙️</button>
+            <button class="btn btn-sm btn-d">🗑</button>
+          </div>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-video">视频</span>
+          <span class="u-name">2. 标注工具操作演示</span>
+          <span class="u-meta">12:30 · 必学</span>
+          <div class="u-actions">
+            <button class="btn btn-sm">📝 内容</button>
+            <button class="btn btn-sm">⚙️</button>
+            <button class="btn btn-sm btn-d">🗑</button>
+          </div>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practice">练习</span>
+          <span class="u-name">3. 标注练习</span>
+          <span class="u-meta">10题 · 必学</span>
+          <div class="u-actions">
+            <button class="btn btn-sm">📝 配置</button>
+            <button class="btn btn-sm">⚙️</button>
+            <button class="btn btn-sm btn-d">🗑</button>
+          </div>
+        </div>
+
+        <div class="unit-item">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-quiz">测验</span>
+          <span class="u-name">4. 阶段测验</span>
+          <span class="u-meta">20题 · 必学</span>
+          <div class="u-actions">
+            <button class="btn btn-sm">📝 配置</button>
+            <button class="btn btn-sm">⚙️</button>
+            <button class="btn btn-sm btn-d">🗑</button>
+          </div>
+        </div>
+
+        <div class="unit-item" style="opacity: 0.7;">
+          <span class="drag-h">⠿</span>
+          <span class="u-tag u-practical">实战</span>
+          <span class="u-name">5. 实战标注任务</span>
+          <span class="u-meta">选学</span>
+          <div class="u-actions">
+            <button class="btn btn-sm">📝 内容</button>
+            <button class="btn btn-sm">⚙️</button>
+            <button class="btn btn-sm btn-d">🗑</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 练习/测验配置 -->
+      <div class="tab-panel">
+        <div class="quiz-config">
+          <div class="quiz-hdr">📝 练习配置（单元3：标注练习）</div>
+          <div class="quiz-body">
+            <div class="qc-row"><label>单选题数</label><input type="number" value="5"> <span class="hint">题</span></div>
+            <div class="qc-row"><label>多选题数</label><input type="number" value="3"> <span class="hint">题</span></div>
+            <div class="qc-row"><label>判断题数</label><input type="number" value="2"> <span class="hint">题</span></div>
+            <div class="qc-pool">
+              题池：练习池 <strong>45</strong> 题可用（单选 20 / 多选 15 / 判断 10）
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-config" style="margin-top: 12px;">
+          <div class="quiz-hdr">🎯 测验配置（单元4：阶段测验）</div>
+          <div class="quiz-body">
+            <div class="qc-row"><label>单选题数</label><input type="number" value="10"> <span class="hint">题</span></div>
+            <div class="qc-row"><label>多选题数</label><input type="number" value="5"> <span class="hint">题</span></div>
+            <div class="qc-row"><label>判断题数</label><input type="number" value="5"> <span class="hint">题</span></div>
+            <div class="qc-row"><label>通过分数</label><input type="number" value="80"> <span class="hint">分</span></div>
+            <div class="qc-row"><label>测验次数</label><input type="number" value="2"> <span class="hint">次</span></div>
+            <div class="qc-pool">
+              题池：测验池 <strong>60</strong> 题可用（单选 30 / 多选 18 / 判断 12）
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px;"><button class="btn btn-p">💾 保存配置</button></div>
+      </div>
+
+      <!-- 导师 -->
+      <div class="tab-panel">
+        <div style="margin-bottom: 12px;"><button class="btn btn-p">+ 添加导师</button></div>
+        <div class="mentor-card">
+          <div class="mentor-avatar">👤</div>
+          <div class="mentor-info">
+            <div class="mentor-name">张老师</div>
+            <div class="mentor-role">导师 · 负责第1-3单元答疑</div>
+          </div>
+          <button class="btn btn-sm btn-d">移除</button>
+        </div>
+        <div class="mentor-card">
+          <div class="mentor-avatar">👤</div>
+          <div class="mentor-info">
+            <div class="mentor-name">李老师</div>
+            <div class="mentor-role">导师 · 负责实战任务审核</div>
+          </div>
+          <button class="btn btn-sm btn-d">移除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx))
+  document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx))
+}
+</script>
+
+</body>
+</html>

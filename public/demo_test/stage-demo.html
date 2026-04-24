@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关卡学习页 Demo — Step 4</title>
+<style>
+:root {
+  --pixel-green: #5C8A4D;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-brown-light: #8B6F5E;
+  --pixel-red: #C24A3A;
+  --pixel-blue: #4A90B8;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--pixel-bg); color: var(--pixel-text); }
+.user-content { max-width: 800px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.stage-header {
+  padding: 24px 24px 28px; margin-bottom: 24px;
+  background-color: #E8DFC8;
+  background-image: url('assets/pixel/tiles/floor_02.png');
+  background-size: 32px 32px; background-repeat: repeat;
+  image-rendering: pixelated;
+  border: 4px solid var(--pixel-brown);
+  position: relative; overflow: hidden;
+}
+.stage-header::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.78); z-index: 1; }
+.stage-header > * { position: relative; z-index: 2; }
+.stage-breadcrumb { font-size: 13px; color: var(--pixel-text-secondary); margin-bottom: 10px; }
+.stage-breadcrumb a { color: var(--pixel-blue); text-decoration: none; }
+.stage-header h1 { font-size: 22px; color: var(--pixel-brown); margin-bottom: 10px; }
+
+.progress-row { display: flex; align-items: center; gap: 10px; }
+.progress-bar-px { flex: 1; max-width: 300px; height: 14px; background: #E0D5C8; border: 2px solid var(--pixel-brown); }
+.progress-fill-y { height: 100%; background: var(--pixel-gold); }
+.progress-fill-g { height: 100%; background: var(--pixel-green); }
+.progress-label { font-size: 13px; color: var(--pixel-text-secondary); display: flex; align-items: center; gap: 4px; }
+.progress-label img { width: 14px; height: 14px; image-rendering: pixelated; }
+
+/* Unit list */
+.unit-list { display: flex; flex-direction: column; gap: 10px; }
+.unit-card { background: var(--pixel-card); border: 3px solid var(--pixel-border); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+.unit-card:hover { border-color: var(--pixel-brown); box-shadow: 3px 3px 0 rgba(91,58,41,0.12); }
+.unit-card.locked { opacity: 0.5; cursor: default; filter: saturate(0.3); }
+.unit-card.locked:hover { border-color: var(--pixel-border); box-shadow: none; }
+
+.unit-summary { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.unit-icon { width: 28px; height: 28px; image-rendering: pixelated; flex-shrink: 0; }
+.unit-meta { flex: 1; }
+.unit-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.unit-title { font-size: 15px; font-weight: 600; color: var(--pixel-brown); }
+.unit-type { font-size: 11px; color: var(--pixel-text-secondary); }
+.expand-arrow { font-size: 11px; color: var(--pixel-text-secondary); flex-shrink: 0; }
+
+/* Tags */
+.px-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 1px 6px; font-weight: 500; border: 2px solid; background: var(--pixel-card); }
+.px-tag img { width: 12px; height: 12px; image-rendering: pixelated; }
+.px-tag.completed { border-color: #A5D6A7; color: #2E7D32; }
+.px-tag.active { border-color: #FFCC80; color: #E65100; }
+.px-tag.failed { border-color: #EF9A9A; color: #C62828; }
+.px-tag.locked { border-color: #D5C9B8; color: #8B7355; }
+.px-tag.pending { border-color: #FFCC80; color: #E65100; }
+
+/* Detail */
+.unit-detail { padding: 0 16px 16px; border-top: 2px solid var(--pixel-border); padding-top: 14px; }
+.article-body { font-size: 14px; line-height: 1.8; color: var(--pixel-text); }
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.opt { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 2px solid var(--pixel-border); cursor: pointer; font-size: 14px; background: var(--pixel-card); transition: all 0.15s; }
+.opt:hover { border-color: var(--pixel-gold); background: #FFFBF2; }
+.opt.selected { border-color: var(--pixel-blue); background: #F0F5FA; }
+.opt.correct { border-color: var(--pixel-green); background: #ECF5E8; }
+.opt.wrong { border-color: var(--pixel-red); background: #FFF0EE; }
+.opt input { accent-color: var(--pixel-brown); }
+
+.q-text { font-size: 14px; font-weight: 500; color: var(--pixel-brown); }
+.q-type { font-size: 11px; color: var(--pixel-blue); margin-left: 4px; }
+
+/* Feedback */
+.fb { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; font-size: 13px; font-weight: 500; border: 2px solid; margin: 10px 0 6px; }
+.fb img { width: 16px; height: 16px; image-rendering: pixelated; }
+.fb.correct { border-color: #A5D6A7; color: #2E7D32; background: #ECF5E8; }
+.fb.wrong { border-color: #EF9A9A; color: #C62828; background: #FFF0EE; }
+.analysis { color: var(--pixel-blue); font-size: 13px; margin-top: 4px; }
+
+/* Buttons */
+.px-btn { display: inline-flex; align-items: center; gap: 4px; padding: 8px 20px; font-size: 13px; font-weight: 500; border: 2px solid var(--pixel-brown); cursor: pointer; color: #fff; }
+.px-btn img { width: 14px; height: 14px; image-rendering: pixelated; }
+.px-btn.green { background: var(--pixel-green); }
+.px-btn.green:hover { background: #4A7A3D; box-shadow: 2px 2px 0 var(--pixel-brown); }
+.px-btn.blue { background: var(--pixel-blue); }
+.px-btn.outline { background: var(--pixel-card); color: var(--pixel-brown); border-color: var(--pixel-border); }
+.px-btn.outline:hover { border-color: var(--pixel-brown); }
+
+.done-msg { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: #2E7D32; font-size: 13px; }
+.done-msg img { width: 16px; height: 16px; image-rendering: pixelated; }
+
+/* Warning */
+.warn-box { background: #FFF8E7; border: 2px solid var(--pixel-gold); padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #B8860B; }
+
+/* Pending/Result cards */
+.status-card { text-align: center; padding: 24px; border: 3px solid var(--pixel-border); background: var(--pixel-card); }
+.status-card img { width: 48px; height: 48px; image-rendering: pixelated; margin-bottom: 8px; }
+.status-card h3 { font-size: 16px; color: var(--pixel-brown); margin: 0 0 6px; }
+.status-card p { font-size: 13px; color: var(--pixel-text-secondary); margin: 2px 0; }
+.status-card.passed { border-color: var(--pixel-green); background: #F5FAF2; }
+.status-card.failed { border-color: var(--pixel-red); background: #FFF5F3; }
+
+/* All done */
+.all-done { text-align: center; padding: 28px; margin-top: 24px; background: #F5EFE0; border: 4px solid var(--pixel-gold); }
+.all-done img { width: 48px; height: 48px; image-rendering: pixelated; margin-bottom: 8px; }
+.all-done h2 { font-size: 20px; color: var(--pixel-brown); margin: 0 0 6px; }
+.all-done p { font-size: 14px; color: var(--pixel-text-secondary); }
+
+/* Demo nav */
+.demo-nav { background: rgba(255,248,231,0.95); border-bottom: 1px solid var(--pixel-border); padding: 6px 24px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.demo-btn { padding: 4px 12px; font-size: 12px; border: 1px solid var(--pixel-border); background: var(--pixel-card); cursor: pointer; color: var(--pixel-text); border-radius: 3px; }
+.demo-btn:hover { background: var(--pixel-gold); color: #fff; }
+.demo-btn.active { background: var(--pixel-brown); color: #fff; }
+</style>
+</head>
+<body>
+<div class="user-content">
+
+  <div class="demo-nav">
+    <span style="font-size:12px;color:#999;">展示：</span>
+    <button class="demo-btn active" onclick="show('all')">完整列表</button>
+    <button class="demo-btn" onclick="show('article')">文章展开</button>
+    <button class="demo-btn" onclick="show('quiz')">答题中</button>
+    <button class="demo-btn" onclick="show('feedback')">答题反馈</button>
+    <button class="demo-btn" onclick="show('practical')">实战演练</button>
+    <button class="demo-btn" onclick="show('done')">全部通关</button>
+  </div>
+
+  <!-- Header -->
+  <div class="stage-header">
+    <div class="stage-breadcrumb"><a href="#">← 返回地图</a> / 质量评估</div>
+    <h1>📖 关卡 3：质量评估</h1>
+    <div class="progress-row">
+      <div class="progress-bar-px"><div class="progress-fill-y" style="width:60%;"></div></div>
+      <span class="progress-label"><img src="assets/pixel/icons/stardew/star_gold.png" /> 3 / 5 已完成</span>
+    </div>
+  </div>
+
+  <!-- ===== 完整列表 ===== -->
+  <div id="page-all" class="page">
+    <div class="unit-list">
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/book.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">RLHF 评估原理</span>
+            <span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div>
+            <span class="unit-type">【文章】必学</span>
+          </div>
+          <span class="expand-arrow">▼</span>
+        </div>
+      </div>
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/star_gold.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">偏好排序实操演示</span>
+            <span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div>
+            <span class="unit-type">【视频】必学</span>
+          </div>
+          <span class="expand-arrow">▼</span>
+        </div>
+      </div>
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/sword.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">评估标准练习</span>
+            <span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div>
+            <span class="unit-type">【练习】必学</span>
+          </div>
+          <span class="expand-arrow">▼</span>
+        </div>
+      </div>
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/flag.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">综合测验</span>
+            <span class="px-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span></div>
+            <span class="unit-type">【测验】必学 · 80分通过</span>
+          </div>
+          <span class="expand-arrow">▼</span>
+        </div>
+      </div>
+      <div class="unit-card locked">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/lock.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">实战标注</span>
+            <span class="px-tag locked"><img src="assets/pixel/icons/stardew/lock.png" /> 未解锁</span></div>
+            <span class="unit-type">【实战演练】必学</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 文章展开 ===== -->
+  <div id="page-article" class="page" style="display:none;">
+    <div class="unit-list">
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/book.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">RLHF 评估原理</span>
+            <span class="px-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span></div>
+            <span class="unit-type">【文章】必学</span>
+          </div>
+          <span class="expand-arrow">▲</span>
+        </div>
+        <div class="unit-detail">
+          <div class="article-body">
+            <p><strong>什么是 RLHF？</strong></p>
+            <p>RLHF（Reinforcement Learning from Human Feedback）是一种利用人类反馈来训练和改进大语言模型的技术。核心流程包括：</p>
+            <ol style="margin:8px 0 8px 20px;">
+              <li>收集人类对模型输出的偏好评价</li>
+              <li>训练奖励模型（Reward Model）</li>
+              <li>使用 PPO 等算法优化语言模型</li>
+            </ol>
+            <p>在评估阶段，标注员需要对两个模型回复进行对比，判断哪个更好...</p>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="px-btn green"><img src="assets/pixel/icons/stardew/checkmark.png" /> 我已学完</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 答题中 ===== -->
+  <div id="page-quiz" class="page" style="display:none;">
+    <div class="unit-list">
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/sword.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">评估标准练习</span>
+            <span class="px-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span></div>
+            <span class="unit-type">【练习】第 2 / 5 题</span>
+          </div>
+          <span class="expand-arrow">▲</span>
+        </div>
+        <div class="unit-detail">
+          <p class="q-text">2. RLHF 中，奖励模型的训练数据来源是？ <span class="q-type">[单选]</span></p>
+          <div class="options">
+            <label class="opt"><input type="radio" name="q2" /> A. 模型自动生成的标签</label>
+            <label class="opt selected"><input type="radio" name="q2" checked /> B. 人类标注员的偏好评价</label>
+            <label class="opt"><input type="radio" name="q2" /> C. 预训练数据集</label>
+            <label class="opt"><input type="radio" name="q2" /> D. 搜索引擎结果</label>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="px-btn green">提交答案</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 答题反馈 ===== -->
+  <div id="page-feedback" class="page" style="display:none;">
+    <div class="unit-list">
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/sword.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">评估标准练习</span>
+            <span class="px-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span></div>
+            <span class="unit-type">【练习】第 2 / 5 题</span>
+          </div>
+        </div>
+        <div class="unit-detail">
+          <p class="q-text">2. RLHF 中，奖励模型的训练数据来源是？ <span class="q-type">[单选]</span></p>
+          <div class="options">
+            <label class="opt"><input type="radio" name="q2f" disabled /> A. 模型自动生成的标签</label>
+            <label class="opt correct"><input type="radio" name="q2f" checked disabled /> B. 人类标注员的偏好评价 ✅</label>
+            <label class="opt"><input type="radio" name="q2f" disabled /> C. 预训练数据集</label>
+            <label class="opt"><input type="radio" name="q2f" disabled /> D. 搜索引擎结果</label>
+          </div>
+          <div class="fb correct">
+            <img src="assets/pixel/icons/stardew/checkmark.png" /> 回答正确！
+          </div>
+          <p class="analysis">💡 RLHF 的核心就是利用人类标注员对模型输出的偏好判断来训练奖励模型。</p>
+          <div style="margin-top:12px;">
+            <button class="px-btn green"><img src="assets/pixel/ready/arrow_green.png" /> 下一题 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 错误反馈示例 -->
+      <div class="unit-card" style="margin-top:16px;">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/sword.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">（错误反馈示例）</span></div>
+          </div>
+        </div>
+        <div class="unit-detail">
+          <p class="q-text">3. PPO 算法属于哪一类？ <span class="q-type">[单选]</span></p>
+          <div class="options">
+            <label class="opt wrong"><input type="radio" disabled checked /> A. 监督学习 ❌</label>
+            <label class="opt correct"><input type="radio" disabled /> B. 强化学习 ✅</label>
+            <label class="opt"><input type="radio" disabled /> C. 无监督学习</label>
+          </div>
+          <div class="fb wrong">
+            <img src="assets/pixel/icons/stardew/exclamation.png" /> 回答错误
+          </div>
+          <p style="font-size:13px; color:#E65100; margin-top:4px;">正确答案：B. 强化学习</p>
+          <p class="analysis">💡 PPO（Proximal Policy Optimization）是一种策略梯度强化学习算法。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 实战演练 ===== -->
+  <div id="page-practical" class="page" style="display:none;">
+    <div class="unit-list">
+      <!-- 待提交 -->
+      <div class="unit-card">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/lightning.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">实战标注任务</span>
+            <span class="px-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span></div>
+            <span class="unit-type">【实战演练】必学</span>
+          </div>
+        </div>
+        <div class="unit-detail">
+          <div style="background:#F5EFE0; border:2px solid var(--pixel-border); padding:12px 16px; margin-bottom:14px;">
+            <p style="font-weight:600; color:var(--pixel-brown); font-size:13px; margin:0 0 4px;">📋 任务说明</p>
+            <p style="color:var(--pixel-text-secondary); font-size:13px; margin:0; line-height:1.5;">请前往标注平台完成 20 条文本偏好排序标注，要求准确率 ≥ 85%</p>
+          </div>
+          <div style="margin-bottom:14px;">
+            <a href="#" class="px-btn blue" style="text-decoration:none;">🔗 前往标注平台 →</a>
+          </div>
+          <div class="warn-box">⚠️ 请确认已完成全部实战任务后再申报，申报后无法撤回。</div>
+          <button class="px-btn green">✋ 申报完成</button>
+        </div>
+      </div>
+
+      <!-- 待审核 -->
+      <div class="unit-card" style="margin-top:12px;">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/lightning.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">实战标注（待审核）</span>
+            <span class="px-tag pending">⏳ 待审核</span></div>
+          </div>
+        </div>
+        <div class="unit-detail">
+          <div class="status-card">
+            <img src="assets/pixel/icons/stardew/flag.png" />
+            <h3>已申报，等待审核中...</h3>
+            <p>申报时间：2026-04-21 15:30</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 审核通过 -->
+      <div class="unit-card" style="margin-top:12px;">
+        <div class="unit-summary">
+          <img class="unit-icon" src="assets/pixel/icons/stardew/trophy.png" />
+          <div class="unit-meta">
+            <div class="unit-title-row"><span class="unit-title">实战标注（已通过）</span>
+            <span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div>
+          </div>
+        </div>
+        <div class="unit-detail">
+          <div class="status-card passed">
+            <img src="assets/pixel/icons/stardew/trophy.png" />
+            <h3>审核通过！</h3>
+            <p style="color:var(--pixel-blue); font-weight:500;">得分：9/10</p>
+            <p>💬 标注质量很好，继续保持！</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 全部通关 ===== -->
+  <div id="page-done" class="page" style="display:none;">
+    <div class="unit-list">
+      <div class="unit-card"><div class="unit-summary"><img class="unit-icon" src="assets/pixel/icons/stardew/checkmark.png" /><div class="unit-meta"><div class="unit-title-row"><span class="unit-title">RLHF 评估原理</span><span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div><span class="unit-type">【文章】</span></div></div></div>
+      <div class="unit-card"><div class="unit-summary"><img class="unit-icon" src="assets/pixel/icons/stardew/checkmark.png" /><div class="unit-meta"><div class="unit-title-row"><span class="unit-title">偏好排序实操演示</span><span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div><span class="unit-type">【视频】</span></div></div></div>
+      <div class="unit-card"><div class="unit-summary"><img class="unit-icon" src="assets/pixel/icons/stardew/checkmark.png" /><div class="unit-meta"><div class="unit-title-row"><span class="unit-title">评估标准练习</span><span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div><span class="unit-type">【练习】</span></div></div></div>
+      <div class="unit-card"><div class="unit-summary"><img class="unit-icon" src="assets/pixel/icons/stardew/checkmark.png" /><div class="unit-meta"><div class="unit-title-row"><span class="unit-title">综合测验</span><span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div><span class="unit-type">【测验】95分</span></div></div></div>
+      <div class="unit-card"><div class="unit-summary"><img class="unit-icon" src="assets/pixel/icons/stardew/checkmark.png" /><div class="unit-meta"><div class="unit-title-row"><span class="unit-title">实战标注</span><span class="px-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已完成</span></div><span class="unit-type">【实战演练】</span></div></div></div>
+    </div>
+    <div class="all-done">
+      <img src="assets/pixel/icons/stardew/trophy.png" />
+      <h2>🎊 恭喜通关！</h2>
+      <p>本关卡全部完成，你已经掌握了质量评估的核心技能！</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(name) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + name).style.display = 'block';
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

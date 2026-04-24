@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目卡片封面 — dobo UI 素材方案</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+img { image-rendering: auto; }
+
+.demo-nav { position: sticky; top: 0; z-index: 100; padding: 10px 20px; background: #5B3A29; color: #E8A93A; font-size: 14px; font-weight: bold; }
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+.section { margin-bottom: 48px; }
+.section-header {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 20px; letter-spacing: 2px;
+  color: #5B3A29; margin-bottom: 6px;
+}
+.section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.7; }
+
+.cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+
+/* ========== 方案 C: card 素材做封面底图 ========== */
+.card-c {
+  position: relative; overflow: hidden;
+  background: transparent;
+  transition: transform 0.2s;
+}
+.card-c:hover { transform: translateY(-3px); }
+
+.card-c-cover {
+  position: relative;
+  /* 用 card 素材做整个封面背景 */
+  padding: 20px 16px 12px;
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 160px;
+}
+.card-c-cover .bg-frame {
+  position: absolute; inset: 0; z-index: 0;
+}
+.card-c-cover .bg-frame img {
+  width: 100%; height: 100%;
+  object-fit: fill;
+}
+.card-c-cover .icon {
+  width: 56px; height: 56px; image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.2));
+  z-index: 1; margin-bottom: 8px;
+  transition: transform 0.3s;
+}
+.card-c:hover .icon { transform: translateY(-4px); }
+.card-c-cover .title {
+  font-family: "ZCOOL QingKe HuangYou", sans-serif;
+  font-size: 16px; letter-spacing: 2px; color: #5B3A29; text-align: center;
+  z-index: 1; text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+.card-c-body {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-top: none;
+  padding: 10px 14px;
+}
+.card-c-body p { font-size: 12px; color: #8B7355; }
+
+/* ========== 方案 D: 简洁边框卡 — card 素材做小装饰 ========== */
+.card-d {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-d:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.card-d-cover {
+  height: 130px; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 3px solid #E0D5C8;
+}
+/* 用 card 素材做居中装饰框 */
+.card-d-cover .frame {
+  position: relative; width: 80px; height: 92px;
+}
+.card-d-cover .frame img.frame-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; opacity: 0.85;
+}
+.card-d-cover .frame img.frame-icon {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 40px; height: 40px; image-rendering: pixelated;
+  filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.2));
+  z-index: 1;
+  transition: transform 0.3s;
+}
+.card-d:hover .frame-icon { transform: translate(-50%, -50%) scale(1.1); }
+.card-d-body { padding: 12px 16px; }
+.card-d-body h3 { font-size: 15px; font-weight: 600; color: #5B3A29; margin-bottom: 4px; }
+.card-d-body p { font-size: 12px; color: #8B7355; }
+
+/* 封面背景配色 */
+.bg-sage { background: linear-gradient(135deg, #D4E7C5, #C5DEBA); }
+.bg-sky { background: linear-gradient(135deg, #C5D8E7, #B0CAD9); }
+.bg-warm { background: linear-gradient(135deg, #E7DFC8, #DDD4BC); }
+.bg-lavender { background: linear-gradient(135deg, #E0D0E7, #D1BFD9); }
+.bg-peach { background: linear-gradient(135deg, #E7D4C5, #D9C4B0); }
+
+/* ========== 方案 E: header 素材做卡片顶栏 ========== */
+.card-e {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-e:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.card-e-header {
+  position: relative; height: 40px; overflow: hidden;
+}
+.card-e-header img { width: 100%; height: 100%; object-fit: fill; }
+.card-e-header .header-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 14px; letter-spacing: 2px;
+  color: #5B3A29; text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+}
+
+.card-e-cover {
+  height: 100px; display: flex; align-items: center; justify-content: center;
+  border-bottom: 2px solid #E0D5C8;
+}
+.card-e-cover img {
+  width: 48px; height: 48px; image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.15));
+  transition: transform 0.3s;
+}
+.card-e:hover .card-e-cover img { transform: translateY(-4px); }
+
+.card-e-body { padding: 10px 14px; }
+.card-e-body p { font-size: 12px; color: #8B7355; }
+
+/* ========== 方案 F: 现有风格微调 — 底部加 wood label 标题条 ========== */
+.card-f {
+  border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-f:hover { transform: translateY(-3px); box-shadow: 4px 6px 0 #5B3A29; border-color: #5B3A29; }
+
+.card-f-cover {
+  height: 120px; display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.card-f-cover .icon {
+  width: 48px; height: 48px; image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.15));
+  transition: transform 0.3s;
+}
+.card-f:hover .icon { transform: translateY(-4px); }
+
+/* wood label 做标题底栏 */
+.card-f-label {
+  position: relative; height: 36px; overflow: hidden;
+}
+.card-f-label img.label-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill;
+}
+.card-f-label .label-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: "ZCOOL QingKe HuangYou", sans-serif; font-size: 14px; letter-spacing: 2px;
+  color: #FFF8E7; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.card-f-body { padding: 10px 14px; }
+.card-f-body p { font-size: 12px; color: #8B7355; }
+
+/* 进度条 */
+.mini-progress { height: 10px; background: #E0D5C8; border: 2px solid #5B3A29; margin-top: 8px; }
+.mini-fill { height: 100%; background: #5C8A4D; }
+.mini-fill.gold { background: #E8A93A; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">🎨 项目卡片封面 — 4 种方案（dobo UI 素材）</div>
+
+<div class="container">
+
+<!-- 方案 C -->
+<div class="section">
+  <h2 class="section-header">方案 C：整卡素材底图</h2>
+  <div class="section-desc">用 dobo 的 card 素材做整个封面背景。每种颜色对应不同项目。图标+标题叠在上面。</div>
+  <div class="cards-row">
+    <div class="card-c">
+      <div class="card-c-cover">
+        <div class="bg-frame"><img src="/pixel-icons/dobo/card_cream.png"></div>
+        <img src="/pixel-icons/projects/adventure_icon_64px.png" class="icon">
+        <div class="title">图像标注基础</div>
+      </div>
+      <div class="card-c-body">
+        <p>已完成 3/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:37%"></div></div>
+      </div>
+    </div>
+    <div class="card-c">
+      <div class="card-c-cover">
+        <div class="bg-frame"><img src="/pixel-icons/dobo/card_green.png"></div>
+        <img src="/pixel-icons/projects/gem_icon_64px.png" class="icon">
+        <div class="title">NLP 文本分类</div>
+      </div>
+      <div class="card-c-body">
+        <p>已完成 6/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:75%"></div></div>
+      </div>
+    </div>
+    <div class="card-c">
+      <div class="card-c-cover">
+        <div class="bg-frame"><img src="/pixel-icons/dobo/card_blue.png"></div>
+        <img src="/pixel-icons/projects/chestRuby_icon_64px.png" class="icon">
+        <div class="title">语音标注进阶</div>
+      </div>
+      <div class="card-c-body">
+        <p>尚未开始</p>
+        <div class="mini-progress"><div class="mini-fill gold" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 D -->
+<div class="section">
+  <h2 class="section-header">方案 D：渐变底 + card 素材小框</h2>
+  <div class="section-desc">保持现有渐变配色，用 card 素材做图标的"装饰相框"，让图标更有存在感。改动最小。</div>
+  <div class="cards-row">
+    <div class="card-d">
+      <div class="card-d-cover bg-sage">
+        <div class="frame">
+          <img src="/pixel-icons/dobo/card_cream.png" class="frame-bg">
+          <img src="/pixel-icons/projects/adventure_icon_64px.png" class="frame-icon">
+        </div>
+      </div>
+      <div class="card-d-body">
+        <h3>图像标注基础</h3>
+        <p>已完成 3/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:37%"></div></div>
+      </div>
+    </div>
+    <div class="card-d">
+      <div class="card-d-cover bg-sky">
+        <div class="frame">
+          <img src="/pixel-icons/dobo/card_green.png" class="frame-bg">
+          <img src="/pixel-icons/projects/gem_icon_64px.png" class="frame-icon">
+        </div>
+      </div>
+      <div class="card-d-body">
+        <h3>NLP 文本分类</h3>
+        <p>已完成 6/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:75%"></div></div>
+      </div>
+    </div>
+    <div class="card-d">
+      <div class="card-d-cover bg-lavender">
+        <div class="frame">
+          <img src="/pixel-icons/dobo/card_purple.png" class="frame-bg">
+          <img src="/pixel-icons/projects/chestRuby_icon_64px.png" class="frame-icon">
+        </div>
+      </div>
+      <div class="card-d-body">
+        <h3>语音标注进阶</h3>
+        <p>尚未开始</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 E -->
+<div class="section">
+  <h2 class="section-header">方案 E：header 素材做顶栏</h2>
+  <div class="section-desc">用 header 素材做卡片标题栏装饰，项目名嵌在里面。下方简洁图标区。标题和图标分离更清晰。</div>
+  <div class="cards-row">
+    <div class="card-e">
+      <div class="card-e-header"><img src="/pixel-icons/dobo/header_cream.png"><div class="header-text">图像标注基础</div></div>
+      <div class="card-e-cover bg-sage"><img src="/pixel-icons/projects/adventure_icon_64px.png"></div>
+      <div class="card-e-body">
+        <p>已完成 3/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:37%"></div></div>
+      </div>
+    </div>
+    <div class="card-e">
+      <div class="card-e-header"><img src="/pixel-icons/dobo/header_green.png"><div class="header-text">NLP 文本分类</div></div>
+      <div class="card-e-cover bg-sky"><img src="/pixel-icons/projects/gem_icon_64px.png"></div>
+      <div class="card-e-body">
+        <p>已完成 6/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:75%"></div></div>
+      </div>
+    </div>
+    <div class="card-e">
+      <div class="card-e-header"><img src="/pixel-icons/dobo/headerBow_cream.png"><div class="header-text">语音标注进阶</div></div>
+      <div class="card-e-cover bg-warm"><img src="/pixel-icons/projects/chestRuby_icon_64px.png"></div>
+      <div class="card-e-body">
+        <p>尚未开始</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 F -->
+<div class="section">
+  <h2 class="section-header">方案 F：wood label 底栏标题</h2>
+  <div class="section-desc">在封面和内容之间加一条 wood label 木质标题条。保持现有配色，只加一条装饰分隔。最克制的改法。</div>
+  <div class="cards-row">
+    <div class="card-f">
+      <div class="card-f-cover bg-sage"><img src="/pixel-icons/projects/adventure_icon_64px.png" class="icon"></div>
+      <div class="card-f-label"><img src="/pixel-icons/dobo/wood_label.png" class="label-bg"><div class="label-text">图像标注基础</div></div>
+      <div class="card-f-body">
+        <p>已完成 3/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:37%"></div></div>
+      </div>
+    </div>
+    <div class="card-f">
+      <div class="card-f-cover bg-sky"><img src="/pixel-icons/projects/gem_icon_64px.png" class="icon"></div>
+      <div class="card-f-label"><img src="/pixel-icons/dobo/wood_label.png" class="label-bg"><div class="label-text">NLP 文本分类</div></div>
+      <div class="card-f-body">
+        <p>已完成 6/8 关卡</p>
+        <div class="mini-progress"><div class="mini-fill" style="width:75%"></div></div>
+      </div>
+    </div>
+    <div class="card-f">
+      <div class="card-f-cover bg-warm"><img src="/pixel-icons/projects/chestRuby_icon_64px.png" class="icon"></div>
+      <div class="card-f-label"><img src="/pixel-icons/dobo/wood_label.png" class="label-bg"><div class="label-text">语音标注进阶</div></div>
+      <div class="card-f-body">
+        <p>尚未开始</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

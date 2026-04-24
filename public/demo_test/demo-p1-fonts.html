@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P1 字体方案对比 — 6种候选</title>
+
+<!-- 所有候选字体 -->
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=ZCOOL+Kuaile&family=Ma+Shan+Zheng&family=Long+Cang&family=Liu+Jian+Mao+Cao&family=Zhi+Mang+Xing&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@600&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 10px; padding: 12px 20px; background: #5B3A29; align-items: center;
+  }
+  .demo-nav .title { color: #E8A93A; font-size: 16px; font-weight: bold; margin-right: 12px; }
+  .demo-nav span { color: #C8A882; font-size: 12px; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+  .intro { font-size: 13px; color: #8B7355; margin-bottom: 24px; line-height: 1.6; }
+
+  /* 字体卡片 */
+  .font-card {
+    border: 3px solid #E0D5C8; background: #FFFDF5; margin-bottom: 20px;
+    display: grid; grid-template-columns: 80px 1fr; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .font-card:hover { border-color: #E8A93A; }
+
+  .font-label {
+    background: #5B3A29; color: #E8A93A; padding: 16px 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; font-size: 13px; font-weight: bold;
+  }
+  .font-label .num { font-size: 24px; margin-bottom: 4px; }
+
+  .font-content { padding: 20px 24px; }
+  .font-name { font-size: 12px; color: #8B7355; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+  .font-content .banner-sim {
+    background: #E8DFC8; border: 3px solid #5B3A29; padding: 20px; text-align: center; margin-bottom: 14px;
+    position: relative; overflow: hidden;
+  }
+  .font-content .banner-sim::before {
+    content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.7);
+  }
+  .font-content .banner-sim > * { position: relative; }
+
+  .font-samples { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .font-sample { }
+  .font-sample .ctx { font-size: 11px; color: #B0A090; margin-bottom: 4px; }
+
+  .vote-row {
+    display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #E0D5C8;
+  }
+  .vote-btn {
+    padding: 4px 14px; border: 2px solid #E0D5C8; background: #FFF8E7;
+    color: #5B3A29; font-size: 12px; cursor: pointer;
+  }
+  .vote-btn:hover { border-color: #E8A93A; background: #E8A93A; color: #fff; }
+
+  /* 统一对照文字 */
+  .system-font { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🔤 P1 字体方案对比</span>
+  <span>6 种中文标题字体候选 · 正文始终用系统字体</span>
+</div>
+
+<div class="container">
+  <p class="intro">
+    以下每种字体都只用于 <strong>标题/Banner</strong>，正文保持系统字体保证可读性。<br>
+    每个方案展示：Banner 标题、关卡标题、状态文字的效果。选一个你觉得和像素风最搭的！
+  </p>
+
+  <!-- ===== 0: 对照组 ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">0</span>对照</div>
+    <div class="font-content">
+      <div class="font-name">当前 · 系统默认字体 (PingFang SC / 苹方)</div>
+      <div class="banner-sim">
+        <div style="font-size:26px; font-weight:600; color:#5B3A29; margin-bottom:6px;" class="system-font">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-size:18px; font-weight:600; color:#5B3A29;" class="system-font">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-size:16px; font-weight:600; color:#5B3A29;" class="system-font">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== A: ZCOOL XiaoWei ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">A</span>推荐</div>
+    <div class="font-content">
+      <div class="font-name">站酷小薇 · ZCOOL XiaoWei — 温暖圆润，间距舒适，有手写感但不夸张</div>
+      <div class="banner-sim">
+        <div style="font-family:'ZCOOL XiaoWei',serif; font-size:26px; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'ZCOOL XiaoWei',serif; font-size:18px; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'ZCOOL XiaoWei',serif; font-size:16px; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== B: Ma Shan Zheng ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">B</span></div>
+    <div class="font-content">
+      <div class="font-name">马善政楷体 · Ma Shan Zheng — 中国风毛笔楷书，古朴有力</div>
+      <div class="banner-sim">
+        <div style="font-family:'Ma Shan Zheng',cursive; font-size:28px; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'Ma Shan Zheng',cursive; font-size:20px; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'Ma Shan Zheng',cursive; font-size:18px; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== C: Long Cang ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">C</span></div>
+    <div class="font-content">
+      <div class="font-name">龙藏体 · Long Cang — 随性手写体，轻松活泼，像笔记涂鸦</div>
+      <div class="banner-sim">
+        <div style="font-family:'Long Cang',cursive; font-size:28px; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'Long Cang',cursive; font-size:20px; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'Long Cang',cursive; font-size:18px; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== D: ZCOOL Kuaile ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">D</span></div>
+    <div class="font-content">
+      <div class="font-name">站酷快乐体 · ZCOOL Kuaile — 胖胖的卡通感，很"游戏"</div>
+      <div class="banner-sim">
+        <div style="font-family:'ZCOOL Kuaile',cursive; font-size:26px; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'ZCOOL Kuaile',cursive; font-size:18px; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'ZCOOL Kuaile',cursive; font-size:16px; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== E: Noto Serif SC ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">E</span></div>
+    <div class="font-content">
+      <div class="font-name">思源宋体 · Noto Serif SC — 优雅宋体，古典书卷感，适合羊皮纸氛围</div>
+      <div class="banner-sim">
+        <div style="font-family:'Noto Serif SC',serif; font-size:26px; font-weight:600; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'Noto Serif SC',serif; font-size:18px; font-weight:600; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'Noto Serif SC',serif; font-size:16px; font-weight:600; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== F: Zhi Mang Xing ===== -->
+  <div class="font-card">
+    <div class="font-label"><span class="num">F</span></div>
+    <div class="font-content">
+      <div class="font-name">志莽行书 · Zhi Mang Xing — 潇洒行书，有江湖气，适合"冒险"主题</div>
+      <div class="banner-sim">
+        <div style="font-family:'Zhi Mang Xing',cursive; font-size:30px; color:#5B3A29; margin-bottom:6px;">欢迎来到培训系统</div>
+        <div style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</div>
+      </div>
+      <div class="font-samples">
+        <div class="font-sample">
+          <div class="ctx">关卡标题</div>
+          <div style="font-family:'Zhi Mang Xing',cursive; font-size:22px; color:#5B3A29;">🗺️ 标注基础培训</div>
+        </div>
+        <div class="font-sample">
+          <div class="ctx">卡片标题</div>
+          <div style="font-family:'Zhi Mang Xing',cursive; font-size:20px; color:#5B3A29;">图像分类进阶课程</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <div style="text-align:center; font-size:14px; color:#8B7355; padding:12px 0;">
+    💡 我的推荐：<strong>A (站酷小薇)</strong> 温暖不挤、和像素暖色系搭配最和谐<br>
+    <strong>D (站酷快乐体)</strong> 如果想更"游戏感"<br>
+    <strong>E (思源宋体)</strong> 如果想更"书卷/羊皮纸"气质
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地图背景方案对比</title>
+<style>
+:root {
+  --pixel-brown: #5B3A29;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+  --pixel-gold: #E8A93A;
+  --pixel-green: #5C8A4D;
+  --pixel-card: #FFFDF5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, sans-serif; background: #FFF8E7; color: var(--pixel-text); padding: 24px; }
+h1 { font-size: 22px; color: var(--pixel-brown); margin-bottom: 24px; }
+h2 { font-size: 16px; color: var(--pixel-brown); margin: 24px 0 12px; }
+
+.map-box {
+  border: 4px solid var(--pixel-brown);
+  padding: 32px 24px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+/* 通用内容（每个方案都有相同的示例卡片） */
+.sample-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.sample-card {
+  background: var(--pixel-card); border: 3px solid var(--pixel-border);
+  padding: 14px 18px; max-width: 340px; width: 100%;
+  display: flex; align-items: center; gap: 12px;
+}
+.sample-icon {
+  width: 44px; height: 44px; border: 3px solid var(--pixel-gold);
+  display: flex; align-items: center; justify-content: center;
+  background: #FFF8E7; flex-shrink: 0;
+}
+.sample-icon img { width: 28px; height: 28px; image-rendering: pixelated; }
+.sample-card h3 { font-size: 14px; color: var(--pixel-brown); margin: 0 0 2px; }
+.sample-card p { font-size: 12px; color: var(--pixel-text-secondary); margin: 0; }
+.sample-path { width: 6px; height: 32px; background: var(--pixel-gold); border: 2px solid var(--pixel-brown); margin: 0 auto; }
+
+/* 像素装饰 */
+.deco { position: absolute; image-rendering: pixelated; z-index: 1; opacity: 0.7; }
+
+.label-tag {
+  position: absolute; top: 8px; left: 8px;
+  background: var(--pixel-brown); color: #fff;
+  font-size: 11px; padding: 2px 8px; z-index: 5;
+}
+
+/* ===== 方案 A：纯色 + CSS 渐变网格 ===== */
+.bg-a {
+  background:
+    linear-gradient(180deg, #EDE8D8 0%, #E4DDD0 100%);
+}
+.bg-a::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(circle, rgba(200,190,170,0.3) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* ===== 方案 B：自制像素草地 ===== */
+.bg-b {
+  background-color: #E8E1CC;
+  background-image: url('assets/pixel/ready/bg_meadow.png');
+  background-size: 128px 128px;
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+/* ===== 方案 C：自制泥土路径风 ===== */
+.bg-c {
+  background-color: #E4DCCC;
+  background-image: url('assets/pixel/ready/bg_path.png');
+  background-size: 128px 128px;
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+/* ===== 方案 D：羊皮纸古地图风 ===== */
+.bg-d {
+  background-color: #F5EBDB;
+  background-image: url('assets/pixel/ready/bg_parchment.png');
+  background-size: 128px 128px;
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+/* 做旧边框 */
+.bg-d::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  box-shadow:
+    inset 0 0 40px rgba(180, 150, 100, 0.3),
+    inset 0 0 80px rgba(160, 130, 80, 0.15);
+}
+</style>
+</head>
+<body>
+
+<h1>🗺️ 地图背景方案对比（4选1）</h1>
+
+<!-- 方案 A -->
+<h2>方案 A：纯色渐变 + 点阵纹理（CSS，不用图片）</h2>
+<div class="map-box bg-a">
+  <div class="label-tag">A：纯色点阵</div>
+  <img class="deco" src="assets/pixel/ready/bush_01_3x.png" style="left:12px; bottom:8px; height:64px;" />
+  <img class="deco" src="assets/pixel/ready/bush_02_3x.png" style="right:16px; bottom:8px; height:52px;" />
+  <img class="deco" src="assets/pixel/ready/grass_00_3x.png" style="left:100px; top:16px; height:36px;" />
+  <img class="deco" src="assets/pixel/ready/grass_02_3x.png" style="right:80px; top:24px; height:36px;" />
+  <div class="sample-content">
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/checkmark.png" /></div>
+      <div><h3>入门基础</h3><p>了解 RLHF 基本概念</p></div>
+    </div>
+    <div class="sample-path"></div>
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/flag.png" /></div>
+      <div><h3>质量评估</h3><p>学习如何评估模型输出</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 B -->
+<h2>方案 B：像素草地（自制纹理，柔和绿调 + 小花点缀）</h2>
+<div class="map-box bg-b">
+  <div class="label-tag">B：像素草地</div>
+  <img class="deco" src="assets/pixel/ready/bush_01_3x.png" style="left:12px; bottom:8px; height:64px;" />
+  <img class="deco" src="assets/pixel/ready/bush_02_3x.png" style="right:16px; bottom:8px; height:52px;" />
+  <img class="deco" src="assets/pixel/ready/grass_00_3x.png" style="left:100px; top:16px; height:36px;" />
+  <img class="deco" src="assets/pixel/ready/grass_02_3x.png" style="right:80px; top:24px; height:36px;" />
+  <div class="sample-content">
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/checkmark.png" /></div>
+      <div><h3>入门基础</h3><p>了解 RLHF 基本概念</p></div>
+    </div>
+    <div class="sample-path"></div>
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/flag.png" /></div>
+      <div><h3>质量评估</h3><p>学习如何评估模型输出</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 C -->
+<h2>方案 C：泥土路径风（自制纹理，暖棕色 + 石子点缀）</h2>
+<div class="map-box bg-c">
+  <div class="label-tag">C：泥土路径</div>
+  <img class="deco" src="assets/pixel/ready/bush_01_3x.png" style="left:12px; bottom:8px; height:64px;" />
+  <img class="deco" src="assets/pixel/ready/bush_02_3x.png" style="right:16px; bottom:8px; height:52px;" />
+  <img class="deco" src="assets/pixel/ready/grass_00_3x.png" style="left:100px; top:16px; height:36px;" />
+  <img class="deco" src="assets/pixel/ready/grass_02_3x.png" style="right:80px; top:24px; height:36px;" />
+  <div class="sample-content">
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/checkmark.png" /></div>
+      <div><h3>入门基础</h3><p>了解 RLHF 基本概念</p></div>
+    </div>
+    <div class="sample-path"></div>
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/flag.png" /></div>
+      <div><h3>质量评估</h3><p>学习如何评估模型输出</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案 D -->
+<h2>方案 D：羊皮纸古地图风（自制纹理 + 做旧边缘阴影）</h2>
+<div class="map-box bg-d">
+  <div class="label-tag">D：羊皮纸</div>
+  <img class="deco" src="assets/pixel/ready/bush_01_3x.png" style="left:12px; bottom:8px; height:64px;" />
+  <img class="deco" src="assets/pixel/ready/bush_02_3x.png" style="right:16px; bottom:8px; height:52px;" />
+  <img class="deco" src="assets/pixel/ready/grass_00_3x.png" style="left:100px; top:16px; height:36px;" />
+  <img class="deco" src="assets/pixel/ready/grass_02_3x.png" style="right:80px; top:24px; height:36px;" />
+  <div class="sample-content">
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/checkmark.png" /></div>
+      <div><h3>入门基础</h3><p>了解 RLHF 基本概念</p></div>
+    </div>
+    <div class="sample-path"></div>
+    <div class="sample-card">
+      <div class="sample-icon"><img src="assets/pixel/icons/stardew/flag.png" /></div>
+      <div><h3>质量评估</h3><p>学习如何评估模型输出</p></div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 24px; color: #8B7355; font-size: 13px;">
+  💡 灌木/草丛已放大 3 倍，四个方案都有相同的装饰元素方便对比。选一个你喜欢的！也可以混搭（比如 D 的背景 + B 的装饰）
+</p>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZCOOL QingKe HuangYou 间距调整对比</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background: #F5EFE0; color: #3E2723; }
+  .container { max-width: 800px; margin: 0 auto; padding: 24px 20px 60px; }
+  .demo-nav { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: #5B3A29; color: #E8A93A; font-size: 16px; font-weight: bold; }
+
+  .row { display: grid; grid-template-columns: 100px 1fr; border: 3px solid #E0D5C8; background: #FFFDF5; margin-bottom: 12px; overflow: hidden; }
+  .row:hover { border-color: #E8A93A; }
+  .label { background: #5B3A29; color: #E8A93A; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 11px; }
+  .label .val { font-size: 20px; font-weight: bold; margin-bottom: 2px; }
+  .content { padding: 16px 20px; }
+
+  .qk { font-family: "ZCOOL QingKe HuangYou", sans-serif; }
+  .p2p { font-family: "Press Start 2P", monospace; }
+
+  .banner { background: #E8DFC8; border: 3px solid #5B3A29; padding: 20px; text-align: center; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .banner::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.7); }
+  .banner > * { position: relative; }
+
+  .samples { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+  .sample { }
+  .sample .ctx { font-size: 10px; color: #B0A090; margin-bottom: 4px; }
+
+  .rec { display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: bold; background: #E8F5E9; color: #2E7D32; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">🔤 ZCOOL QingKe HuangYou — letter-spacing 间距对比</div>
+
+<div class="container">
+
+  <div class="row">
+    <div class="label"><span class="val">0</span>默认</div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:0;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 0 (默认，字挤在一起)</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><span class="val">1px</span></div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:1px;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 1px</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29; letter-spacing:1px;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29; letter-spacing:1px;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><span class="val">2px</span><span class="rec">推荐</span></div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:2px;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 2px</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29; letter-spacing:2px;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29; letter-spacing:1px;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><span class="val">3px</span></div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:3px;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 3px</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29; letter-spacing:3px;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29; letter-spacing:2px;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><span class="val">4px</span></div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:4px;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 4px</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29; letter-spacing:4px;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29; letter-spacing:2px;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><span class="val">0.1em</span></div>
+    <div class="content">
+      <div class="banner">
+        <div class="qk" style="font-size:26px; color:#5B3A29; letter-spacing:0.1em;">欢迎来到培训系统</div>
+        <div style="font-size:13px; color:#8B7355; margin-top:6px;">letter-spacing: 0.1em（按字号比例缩放，大字宽松小字紧凑）</div>
+      </div>
+      <div class="samples">
+        <div class="sample"><div class="ctx">关卡标题</div><div class="qk" style="font-size:18px; color:#5B3A29; letter-spacing:0.1em;">🗺️ 标注基础培训</div></div>
+        <div class="sample"><div class="ctx">英文</div><div class="p2p" style="font-size:10px; color:#5B3A29; letter-spacing:0.05em;">Stage 3 / 8</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

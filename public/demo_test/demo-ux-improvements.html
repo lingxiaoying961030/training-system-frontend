@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>优化 Demo — 错误提示 / 操作反馈 / 骨架屏</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", sans-serif; background: #f5f0e8; padding: 20px;
+  background-image: url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.025"/></svg>');
+}
+
+.tab-bar { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 3px solid #5B3A29; }
+.tab-bar button {
+  padding: 10px 20px; border: 2px solid #5B3A29; border-bottom: none;
+  background: #E0D5C8; color: #5B3A29; font-size: 13px; font-weight: 600;
+  cursor: pointer; border-radius: 6px 6px 0 0; margin-right: -1px;
+}
+.tab-bar button.active { background: #FFF8E7; }
+.tab-bar button:hover:not(.active) { background: #d6c9b8; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+h1.title { font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; color: #5B3A29; font-size: 18px; margin-bottom: 4px; }
+.desc { color: #8B7355; font-size: 12px; margin-bottom: 16px; line-height: 1.6; }
+
+.px-board { background: #FFF8E7; border: 3px solid #5B3A29; border-radius: 8px; overflow: hidden; }
+.px-header { background: linear-gradient(135deg, #5B3A29, #8B6F5E); color: #FFF8E7; padding: 12px 20px; font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; font-size: 16px; }
+.px-body { padding: 20px; }
+
+/* ==================== 1. Toast 通知 ==================== */
+.px-toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.px-toast {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+  padding: 12px 18px; min-width: 280px; max-width: 380px;
+  box-shadow: 0 4px 16px rgba(91,58,41,0.15);
+  display: flex; align-items: flex-start; gap: 10px;
+  animation: toast-in 0.3s ease-out;
+  pointer-events: auto;
+}
+.px-toast.leaving { animation: toast-out 0.3s ease-in forwards; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+
+.px-toast .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.px-toast .content { flex: 1; }
+.px-toast .toast-title { font-size: 13px; font-weight: 600; color: #5B3A29; margin-bottom: 2px; }
+.px-toast .toast-msg { font-size: 12px; color: #8B7355; line-height: 1.4; }
+.px-toast .close-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; padding: 0 4px; }
+.px-toast .close-btn:hover { color: #5B3A29; }
+
+/* 类型变体 */
+.px-toast.success { border-left: 4px solid #5C8A4D; }
+.px-toast.error { border-left: 4px solid #C24A3A; }
+.px-toast.warning { border-left: 4px solid #E8A93A; }
+.px-toast.info { border-left: 4px solid #4A90B8; }
+
+/* ==================== 2. 网络错误页 ==================== */
+.px-error-state {
+  text-align: center; padding: 48px 20px;
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+}
+.px-error-state .err-icon { font-size: 48px; margin-bottom: 12px; }
+.px-error-state .err-title { font-size: 16px; font-weight: 600; color: #5B3A29; margin-bottom: 6px; }
+.px-error-state .err-msg { font-size: 13px; color: #8B7355; margin-bottom: 16px; line-height: 1.5; }
+.px-error-state .err-detail { font-size: 11px; color: #aaa; margin-bottom: 16px; font-family: monospace; background: #f5f0e8; padding: 6px 12px; border-radius: 4px; display: inline-block; }
+
+.px-btn {
+  display: inline-block; padding: 8px 20px; background: #5C8A4D; color: #fff;
+  border: 2px solid #4E7A3F; border-radius: 4px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.px-btn:hover { background: #4E7A3F; transform: translateY(-1px); }
+.px-btn:active { transform: translateY(1px); }
+.px-btn.secondary { background: #FFFDF5; color: #5B3A29; border-color: #E0D5C8; }
+.px-btn.secondary:hover { border-color: #5B3A29; background: #FFF5E0; }
+
+/* ==================== 3. 骨架屏 ==================== */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #E8DFD0 25%, #F0E8D8 37%, #E8DFD0 63%);
+  background-size: 200px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}
+
+/* 题库骨架 */
+.qb-skel-header { display: flex; gap: 12px; margin-bottom: 20px; }
+.qb-skel-card { background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; padding: 16px; flex: 1; }
+.qb-skel-card .skel-line { height: 12px; margin-bottom: 8px; }
+.qb-skel-card .skel-num { height: 24px; width: 50px; margin-top: 4px; }
+
+.qb-skel-filter { display: flex; gap: 10px; margin-bottom: 16px; }
+.qb-skel-filter .skel { height: 32px; border-radius: 4px; }
+
+.qb-skel-table { background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; overflow: hidden; }
+.qb-skel-row { display: flex; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #f0e8d8; align-items: center; }
+.qb-skel-row:last-child { border-bottom: none; }
+.qb-skel-row .skel { height: 14px; }
+.qb-skel-row-header { background: #F5EDD8; }
+.qb-skel-row-header .skel { background: linear-gradient(90deg, #DDD5C0 25%, #E8DFD0 37%, #DDD5C0 63%); background-size: 200px 100%; animation: shimmer 1.4s ease infinite; }
+
+/* CRUD 操作按钮组 */
+.demo-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.demo-actions .px-btn { font-size: 12px; padding: 6px 14px; }
+
+/* 模拟内容 */
+.mock-content { background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; padding: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center; color: #8B7355; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="px-toast-container" id="toast-container"></div>
+
+<div class="tab-bar">
+  <button class="active" onclick="go('toast')">1. 操作反馈 Toast</button>
+  <button onclick="go('error')">2. 网络错误提示</button>
+  <button onclick="go('skeleton')">3. 骨架屏加载</button>
+</div>
+
+<!-- ==================== 1. Toast 操作反馈 ==================== -->
+<div class="view active" id="v-toast">
+  <h1 class="title">1. 操作反馈 — Toast 通知</h1>
+  <p class="desc">
+    现状：ProjectManager 等页面 CRUD 操作成功后无提示，用户不确定是否生效。<br>
+    方案：统一封装 <code>useToast()</code>，右上角弹出像素风 Toast，自动 3 秒消失。
+  </p>
+
+  <div class="px-board">
+    <div class="px-header">📁 项目管理（模拟）</div>
+    <div class="px-body">
+      <p style="color:#8B7355;font-size:13px;margin-bottom:16px;">点击下方按钮模拟各种操作反馈效果：</p>
+
+      <div class="demo-actions">
+        <button class="px-btn" onclick="showToast('success', '创建成功', '关卡「基础概念」已创建')">✅ 创建关卡</button>
+        <button class="px-btn" onclick="showToast('success', '保存成功', '项目信息已更新')">💾 保存项目</button>
+        <button class="px-btn" onclick="showToast('success', '删除成功', '单元「视频教学」已删除')">🗑️ 删除单元</button>
+        <button class="px-btn" onclick="showToast('success', '排序已保存', '关卡顺序已更新')">↕️ 拖拽排序</button>
+        <button class="px-btn secondary" onclick="showToast('error', '保存失败', '网络连接超时，请检查网络后重试')">❌ 模拟失败</button>
+        <button class="px-btn secondary" onclick="showToast('warning', '题目不足', '单选题需要5题，当前仅3题')">⚠️ 模拟警告</button>
+        <button class="px-btn secondary" onclick="showToast('info', '提示', '已复制链接到剪贴板')">ℹ️ 模拟提示</button>
+      </div>
+
+      <div class="mock-content">👆 点击上方按钮查看右上角 Toast 效果</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. 网络错误提示 ==================== -->
+<div class="view" id="v-error">
+  <h1 class="title">2. 网络错误提示</h1>
+  <p class="desc">
+    现状：Dashboard 等页面加载失败只 console.error，用户看到空白。QuestionBank 的 catch 块是空的 {}。<br>
+    方案：统一错误状态组件，显示图标+描述+重试按钮。区分网络超时、服务器错误、无权限三种场景。
+  </p>
+
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <!-- 场景1：网络超时 -->
+    <div class="px-board">
+      <div class="px-header">📊 数据看板（网络超时）</div>
+      <div class="px-body">
+        <div class="px-error-state">
+          <div class="err-icon">🔌</div>
+          <div class="err-title">网络连接失败</div>
+          <div class="err-msg">无法连接到服务器，请检查网络后重试</div>
+          <div class="err-detail">ConnectTimeoutError: 10s timeout</div>
+          <button class="px-btn" onclick="showToast('info','重试中...','正在重新加载数据'); setTimeout(()=>showToast('success','加载成功','数据已更新'),1500)">🔄 重新加载</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景2：服务器错误 -->
+    <div class="px-board">
+      <div class="px-header">📚 题库管理（服务器错误）</div>
+      <div class="px-body">
+        <div class="px-error-state">
+          <div class="err-icon">⚙️</div>
+          <div class="err-title">服务器开小差了</div>
+          <div class="err-msg">服务器处理出错，请稍后再试。如果持续出现，请联系管理员。</div>
+          <div class="err-detail">500 Internal Server Error</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button class="px-btn">🔄 重试</button>
+            <button class="px-btn secondary">📋 复制错误信息</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景3：无权限 -->
+    <div class="px-board">
+      <div class="px-header">👥 学员管理（无权限）</div>
+      <div class="px-body">
+        <div class="px-error-state">
+          <div class="err-icon">🔒</div>
+          <div class="err-title">无访问权限</div>
+          <div class="err-msg">您的账号没有管理员权限，无法访问此页面</div>
+          <button class="px-btn secondary" onclick="showToast('info','跳转中...','返回首页')">🏠 返回首页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 3. 骨架屏 ==================== -->
+<div class="view" id="v-skeleton">
+  <h1 class="title">3. 骨架屏加载</h1>
+  <p class="desc">
+    现状：QuestionBank 等页面用 Naive UI 的 NSpin 旋转圈，和像素风格不搭。<br>
+    方案：替换为像素风骨架屏（和 Projects/Plans 页面已实现的一致），按实际布局闪烁占位。
+  </p>
+
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- 题库管理骨架 -->
+    <div class="px-board">
+      <div class="px-header">📚 题库管理（加载中...）</div>
+      <div class="px-body">
+        <!-- 统计卡片骨架 -->
+        <div class="qb-skel-header">
+          <div class="qb-skel-card"><div class="skel skel-line" style="width:60%"></div><div class="skel skel-num"></div></div>
+          <div class="qb-skel-card"><div class="skel skel-line" style="width:50%"></div><div class="skel skel-num"></div></div>
+          <div class="qb-skel-card"><div class="skel skel-line" style="width:70%"></div><div class="skel skel-num"></div></div>
+          <div class="qb-skel-card"><div class="skel skel-line" style="width:55%"></div><div class="skel skel-num"></div></div>
+        </div>
+        <!-- 筛选栏骨架 -->
+        <div class="qb-skel-filter">
+          <div class="skel" style="width:120px"></div>
+          <div class="skel" style="width:120px"></div>
+          <div class="skel" style="width:100px"></div>
+          <div class="skel" style="flex:1"></div>
+        </div>
+        <!-- 表格骨架 -->
+        <div class="qb-skel-table">
+          <div class="qb-skel-row qb-skel-row-header">
+            <div class="skel" style="width:40px"></div>
+            <div class="skel" style="flex:2"></div>
+            <div class="skel" style="width:60px"></div>
+            <div class="skel" style="width:60px"></div>
+            <div class="skel" style="width:80px"></div>
+            <div class="skel" style="width:70px"></div>
+          </div>
+          <div class="qb-skel-row">
+            <div class="skel" style="width:40px;height:14px"></div>
+            <div class="skel" style="flex:2;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:80px;height:14px"></div>
+            <div class="skel" style="width:70px;height:14px"></div>
+          </div>
+          <div class="qb-skel-row">
+            <div class="skel" style="width:40px;height:14px"></div>
+            <div class="skel" style="flex:2;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:80px;height:14px"></div>
+            <div class="skel" style="width:70px;height:14px"></div>
+          </div>
+          <div class="qb-skel-row">
+            <div class="skel" style="width:40px;height:14px"></div>
+            <div class="skel" style="flex:2;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:80px;height:14px"></div>
+            <div class="skel" style="width:70px;height:14px"></div>
+          </div>
+          <div class="qb-skel-row">
+            <div class="skel" style="width:40px;height:14px"></div>
+            <div class="skel" style="flex:2;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:80px;height:14px"></div>
+            <div class="skel" style="width:70px;height:14px"></div>
+          </div>
+          <div class="qb-skel-row">
+            <div class="skel" style="width:40px;height:14px"></div>
+            <div class="skel" style="flex:2;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:60px;height:14px"></div>
+            <div class="skel" style="width:80px;height:14px"></div>
+            <div class="skel" style="width:70px;height:14px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 审核列表骨架 -->
+    <div class="px-board">
+      <div class="px-header">📋 实战审核（加载中...）</div>
+      <div class="px-body">
+        <div class="qb-skel-filter">
+          <div class="skel" style="width:100px"></div>
+          <div class="skel" style="width:100px"></div>
+          <div class="skel" style="width:100px"></div>
+        </div>
+        <div class="qb-skel-table">
+          <div class="qb-skel-row qb-skel-row-header">
+            <div class="skel" style="width:80px"></div>
+            <div class="skel" style="flex:1"></div>
+            <div class="skel" style="width:80px"></div>
+            <div class="skel" style="width:60px"></div>
+            <div class="skel" style="width:100px"></div>
+          </div>
+          <div class="qb-skel-row"><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="flex:1;height:14px"></div><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="width:60px;height:14px"></div><div class="skel" style="width:100px;height:14px"></div></div>
+          <div class="qb-skel-row"><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="flex:1;height:14px"></div><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="width:60px;height:14px"></div><div class="skel" style="width:100px;height:14px"></div></div>
+          <div class="qb-skel-row"><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="flex:1;height:14px"></div><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="width:60px;height:14px"></div><div class="skel" style="width:100px;height:14px"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function go(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('v-' + id).classList.add('active');
+  const tabs = ['toast','error','skeleton'];
+  document.querySelectorAll('.tab-bar button')[tabs.indexOf(id)].classList.add('active');
+}
+
+let toastId = 0;
+function showToast(type, title, msg) {
+  const container = document.getElementById('toast-container');
+  const id = ++toastId;
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = 'px-toast ' + type;
+  el.id = 'toast-' + id;
+  el.innerHTML = `
+    <span class="icon">${icons[type]}</span>
+    <div class="content">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>
+    <button class="close-btn" onclick="dismissToast(${id})">✕</button>
+  `;
+  container.appendChild(el);
+  setTimeout(() => dismissToast(id), 3000);
+}
+
+function dismissToast(id) {
+  const el = document.getElementById('toast-' + id);
+  if (!el || el.classList.contains('leaving')) return;
+  el.classList.add('leaving');
+  setTimeout(() => el.remove(), 300);
+}
+</script>
+</body>
+</html>

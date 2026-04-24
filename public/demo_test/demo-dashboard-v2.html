@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据看板 - 方案A/B 含项目详情</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", sans-serif; background: #f5f0e8; padding: 20px;
+  background-image: url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.025"/></svg>');
+}
+
+/* Tab bar */
+.tab-bar { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 3px solid #5B3A29; }
+.tab-bar button {
+  padding: 10px 20px; border: 2px solid #5B3A29; border-bottom: none;
+  background: #E0D5C8; color: #5B3A29; font-size: 13px; font-weight: 600;
+  cursor: pointer; border-radius: 6px 6px 0 0; margin-right: -1px;
+}
+.tab-bar button.active { background: #FFF8E7; }
+.tab-bar button:hover:not(.active) { background: #d6c9b8; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+h1.title { font-family: "ZCOOL QingKe HuangYou", sans-serif; letter-spacing: 2px; color: #5B3A29; font-size: 18px; margin-bottom: 4px; }
+.desc { color: #8B7355; font-size: 12px; margin-bottom: 16px; }
+
+/* ======== 共享像素基础 ======== */
+.px-board { background: #FFF8E7; border: 3px solid #5B3A29; border-radius: 8px; overflow: hidden; }
+.px-header {
+  background: linear-gradient(135deg, #5B3A29, #8B6F5E); color: #FFF8E7;
+  padding: 12px 20px; font-family: "ZCOOL QingKe HuangYou", sans-serif;
+  letter-spacing: 2px; font-size: 16px; display: flex; align-items: center; gap: 8px;
+}
+.px-body { padding: 20px; }
+
+/* 面包屑 */
+.px-bread { font-size: 12px; color: #8B7355; margin-bottom: 12px; }
+.px-bread a { color: #5C8A4D; text-decoration: none; cursor: pointer; }
+.px-bread a:hover { text-decoration: underline; }
+
+/* 统计卡片 - 方案A */
+.a-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.a-stat {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+  padding: 14px; text-align: center; position: relative; overflow: hidden;
+}
+.a-stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.a-stat.s1::before { background: #9C7ADB; }
+.a-stat.s2::before { background: #E8A93A; }
+.a-stat.s3::before { background: #5C8A4D; }
+.a-stat.s4::before { background: #4A90B8; }
+.a-stat .icon { font-size: 20px; margin-bottom: 4px; }
+.a-stat .label { font-size: 11px; color: #8B7355; }
+.a-stat .val { font-size: 24px; font-weight: 700; color: #5B3A29; margin: 2px 0; }
+.a-stat .sub { font-size: 10px; color: #aaa; }
+
+/* 分隔标题 */
+.px-section { font-size: 14px; color: #5B3A29; margin-bottom: 12px; border-bottom: 2px dashed #E0D5C8; padding-bottom: 8px; }
+
+/* 项目卡片 - 方案A */
+.a-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.a-card {
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px;
+  padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.a-card:hover { border-color: #5B3A29; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91,58,41,0.1); }
+.a-card-title { font-size: 14px; font-weight: 600; color: #5B3A29; margin-bottom: 8px; }
+.a-card-nums { display: flex; gap: 12px; font-size: 12px; color: #8B7355; margin-bottom: 8px; }
+.a-card-nums strong { color: #5B3A29; }
+.a-prog { height: 10px; background: #E0D5C8; border-radius: 5px; overflow: hidden; border: 1px solid #d0c5b8; }
+.a-prog-fill { height: 100%; border-radius: 5px; background: repeating-linear-gradient(90deg, #5C8A4D 0px, #5C8A4D 6px, #4E7A3F 6px, #4E7A3F 12px); }
+.a-prog-text { font-size: 10px; color: #8B7355; margin-top: 3px; text-align: right; }
+
+/* 图表区 */
+.a-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.a-chart-box { background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; padding: 14px; }
+.a-chart-box h3 { font-size: 13px; color: #5B3A29; margin-bottom: 10px; }
+.a-chart-box.full { grid-column: 1 / -1; }
+
+/* 漏斗柱状图 */
+.funnel { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding: 0 4px; }
+.funnel-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.funnel-bar .bar { width: 100%; border-radius: 3px 3px 0 0; transition: height 0.3s; }
+.funnel-bar .bar-label { font-size: 9px; color: #8B7355; margin-top: 4px; text-align: center; word-break: break-all; }
+.funnel-bar .bar-val { font-size: 10px; color: #5B3A29; font-weight: 600; margin-bottom: 2px; }
+
+/* 折线图模拟 */
+.trend-chart { height: 140px; display: flex; align-items: flex-end; gap: 8px; padding: 0 8px; }
+.trend-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.trend-bar { width: 100%; border-radius: 3px 3px 0 0; }
+.trend-bar.b1 { background: #9C7ADB; }
+.trend-bar.b2 { background: #5C8A4D; }
+.trend-label { font-size: 9px; color: #8B7355; }
+
+/* 学员表格 */
+.px-table { width: 100%; border-collapse: collapse; background: #FFFDF5; border: 2px solid #E0D5C8; border-radius: 6px; overflow: hidden; }
+.px-table th { background: #F5EDD8; color: #5B3A29; font-size: 11px; font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid #E0D5C8; }
+.px-table td { padding: 10px 12px; font-size: 12px; color: #5B3A29; border-bottom: 1px solid #f0e8d8; }
+.px-table tr:hover td { background: #FFF5E0; }
+.px-table tr:last-child td { border-bottom: none; }
+
+.px-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.px-tag.green { background: #E8F5E9; color: #2E7D32; }
+.px-tag.orange { background: #FFF3E0; color: #E65100; }
+.px-tag.gray { background: #F5F5F5; color: #999; }
+
+.mini-bar { width: 70px; height: 8px; background: #E0D5C8; border-radius: 4px; display: inline-block; overflow: hidden; vertical-align: middle; }
+.mini-fill { height: 100%; background: #5C8A4D; border-radius: 4px; }
+
+/* 实战统计 */
+.practice-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.practice-item { text-align: center; background: #FFF8E7; border: 1px solid #E0D5C8; border-radius: 6px; padding: 12px; }
+.practice-item .p-val { font-size: 22px; font-weight: 700; margin: 4px 0; }
+.practice-item .p-label { font-size: 11px; color: #8B7355; }
+
+/* 方案B 统计条 */
+.b-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.b-strip {
+  display: flex; align-items: center; gap: 10px;
+  background: #FFFDF5; border: 2px solid #E0D5C8; border-left: 5px solid; border-radius: 6px; padding: 12px 14px;
+}
+.b-strip.c1 { border-left-color: #9C7ADB; }
+.b-strip.c2 { border-left-color: #E8A93A; }
+.b-strip.c3 { border-left-color: #5C8A4D; }
+.b-strip.c4 { border-left-color: #4A90B8; }
+.b-strip .icon { font-size: 24px; }
+.b-strip .info { flex: 1; }
+.b-strip .label { font-size: 10px; color: #8B7355; }
+.b-strip .val { font-size: 20px; font-weight: 700; color: #5B3A29; }
+.b-strip .sub { font-size: 10px; color: #aaa; }
+
+.b-section { font-size: 14px; color: #5B3A29; margin-bottom: 12px; padding-left: 10px; border-left: 4px solid #E8A93A; }
+
+.legend { display: flex; gap: 14px; margin-top: 6px; justify-content: center; }
+.legend span { font-size: 10px; display: flex; align-items: center; gap: 4px; color: #8B7355; }
+.legend .dot { width: 8px; height: 8px; border-radius: 2px; }
+.link-btn { color: #5C8A4D; cursor: pointer; font-size: 12px; text-decoration: none; }
+.link-btn:hover { text-decoration: underline; }
+
+.funnel-colors { --f1: #8B6F5E; --f2: #A68B6B; --f3: #C4A67A; --f4: #D4B88C; --f5: #E0C89E; }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="active" onclick="go('a-overview')">A · 总览</button>
+  <button onclick="go('a-project')">A · 项目详情</button>
+  <button onclick="go('a-plan')">A · 计划详情</button>
+  <button onclick="go('b-overview')">B · 总览</button>
+  <button onclick="go('b-project')">B · 项目详情</button>
+  <button onclick="go('b-plan')">B · 计划详情</button>
+</div>
+
+<!-- ==================== A · 总览 ==================== -->
+<div class="view active" id="v-a-overview">
+  <h1 class="title">方案A · 总览</h1>
+  <div class="px-board">
+    <div class="px-header">📊 冒险者公告板</div>
+    <div class="px-body">
+      <div class="a-stats">
+        <div class="a-stat s1"><div class="icon">👥</div><div class="label">学员总数</div><div class="val">128</div><div class="sub">本月 +12</div></div>
+        <div class="a-stat s2"><div class="icon">⚔️</div><div class="label">在训人数</div><div class="val">86</div><div class="sub">占比 67%</div></div>
+        <div class="a-stat s3"><div class="icon">🏆</div><div class="label">已通关</div><div class="val">34</div><div class="sub">通关率 27%</div></div>
+        <div class="a-stat s4"><div class="icon">📅</div><div class="label">平均通关天数</div><div class="val">14</div></div>
+      </div>
+      <h3 class="px-section">📁 项目概览</h3>
+      <div class="a-grid">
+        <div class="a-card" onclick="go('a-project')">
+          <div class="a-card-title">📁 AI标注培训</div>
+          <div class="a-card-nums"><span>学员 <strong>68</strong></span><span>在训 <strong>42</strong></span><span>通关 <strong>20</strong></span></div>
+          <div class="a-prog"><div class="a-prog-fill" style="width:65%"></div></div>
+          <div class="a-prog-text">通过率 65%</div>
+        </div>
+        <div class="a-card">
+          <div class="a-card-title">📁 数据清洗入门</div>
+          <div class="a-card-nums"><span>学员 <strong>45</strong></span><span>在训 <strong>30</strong></span><span>通关 <strong>10</strong></span></div>
+          <div class="a-prog"><div class="a-prog-fill" style="width:40%"></div></div>
+          <div class="a-prog-text">通过率 40%</div>
+        </div>
+        <div class="a-card">
+          <div class="a-card-title">📁 NLP基础训练</div>
+          <div class="a-card-nums"><span>学员 <strong>15</strong></span><span>在训 <strong>14</strong></span><span>通关 <strong>4</strong></span></div>
+          <div class="a-prog"><div class="a-prog-fill" style="width:28%"></div></div>
+          <div class="a-prog-text">通过率 28%</div>
+        </div>
+      </div>
+      <div class="a-chart-box full" style="margin-bottom:0">
+        <h3>📈 每周趋势</h3>
+        <div class="trend-chart">
+          <div class="trend-group"><div class="trend-bar b1" style="height:40px"></div><div class="trend-bar b2" style="height:20px"></div><div class="trend-label">W1</div></div>
+          <div class="trend-group"><div class="trend-bar b1" style="height:55px"></div><div class="trend-bar b2" style="height:30px"></div><div class="trend-label">W2</div></div>
+          <div class="trend-group"><div class="trend-bar b1" style="height:35px"></div><div class="trend-bar b2" style="height:45px"></div><div class="trend-label">W3</div></div>
+          <div class="trend-group"><div class="trend-bar b1" style="height:70px"></div><div class="trend-bar b2" style="height:50px"></div><div class="trend-label">W4</div></div>
+          <div class="trend-group"><div class="trend-bar b1" style="height:60px"></div><div class="trend-bar b2" style="height:65px"></div><div class="trend-label">W5</div></div>
+          <div class="trend-group"><div class="trend-bar b1" style="height:80px"></div><div class="trend-bar b2" style="height:55px"></div><div class="trend-label">W6</div></div>
+        </div>
+        <div class="legend"><span><span class="dot" style="background:#9C7ADB"></span> 新增学员</span><span><span class="dot" style="background:#5C8A4D"></span> 通关人数</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== A · 项目详情 ==================== -->
+<div class="view" id="v-a-project">
+  <h1 class="title">方案A · 项目详情</h1>
+  <div class="px-board">
+    <div class="px-header">📁 AI标注培训</div>
+    <div class="px-body">
+      <div class="px-bread"><a onclick="go('a-overview')">📊 数据看板</a> › <span style="color:#5B3A29">AI标注培训</span></div>
+
+      <div class="a-stats">
+        <div class="a-stat s1"><div class="icon">👥</div><div class="label">项目学员</div><div class="val">68</div></div>
+        <div class="a-stat s2"><div class="icon">⚔️</div><div class="label">在训人数</div><div class="val">42</div></div>
+        <div class="a-stat s3"><div class="icon">🏆</div><div class="label">已通关</div><div class="val">20</div><div class="sub">通关率 29%</div></div>
+        <div class="a-stat s4"><div class="icon">📅</div><div class="label">平均通关天数</div><div class="val">12</div></div>
+      </div>
+
+      <h3 class="px-section">📋 培训计划</h3>
+      <div class="a-grid">
+        <div class="a-card" onclick="go('a-plan')">
+          <div class="a-card-title">📋 标注基础班</div>
+          <div class="a-card-nums"><span>学员 <strong>45</strong></span><span>通关 <strong>15</strong></span><span>通过率 <strong>33%</strong></span></div>
+          <div class="a-prog"><div class="a-prog-fill" style="width:33%"></div></div>
+        </div>
+        <div class="a-card">
+          <div class="a-card-title">📋 标注进阶班</div>
+          <div class="a-card-nums"><span>学员 <strong>23</strong></span><span>通关 <strong>5</strong></span><span>通过率 <strong>22%</strong></span></div>
+          <div class="a-prog"><div class="a-prog-fill" style="width:22%"></div></div>
+        </div>
+      </div>
+
+      <div class="a-chart-row">
+        <div class="a-chart-box">
+          <h3>🔻 关卡漏斗（全项目）</h3>
+          <div class="funnel">
+            <div class="funnel-bar"><div class="bar-val">68</div><div class="bar" style="height:120px;background:#8B6F5E"></div><div class="bar-label">关卡1</div></div>
+            <div class="funnel-bar"><div class="bar-val">52</div><div class="bar" style="height:92px;background:#A68B6B"></div><div class="bar-label">关卡2</div></div>
+            <div class="funnel-bar"><div class="bar-val">38</div><div class="bar" style="height:67px;background:#B89E7A"></div><div class="bar-label">关卡3</div></div>
+            <div class="funnel-bar"><div class="bar-val">28</div><div class="bar" style="height:49px;background:#C8AE8A"></div><div class="bar-label">关卡4</div></div>
+            <div class="funnel-bar"><div class="bar-val">20</div><div class="bar" style="height:35px;background:#D4BE9A"></div><div class="bar-label">关卡5</div></div>
+          </div>
+        </div>
+        <div class="a-chart-box">
+          <h3>📈 每周趋势</h3>
+          <div class="trend-chart" style="height:120px">
+            <div class="trend-group"><div class="trend-bar b1" style="height:30px"></div><div class="trend-bar b2" style="height:15px"></div><div class="trend-label">W1</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:45px"></div><div class="trend-bar b2" style="height:25px"></div><div class="trend-label">W2</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:20px"></div><div class="trend-bar b2" style="height:35px"></div><div class="trend-label">W3</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:55px"></div><div class="trend-bar b2" style="height:40px"></div><div class="trend-label">W4</div></div>
+          </div>
+          <div class="legend"><span><span class="dot" style="background:#9C7ADB"></span> 新增</span><span><span class="dot" style="background:#5C8A4D"></span> 通关</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== A · 计划详情 ==================== -->
+<div class="view" id="v-a-plan">
+  <h1 class="title">方案A · 计划详情</h1>
+  <div class="px-board">
+    <div class="px-header">📋 标注基础班</div>
+    <div class="px-body">
+      <div class="px-bread"><a onclick="go('a-overview')">📊 数据看板</a> › <a onclick="go('a-project')">AI标注培训</a> › <span style="color:#5B3A29">标注基础班</span></div>
+
+      <div class="a-stats">
+        <div class="a-stat s1"><div class="icon">👥</div><div class="label">参与学员</div><div class="val">45</div></div>
+        <div class="a-stat s2"><div class="icon">⚔️</div><div class="label">在训人数</div><div class="val">28</div></div>
+        <div class="a-stat s3"><div class="icon">🏆</div><div class="label">已通关</div><div class="val">15</div><div class="sub">通过率 33%</div></div>
+        <div class="a-stat s4"><div class="icon">📅</div><div class="label">平均通关天数</div><div class="val">10</div></div>
+      </div>
+
+      <div class="a-chart-row">
+        <div class="a-chart-box">
+          <h3>🔻 关卡漏斗</h3>
+          <div class="funnel">
+            <div class="funnel-bar"><div class="bar-val">45</div><div class="bar" style="height:120px;background:#5C8A4D"></div><div class="bar-label">基础概念</div></div>
+            <div class="funnel-bar"><div class="bar-val">38</div><div class="bar" style="height:101px;background:#6B9A5C"></div><div class="bar-label">标注规范</div></div>
+            <div class="funnel-bar"><div class="bar-val">28</div><div class="bar" style="height:75px;background:#7AAB6B"></div><div class="bar-label">实操练习</div></div>
+            <div class="funnel-bar"><div class="bar-val">15</div><div class="bar" style="height:40px;background:#89BB7A"></div><div class="bar-label">综合测评</div></div>
+          </div>
+        </div>
+        <div class="a-chart-box">
+          <h3>📊 实战演练统计</h3>
+          <div class="practice-row">
+            <div class="practice-item"><div class="p-label">平均得分</div><div class="p-val" style="color:#9C7ADB">7.8</div><div class="p-label">/10 分</div></div>
+            <div class="practice-item"><div class="p-label">通过率</div><div class="p-val" style="color:#5C8A4D">72%</div><div class="p-label">首次通过</div></div>
+            <div class="practice-item"><div class="p-label">平均审核</div><div class="p-val" style="color:#E8A93A">4.2</div><div class="p-label">小时</div></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="px-section">👥 学员进度明细</h3>
+      <table class="px-table">
+        <thead><tr><th>姓名</th><th>当前关卡</th><th>完成进度</th><th>测验均分</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td><strong>张三</strong></td><td>综合测评</td><td>3/4 <div class="mini-bar"><div class="mini-fill" style="width:75%"></div></div></td><td>92</td><td><span class="px-tag green">已通关</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>李四</strong></td><td>实操练习</td><td>2/4 <div class="mini-bar"><div class="mini-fill" style="width:50%"></div></div></td><td>78</td><td><span class="px-tag orange">学习中</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>王五</strong></td><td>标注规范</td><td>1/4 <div class="mini-bar"><div class="mini-fill" style="width:25%"></div></div></td><td>65</td><td><span class="px-tag orange">学习中</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>赵六</strong></td><td>基础概念</td><td>0/4 <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div></td><td>—</td><td><span class="px-tag gray">未开始</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>陈七</strong></td><td>综合测评</td><td>4/4 <div class="mini-bar"><div class="mini-fill" style="width:100%"></div></div></td><td>88</td><td><span class="px-tag green">已通关</span></td><td><span class="link-btn">详情</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== B · 总览 ==================== -->
+<div class="view" id="v-b-overview">
+  <h1 class="title">方案B · 总览</h1>
+  <div class="px-board">
+    <div class="px-header">📋 数据看板</div>
+    <div class="px-body">
+      <div class="b-stats">
+        <div class="b-strip c1"><div class="icon">👥</div><div class="info"><div class="label">学员总数</div><div class="val">128</div></div><div class="sub">+12</div></div>
+        <div class="b-strip c2"><div class="icon">⚔️</div><div class="info"><div class="label">在训人数</div><div class="val">86</div></div><div class="sub">67%</div></div>
+        <div class="b-strip c3"><div class="icon">🏆</div><div class="info"><div class="label">已通关</div><div class="val">34</div></div><div class="sub">27%</div></div>
+        <div class="b-strip c4"><div class="icon">📅</div><div class="info"><div class="label">平均通关</div><div class="val">14天</div></div></div>
+      </div>
+      <h3 class="b-section">📁 项目概览</h3>
+      <table class="px-table">
+        <thead><tr><th>项目名称</th><th>学员</th><th>在训</th><th>通关</th><th>通过率</th><th>进度</th></tr></thead>
+        <tbody>
+          <tr style="cursor:pointer" onclick="go('b-project')"><td><strong>📁 AI标注培训</strong></td><td>68</td><td>42</td><td>20</td><td><span class="px-tag green">65%</span></td><td><div class="mini-bar"><div class="mini-fill" style="width:65%"></div></div></td></tr>
+          <tr style="cursor:pointer"><td><strong>📁 数据清洗入门</strong></td><td>45</td><td>30</td><td>10</td><td><span class="px-tag orange">40%</span></td><td><div class="mini-bar"><div class="mini-fill" style="width:40%"></div></div></td></tr>
+          <tr style="cursor:pointer"><td><strong>📁 NLP基础训练</strong></td><td>15</td><td>14</td><td>4</td><td><span class="px-tag orange">28%</span></td><td><div class="mini-bar"><div class="mini-fill" style="width:28%"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== B · 项目详情 ==================== -->
+<div class="view" id="v-b-project">
+  <h1 class="title">方案B · 项目详情</h1>
+  <div class="px-board">
+    <div class="px-header">📁 AI标注培训</div>
+    <div class="px-body">
+      <div class="px-bread"><a onclick="go('b-overview')">📊 数据看板</a> › <span style="color:#5B3A29">AI标注培训</span></div>
+
+      <div class="b-stats">
+        <div class="b-strip c1"><div class="icon">👥</div><div class="info"><div class="label">项目学员</div><div class="val">68</div></div></div>
+        <div class="b-strip c2"><div class="icon">⚔️</div><div class="info"><div class="label">在训</div><div class="val">42</div></div></div>
+        <div class="b-strip c3"><div class="icon">🏆</div><div class="info"><div class="label">已通关</div><div class="val">20</div></div><div class="sub">29%</div></div>
+        <div class="b-strip c4"><div class="icon">📅</div><div class="info"><div class="label">平均通关</div><div class="val">12天</div></div></div>
+      </div>
+
+      <h3 class="b-section">📋 培训计划</h3>
+      <table class="px-table">
+        <thead><tr><th>计划名称</th><th>学员</th><th>通关</th><th>通过率</th><th>进度</th></tr></thead>
+        <tbody>
+          <tr style="cursor:pointer" onclick="go('b-plan')"><td><strong>📋 标注基础班</strong></td><td>45</td><td>15</td><td><span class="px-tag orange">33%</span></td><td><div class="mini-bar"><div class="mini-fill" style="width:33%"></div></div></td></tr>
+          <tr style="cursor:pointer"><td><strong>📋 标注进阶班</strong></td><td>23</td><td>5</td><td><span class="px-tag orange">22%</span></td><td><div class="mini-bar"><div class="mini-fill" style="width:22%"></div></div></td></tr>
+        </tbody>
+      </table>
+
+      <div class="a-chart-row" style="margin-top:20px">
+        <div class="a-chart-box">
+          <h3>🔻 关卡漏斗（全项目）</h3>
+          <div class="funnel">
+            <div class="funnel-bar"><div class="bar-val">68</div><div class="bar" style="height:120px;background:#8B6F5E"></div><div class="bar-label">关卡1</div></div>
+            <div class="funnel-bar"><div class="bar-val">52</div><div class="bar" style="height:92px;background:#A68B6B"></div><div class="bar-label">关卡2</div></div>
+            <div class="funnel-bar"><div class="bar-val">38</div><div class="bar" style="height:67px;background:#B89E7A"></div><div class="bar-label">关卡3</div></div>
+            <div class="funnel-bar"><div class="bar-val">28</div><div class="bar" style="height:49px;background:#C8AE8A"></div><div class="bar-label">关卡4</div></div>
+            <div class="funnel-bar"><div class="bar-val">20</div><div class="bar" style="height:35px;background:#D4BE9A"></div><div class="bar-label">关卡5</div></div>
+          </div>
+        </div>
+        <div class="a-chart-box">
+          <h3>📈 每周趋势</h3>
+          <div class="trend-chart" style="height:120px">
+            <div class="trend-group"><div class="trend-bar b1" style="height:30px"></div><div class="trend-bar b2" style="height:15px"></div><div class="trend-label">W1</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:45px"></div><div class="trend-bar b2" style="height:25px"></div><div class="trend-label">W2</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:20px"></div><div class="trend-bar b2" style="height:35px"></div><div class="trend-label">W3</div></div>
+            <div class="trend-group"><div class="trend-bar b1" style="height:55px"></div><div class="trend-bar b2" style="height:40px"></div><div class="trend-label">W4</div></div>
+          </div>
+          <div class="legend"><span><span class="dot" style="background:#9C7ADB"></span> 新增</span><span><span class="dot" style="background:#5C8A4D"></span> 通关</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== B · 计划详情 ==================== -->
+<div class="view" id="v-b-plan">
+  <h1 class="title">方案B · 计划详情</h1>
+  <div class="px-board">
+    <div class="px-header">📋 标注基础班</div>
+    <div class="px-body">
+      <div class="px-bread"><a onclick="go('b-overview')">📊 数据看板</a> › <a onclick="go('b-project')">AI标注培训</a> › <span style="color:#5B3A29">标注基础班</span></div>
+
+      <div class="b-stats">
+        <div class="b-strip c1"><div class="icon">👥</div><div class="info"><div class="label">参与学员</div><div class="val">45</div></div></div>
+        <div class="b-strip c2"><div class="icon">⚔️</div><div class="info"><div class="label">在训</div><div class="val">28</div></div></div>
+        <div class="b-strip c3"><div class="icon">🏆</div><div class="info"><div class="label">已通关</div><div class="val">15</div></div><div class="sub">33%</div></div>
+        <div class="b-strip c4"><div class="icon">📅</div><div class="info"><div class="label">平均通关</div><div class="val">10天</div></div></div>
+      </div>
+
+      <div class="a-chart-row">
+        <div class="a-chart-box">
+          <h3>🔻 关卡漏斗</h3>
+          <div class="funnel">
+            <div class="funnel-bar"><div class="bar-val">45</div><div class="bar" style="height:120px;background:#5C8A4D"></div><div class="bar-label">基础概念</div></div>
+            <div class="funnel-bar"><div class="bar-val">38</div><div class="bar" style="height:101px;background:#6B9A5C"></div><div class="bar-label">标注规范</div></div>
+            <div class="funnel-bar"><div class="bar-val">28</div><div class="bar" style="height:75px;background:#7AAB6B"></div><div class="bar-label">实操练习</div></div>
+            <div class="funnel-bar"><div class="bar-val">15</div><div class="bar" style="height:40px;background:#89BB7A"></div><div class="bar-label">综合测评</div></div>
+          </div>
+        </div>
+        <div class="a-chart-box">
+          <h3>📊 实战演练统计</h3>
+          <div class="practice-row">
+            <div class="practice-item"><div class="p-label">平均得分</div><div class="p-val" style="color:#9C7ADB">7.8</div><div class="p-label">/10 分</div></div>
+            <div class="practice-item"><div class="p-label">通过率</div><div class="p-val" style="color:#5C8A4D">72%</div><div class="p-label">首次通过</div></div>
+            <div class="practice-item"><div class="p-label">平均审核</div><div class="p-val" style="color:#E8A93A">4.2</div><div class="p-label">小时</div></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="b-section">👥 学员进度明细</h3>
+      <table class="px-table">
+        <thead><tr><th>姓名</th><th>当前关卡</th><th>完成进度</th><th>测验均分</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td><strong>张三</strong></td><td>综合测评</td><td>3/4 <div class="mini-bar"><div class="mini-fill" style="width:75%"></div></div></td><td>92</td><td><span class="px-tag green">已通关</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>李四</strong></td><td>实操练习</td><td>2/4 <div class="mini-bar"><div class="mini-fill" style="width:50%"></div></div></td><td>78</td><td><span class="px-tag orange">学习中</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>王五</strong></td><td>标注规范</td><td>1/4 <div class="mini-bar"><div class="mini-fill" style="width:25%"></div></div></td><td>65</td><td><span class="px-tag orange">学习中</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>赵六</strong></td><td>基础概念</td><td>0/4 <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div></td><td>—</td><td><span class="px-tag gray">未开始</span></td><td><span class="link-btn">详情</span></td></tr>
+          <tr><td><strong>陈七</strong></td><td>综合测评</td><td>4/4 <div class="mini-bar"><div class="mini-fill" style="width:100%"></div></div></td><td>88</td><td><span class="px-tag green">已通关</span></td><td><span class="link-btn">详情</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function go(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('v-' + id).classList.add('active');
+  const tabs = ['a-overview','a-project','a-plan','b-overview','b-project','b-plan'];
+  const idx = tabs.indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.tab-bar button')[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

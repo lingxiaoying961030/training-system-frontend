@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 5D Demo — 成就反馈动画</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; background: #F5EFE0; color: #5B3A29; }
+
+  /* Nav */
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 8px; padding: 12px 20px; background: #5B3A29; flex-wrap: wrap; align-items: center;
+  }
+  .demo-nav .title { color: #E8A93A; font-size: 16px; font-weight: bold; margin-right: 12px; }
+  .demo-nav button {
+    padding: 8px 18px; border: 2px solid #E8A93A; background: #7B5B3A;
+    color: #FFF8E7; font-size: 14px; cursor: pointer;
+  }
+  .demo-nav button:hover { background: #E8A93A; color: #5B3A29; }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 30px 20px; }
+  .section { margin-bottom: 40px; }
+  .section-title { font-size: 18px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .section-title .badge { background: #E8A93A; color: #5B3A29; padding: 2px 10px; font-size: 12px; font-weight: bold; }
+  .section-desc { font-size: 13px; color: #8B7355; margin-bottom: 16px; }
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 30px 0; }
+
+  /* ===== ① 答对：星星粒子 ===== */
+  .feedback-area {
+    position: relative; display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px; border: 2px solid #A5D6A7; color: #2E7D32; background: #ECF5E8;
+    font-size: 14px; font-weight: 500; overflow: visible;
+  }
+  .feedback-area img { width: 18px; height: 18px; image-rendering: pixelated; }
+
+  /* 星星粒子 */
+  .star-particle {
+    position: absolute; width: 16px; height: 16px;
+    image-rendering: pixelated; pointer-events: none; z-index: 10;
+    animation: star-burst 700ms ease-out forwards;
+  }
+  @keyframes star-burst {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--rot)); }
+  }
+
+  /* ===== ② 答错：抖动 ===== */
+  .opt {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border: 2px solid #E0D5C8; cursor: pointer;
+    font-size: 14px; background: #FFFDF5; transition: all 0.15s; margin-bottom: 6px;
+  }
+  .opt.selected { border-color: #4A90B8; background: #F0F5FA; }
+  .opt.wrong {
+    border-color: #C24A3A; background: #FFF0EE;
+    animation: shake 350ms ease-in-out;
+  }
+  .opt.correct { border-color: #5C8A4D; background: #ECF5E8; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-5px); }
+    30% { transform: translateX(5px); }
+    45% { transform: translateX(-4px); }
+    60% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+    90% { transform: translateX(2px); }
+  }
+
+  /* ===== ③ 通关庆祝 ===== */
+  .status-card {
+    position: relative; text-align: center; padding: 28px;
+    border: 3px solid #E0D5C8; background: #FFFDF5; overflow: hidden;
+  }
+  .status-card.passed { border-color: #5C8A4D; background: #F5FAF2; }
+  .status-card img.trophy {
+    width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 8px;
+    opacity: 0; animation: trophy-bounce 500ms ease-out 200ms forwards;
+  }
+  @keyframes trophy-bounce {
+    0%   { opacity: 0; transform: scale(0); }
+    60%  { opacity: 1; transform: scale(1.25); }
+    80%  { transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .status-card h3 { font-size: 18px; color: #5B3A29; margin-bottom: 4px; }
+  .status-card p { font-size: 14px; color: #8B7355; }
+
+  /* 彩色方块粒子 */
+  .confetti {
+    position: absolute; pointer-events: none; z-index: 5;
+    animation: confetti-fall var(--duration) ease-out forwards;
+  }
+  @keyframes confetti-fall {
+    0%   { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+    100% { opacity: 0; transform: translate(var(--cx), var(--cy)) rotate(var(--cr)); }
+  }
+
+  /* ===== ④ 全通关：金色粒子雨 ===== */
+  .all-done {
+    position: relative; text-align: center; padding: 32px;
+    background: #F5EFE0; border: 4px solid #E8A93A; overflow: hidden;
+  }
+  .all-done img.trophy-glow {
+    width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 10px;
+    animation: trophy-bounce 500ms ease-out forwards, glow-pulse 1.5s ease-in-out 0.7s infinite;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(232,169,58,0.3)); }
+    50%      { filter: drop-shadow(0 0 16px rgba(232,169,58,0.8)); }
+  }
+  .all-done h2 { font-size: 22px; color: #5B3A29; margin-bottom: 6px; }
+  .all-done p { font-size: 14px; color: #8B7355; }
+
+  .gold-rain {
+    position: absolute; pointer-events: none; z-index: 5;
+    background: #E8A93A;
+    animation: gold-fall var(--duration) linear forwards;
+  }
+  @keyframes gold-fall {
+    0%   { opacity: 1; transform: translateY(0) translateX(0) rotate(0deg); }
+    25%  { transform: translateY(25%) translateX(var(--sway)) rotate(90deg); }
+    50%  { transform: translateY(50%) translateX(calc(var(--sway) * -0.6)) rotate(180deg); }
+    75%  { transform: translateY(75%) translateX(var(--sway)) rotate(270deg); }
+    100% { opacity: 0; transform: translateY(var(--fall-dist)) translateX(0) rotate(360deg); }
+  }
+
+  /* Buttons */
+  .px-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 22px; font-size: 14px; font-weight: 500;
+    border: 2px solid #5B3A29; cursor: pointer; color: #fff; margin-top: 12px;
+  }
+  .px-btn.green { background: #5C8A4D; }
+  .px-btn.green:hover { background: #4A7A3D; box-shadow: 2px 2px 0 #5B3A29; }
+  .px-btn.outline { background: #FFFDF5; color: #5B3A29; border-color: #C8A882; }
+  .px-btn.outline:hover { border-color: #5B3A29; }
+
+  .demo-q { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎮 5D 成就反馈动画 Demo</span>
+  <button onclick="replayAll()">🔄 全部重播</button>
+</div>
+
+<div class="container">
+
+  <!-- ① 答对星星 -->
+  <div class="section">
+    <div class="section-title"><span class="badge">①</span> 答对 — 星星粒子飞散</div>
+    <p class="section-desc">提交正确答案后，从反馈标签飞出 6-8 颗星星向四周扩散</p>
+
+    <div class="demo-q">1. Vue 3 的组合式 API 使用哪个函数？ [单选]</div>
+    <div id="q1-options">
+      <div class="opt correct">A. setup()</div>
+      <div class="opt">B. created()</div>
+      <div class="opt">C. mounted()</div>
+    </div>
+    <div id="star-anchor" class="feedback-area" style="margin-top:10px;">
+      <img src="frontend/public/pixel-icons/ui/checkmark.png" onerror="this.style.display='none'"> 回答正确！
+    </div>
+    <br>
+    <button class="px-btn green" onclick="playStars()">🌟 播放星星粒子</button>
+  </div>
+
+  <hr>
+
+  <!-- ② 答错抖动 -->
+  <div class="section">
+    <div class="section-title"><span class="badge">②</span> 答错 — 选项抖动</div>
+    <p class="section-desc">提交错误答案后，错误选项抖动 + 红色高亮，正确选项绿色显示</p>
+
+    <div class="demo-q">2. JavaScript 中 null == undefined 的结果？ [判断]</div>
+    <div id="q2-options">
+      <div class="opt" id="q2-a">A. 对</div>
+      <div class="opt" id="q2-b">B. 错</div>
+    </div>
+    <button class="px-btn green" onclick="playShake()">😣 播放答错抖动</button>
+  </div>
+
+  <hr>
+
+  <!-- ③ 通关庆祝 -->
+  <div class="section">
+    <div class="section-title"><span class="badge">③</span> 测验通关 — 烟花庆祝</div>
+    <p class="section-desc">测验得分 ≥80，trophy 弹跳入场 + 彩色方块粒子飞散</p>
+
+    <div id="pass-card" class="status-card passed">
+      <img class="trophy" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+      <h3>🎉 恭喜通过！</h3>
+      <p>得分：92 / 100（答对 11 / 12）</p>
+    </div>
+    <button class="px-btn green" onclick="playConfetti()">🎆 播放通关庆祝</button>
+  </div>
+
+  <hr>
+
+  <!-- ④ 全通关 -->
+  <div class="section">
+    <div class="section-title"><span class="badge">④</span> 全关卡通关 — 金色粒子雨</div>
+    <p class="section-desc">所有关卡完成时，trophy 光芒脉冲 + 金色方块从顶部飘落</p>
+
+    <div id="alldone-card" class="all-done">
+      <img class="trophy-glow" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+      <h2>🎊 恭喜通关！</h2>
+      <p>本关卡全部完成！</p>
+    </div>
+    <button class="px-btn green" onclick="playGoldRain()">🌧️ 播放金色粒子雨</button>
+  </div>
+
+</div>
+
+<script>
+// ===== ① 星星粒子 =====
+function playStars() {
+  const anchor = document.getElementById('star-anchor');
+  // 清理旧粒子
+  anchor.querySelectorAll('.star-particle').forEach(e => e.remove());
+
+  const count = 6 + Math.floor(Math.random() * 3); // 6-8
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('img');
+    star.className = 'star-particle';
+    star.src = 'frontend/public/pixel-icons/ui/star_gold.png';
+    star.onerror = () => { star.style.background = '#E8A93A'; star.style.borderRadius = '1px'; };
+
+    const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
+    const dist = 40 + Math.random() * 50;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const rot = (Math.random() - 0.5) * 360;
+
+    star.style.cssText = `
+      left: 50%; top: 50%;
+      --dx: ${dx}px; --dy: ${dy}px; --rot: ${rot}deg;
+    `;
+    anchor.appendChild(star);
+    star.addEventListener('animationend', () => star.remove());
+  }
+}
+
+// ===== ② 答错抖动 =====
+function playShake() {
+  const a = document.getElementById('q2-a');
+  const b = document.getElementById('q2-b');
+
+  // Reset
+  a.className = 'opt';
+  b.className = 'opt';
+
+  // B 是用户选的（错误），A 是正确答案
+  requestAnimationFrame(() => {
+    b.classList.add('wrong');
+    a.classList.add('correct');
+  });
+
+  // 移除动画class以便重播
+  b.addEventListener('animationend', () => {
+    // keep wrong class for color, just allow re-trigger
+  }, { once: true });
+}
+
+// ===== ③ 通关彩色方块 =====
+function playConfetti() {
+  const card = document.getElementById('pass-card');
+  // 清理 & 重播 trophy
+  card.querySelectorAll('.confetti').forEach(e => e.remove());
+  const trophy = card.querySelector('.trophy');
+  trophy.style.animation = 'none';
+  trophy.offsetHeight;
+  trophy.style.animation = 'trophy-bounce 500ms ease-out 200ms forwards';
+
+  const colors = ['#E8A93A', '#5C8A4D', '#4A90B8', '#E88BA5', '#C27ADB', '#FF8C42'];
+  const count = 25;
+
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti';
+    const size = 4 + Math.floor(Math.random() * 5); // 4-8px 方块
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const startX = Math.random() * 100;
+    const cx = (Math.random() - 0.5) * 120;
+    const cy = 60 + Math.random() * 100;
+    const cr = (Math.random() - 0.5) * 720;
+    const duration = 800 + Math.random() * 700;
+    const delay = Math.random() * 300;
+
+    p.style.cssText = `
+      width: ${size}px; height: ${size}px; background: ${color};
+      left: ${startX}%; top: 30%;
+      --cx: ${cx}px; --cy: ${cy}px; --cr: ${cr}deg;
+      --duration: ${duration}ms;
+      animation-delay: ${delay}ms;
+    `;
+    card.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// ===== ④ 金色粒子雨 =====
+function playGoldRain() {
+  const card = document.getElementById('alldone-card');
+  card.querySelectorAll('.gold-rain').forEach(e => e.remove());
+
+  // 重播 trophy
+  const trophy = card.querySelector('.trophy-glow');
+  trophy.style.animation = 'none';
+  trophy.offsetHeight;
+  trophy.style.animation = 'trophy-bounce 500ms ease-out forwards, glow-pulse 1.5s ease-in-out 0.7s infinite';
+
+  const count = 35;
+  const cardH = card.offsetHeight;
+
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'gold-rain';
+    const size = 3 + Math.floor(Math.random() * 5);
+    const x = Math.random() * 100;
+    const sway = (Math.random() - 0.5) * 30;
+    const duration = 1500 + Math.random() * 1000;
+    const delay = Math.random() * 800;
+    const opacity = 0.5 + Math.random() * 0.5;
+    const shade = Math.random() > 0.3 ? '#E8A93A' : (Math.random() > 0.5 ? '#D4962E' : '#F0C060');
+
+    p.style.cssText = `
+      width: ${size}px; height: ${size}px; background: ${shade};
+      left: ${x}%; top: -${size}px; opacity: ${opacity};
+      --sway: ${sway}px; --fall-dist: ${cardH + 20}px;
+      --duration: ${duration}ms;
+      animation-delay: ${delay}ms;
+    `;
+    card.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+// 全部重播
+function replayAll() {
+  // Reset shake
+  document.getElementById('q2-a').className = 'opt';
+  document.getElementById('q2-b').className = 'opt';
+
+  setTimeout(() => {
+    playStars();
+    playShake();
+    playConfetti();
+    playGoldRain();
+  }, 100);
+}
+
+// 自动播放
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    playStars();
+    playConfetti();
+    playGoldRain();
+  }, 500);
+});
+</script>
+</body>
+</html>

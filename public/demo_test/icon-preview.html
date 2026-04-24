@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Plan 图标候选预览</title>
+<style>
+body { font-family: sans-serif; background: #FFF8E7; padding: 32px; color: #3E2723; }
+h2 { margin: 24px 0 12px; }
+.grid { display: flex; flex-wrap: wrap; gap: 16px; }
+.item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 16px; border: 2px solid #E0D5C8; background: #FFFDF5;
+  min-width: 90px;
+}
+.item.current { border-color: #5C8A4D; background: #F0F8EC; }
+.item.candidate { border-color: #E8A93A; background: #FFF8E7; }
+.item.remove { border-color: #C24A3A; background: #FFF0EE; opacity: 0.6; }
+.item img { width: 40px; height: 40px; image-rendering: pixelated; }
+.item .name { font-size: 11px; color: #8B7355; text-align: center; }
+.item .label { font-size: 10px; font-weight: bold; }
+.label.green { color: #5C8A4D; }
+.label.orange { color: #E8A93A; }
+.label.red { color: #C24A3A; }
+</style></head><body>
+<h1>📋 Plan 图标池 — 候选预览</h1>
+
+<h2>✅ 当前在用（7个，去掉 house）</h2>
+<div class="grid">
+  <div class="item current"><img src="assets/pixel/icons/stardew/book.png"><div class="name">book</div><div class="label green">📖 知识</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/sword.png"><div class="name">sword</div><div class="label green">⚔️ 实战</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/trophy.png"><div class="name">trophy</div><div class="label green">🏆 成就</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/star_gold.png"><div class="name">star_gold</div><div class="label green">⭐ 优秀</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/gift.png"><div class="name">gift</div><div class="label green">🎁 奖励</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/lightning.png"><div class="name">lightning</div><div class="label green">⚡ 快速</div></div>
+  <div class="item current"><img src="assets/pixel/icons/stardew/star_iridium.png"><div class="name">star_iridium</div><div class="label green">💜 进阶</div></div>
+</div>
+
+<h2>❌ 移除</h2>
+<div class="grid">
+  <div class="item remove"><img src="assets/pixel/icons/stardew/house.png"><div class="name">house</div><div class="label red">不好看</div></div>
+</div>
+
+<h2>🆕 候选新增</h2>
+<div class="grid">
+  <div class="item candidate"><img src="assets/pixel/icons/stardew/heart.png"><div class="name">heart</div><div class="label orange">❤️ 喜爱/核心</div></div>
+  <div class="item candidate"><img src="assets/pixel/icons/stardew/coin.png"><div class="name">coin</div><div class="label orange">🪙 积分/价值</div></div>
+  <div class="item candidate"><img src="assets/pixel/icons/stardew/star_silver.png"><div class="name">star_silver</div><div class="label orange">⚪ 基础/入门</div></div>
+  <div class="item candidate"><img src="assets/pixel/icons/stardew/exclamation.png"><div class="name">exclamation</div><div class="label orange">❗ 重要/必修</div></div>
+  <div class="item candidate"><img src="assets/pixel/icons/stardew/question.png"><div class="name">question</div><div class="label orange">❓ 考核/测试</div></div>
+</div>
+
+<h2>🔄 也可以用 dobo 的 64px 图标（目前只用在项目池，但计划也能用）</h2>
+<div class="grid">
+  <div class="item candidate"><img src="assets/pixel/ready/adventure_icon_64px.png"><div class="name">adventure</div><div class="label orange">⚔️ 冒险</div></div>
+  <div class="item candidate"><img src="assets/pixel/ready/gem_icon_64px.png"><div class="name">gem</div><div class="label orange">💎 精华</div></div>
+  <div class="item candidate"><img src="assets/pixel/ready/key_icon_64px.png"><div class="name">key</div><div class="label orange">🔑 解锁</div></div>
+  <div class="item candidate"><img src="assets/pixel/ready/energy_icon_64px.png"><div class="name">energy</div><div class="label orange">⚡ 活力</div></div>
+</div>
+
+<p style="margin-top: 32px; color: #8B7355; font-size: 13px;">
+  💡 挑你喜欢的告诉我，我来更新配置！
+</p>
+</body></html>

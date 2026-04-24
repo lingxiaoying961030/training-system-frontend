@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>培训地图 完整 Demo</title>
+<style>
+:root {
+  --pixel-green: #5C8A4D;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-brown-light: #8B6F5E;
+  --pixel-red: #C24A3A;
+  --pixel-blue: #4A90B8;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--pixel-bg); color: var(--pixel-text); }
+
+.user-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 24px; height: 56px;
+  background: var(--pixel-card); border-bottom: 2px solid var(--pixel-border);
+}
+.header-logo { font-size: 17px; font-weight: 600; color: var(--pixel-brown); display: flex; align-items: center; gap: 8px; }
+.header-avatar { width: 32px; height: 32px; image-rendering: pixelated; border: 2px solid var(--pixel-gold); }
+.header-nav a { margin-left: 16px; color: var(--pixel-text-secondary); text-decoration: none; font-size: 14px; }
+
+.user-content { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Map Header */
+.map-header {
+  text-align: center; padding: 28px 24px 36px; margin-bottom: 28px;
+  background-color: #E8DFC8;
+  background-image: url('assets/pixel/tiles/floor_02.png');
+  background-size: 32px 32px; background-repeat: repeat;
+  image-rendering: pixelated;
+  border: 4px solid var(--pixel-brown);
+  position: relative; overflow: hidden;
+}
+.map-header::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.75); z-index: 1; }
+.map-header::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
+  background-image: url('assets/pixel/decorations/bush_00.png');
+  background-size: auto 32px; background-repeat: repeat-x;
+  image-rendering: pixelated; opacity: 0.5; z-index: 2;
+}
+.map-header > * { position: relative; z-index: 3; }
+.map-header h1 { font-size: 22px; color: var(--pixel-brown); margin-bottom: 6px; }
+.map-subtitle { font-size: 14px; color: var(--pixel-text-secondary); }
+.map-breadcrumb { font-size: 13px; color: var(--pixel-text-secondary); margin-bottom: 10px; }
+.map-breadcrumb a { color: var(--pixel-blue); text-decoration: none; }
+
+/* ===== Map Area ===== */
+.map-area {
+  position: relative; padding: 48px 0 40px; overflow: hidden;
+  border: 4px solid var(--pixel-brown);
+  background-color: #E8E1CC;
+  background-image: url('assets/pixel/ready/bg_meadow.png');
+  background-size: 128px 128px; background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+/* 装饰元素 */
+.deco {
+  position: absolute; image-rendering: pixelated; z-index: 0;
+  pointer-events: none;
+}
+
+/* 学员角色（显示在地图上当前关卡旁边） */
+.player-char {
+  position: absolute; image-rendering: pixelated; z-index: 3;
+  filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.15));
+  animation: player-bounce 2s ease-in-out infinite;
+}
+@keyframes player-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ===== Stage Path ===== */
+.stage-path {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+.stage-node-wrap {
+  width: 100%; max-width: 600px;
+  display: flex; padding: 0 24px;
+}
+.stage-node-wrap.left { justify-content: flex-start; }
+.stage-node-wrap.right { justify-content: flex-end; }
+
+/* SVG 路径连接 */
+.path-segment {
+  width: 100%; max-width: 600px; height: 44px;
+  position: relative; z-index: 1;
+}
+.path-segment svg { width: 100%; height: 100%; }
+
+/* 关卡卡片 */
+.stage-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--pixel-card); border: 3px solid var(--pixel-border);
+  padding: 14px 16px; max-width: 360px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.stage-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--pixel-brown);
+  border-color: var(--pixel-brown);
+}
+.stage-card.locked { opacity: 0.5; cursor: default; filter: saturate(0.3); }
+.stage-card.locked:hover { transform: none; box-shadow: none; border-color: var(--pixel-border); }
+
+/* 关卡图标 */
+.stage-icon {
+  flex-shrink: 0; width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--pixel-border); background: #F0EBE3;
+  position: relative;
+}
+.stage-icon img { width: 32px; height: 32px; image-rendering: pixelated; }
+.stage-num {
+  position: absolute; bottom: -5px; right: -5px;
+  background: var(--pixel-brown); color: #fff;
+  font-size: 10px; font-weight: bold;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--pixel-card);
+}
+.stage-icon.completed { border-color: var(--pixel-green); background: #ECF5E8; }
+.stage-icon.active { border-color: var(--pixel-gold); background: #FFF8E7; }
+.stage-icon.failed { border-color: var(--pixel-red); background: #FFF0EE; }
+
+/* 关卡信息 */
+.stage-info { flex: 1; min-width: 0; }
+.stage-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
+.stage-title { font-size: 14px; font-weight: 600; color: var(--pixel-brown); }
+
+.stage-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; padding: 1px 6px; font-weight: 500;
+  border: 2px solid; background: var(--pixel-card);
+}
+.stage-tag img { width: 12px; height: 12px; image-rendering: pixelated; }
+.stage-tag.completed { border-color: #A5D6A7; color: #2E7D32; }
+.stage-tag.active { border-color: #FFCC80; color: #E65100; }
+.stage-tag.failed { border-color: #EF9A9A; color: #C62828; }
+.stage-tag.locked { border-color: #D5C9B8; color: #8B7355; }
+
+.stage-desc { font-size: 12px; color: var(--pixel-text-secondary); line-height: 1.4; margin: 3px 0; }
+.stage-mentors { font-size: 11px; color: var(--pixel-brown-light); }
+.stage-time { font-size: 11px; color: #B0A090; }
+
+.stage-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 6px; font-size: 11px; font-weight: 500;
+  color: #fff; border: 2px solid var(--pixel-brown);
+  padding: 3px 10px; cursor: pointer;
+}
+.stage-btn.green { background: var(--pixel-green); }
+.stage-btn.green:hover { background: #4A7A3D; box-shadow: 2px 2px 0 var(--pixel-brown); }
+.stage-btn.blue { background: var(--pixel-blue); }
+.stage-btn img { width: 12px; height: 12px; image-rendering: pixelated; }
+
+/* Demo 切换 */
+.demo-bar {
+  position: fixed; top: 56px; left: 0; right: 0;
+  background: rgba(255,248,231,0.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--pixel-border);
+  padding: 6px 24px; z-index: 50;
+  display: flex; gap: 8px; align-items: center;
+}
+.demo-btn {
+  padding: 4px 12px; font-size: 12px; border: 1px solid var(--pixel-border);
+  background: var(--pixel-card); cursor: pointer; color: var(--pixel-text); border-radius: 3px;
+}
+.demo-btn:hover { background: var(--pixel-gold); color: #fff; }
+.demo-btn.active { background: var(--pixel-brown); color: #fff; border-color: var(--pixel-brown); }
+.user-content { padding-top: 40px; }
+</style>
+</head>
+<body>
+
+<header class="user-header">
+  <span class="header-logo">
+    🏰 培训系统
+  </span>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <img src="assets/pixel/ready/avatar_abigail_head.png" class="header-avatar" />
+    <nav class="header-nav">
+      <a href="#">全部项目</a>
+      <a href="#">个人中心</a>
+    </nav>
+  </div>
+</header>
+
+<div class="demo-bar">
+  <span style="font-size:12px; color:#999;">背景：</span>
+  <button class="demo-btn active" onclick="setBg('meadow')">B 草地</button>
+  <button class="demo-btn" onclick="setBg('path')">C 泥土</button>
+  <button class="demo-btn" onclick="setBg('parchment')">D 羊皮纸</button>
+</div>
+
+<div class="user-content">
+
+  <div class="map-header">
+    <div class="map-breadcrumb">
+      <a href="#">全部项目</a> / <a href="#">文本标注培训</a> / RL基础培训
+    </div>
+    <h1>🗺️ RL基础培训 · 闯关地图</h1>
+    <p class="map-subtitle">完成所有关卡，成为专业标注员！</p>
+  </div>
+
+  <div class="map-area" id="mapArea">
+    <!-- ===== 装饰元素（4个固定槽位 + 微偏移） ===== -->
+    <!-- 左侧树 -->
+    <img class="deco" src="assets/pixel/ready/deco_tree1.png" style="left:-8px; bottom:-10px; height:100px; opacity:0.45;" />
+    <!-- 右侧树 -->
+    <img class="deco" src="assets/pixel/ready/deco_tree2.png" style="right:-5px; bottom:-10px; height:90px; opacity:0.4;" />
+    <!-- 左上：小鸡 -->
+    <img class="deco" src="assets/pixel/ready/deco_chicken.png" style="left:55px; top:8%; height:36px; opacity:0.5;" />
+    <!-- 右上：鸭子（稍低一点，错落） -->
+    <img class="deco" src="assets/pixel/ready/deco_duck.png" style="right:65px; top:12%; height:34px; opacity:0.45;" />
+    <!-- 左中：猫 -->
+    <img class="deco" src="assets/pixel/ready/deco_cat.png" style="left:22px; top:38%; height:40px; opacity:0.45;" />
+    <!-- 右中：绵羊（稍高，错落） -->
+    <img class="deco" src="assets/pixel/ready/deco_sheep.png" style="right:25px; top:42%; height:42px; opacity:0.4;" />
+
+    <!-- ===== 学员角色
+    <!-- 通过 JS 定位到 active 关卡旁边 -->
+
+    <div class="stage-path">
+
+      <!-- ===== 关卡 1：已完成（左） ===== -->
+      <div class="stage-node-wrap left">
+        <div class="stage-card">
+          <div class="stage-icon completed">
+            <img src="assets/pixel/icons/stardew/checkmark.png" />
+            <span class="stage-num">1</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-title-row">
+              <span class="stage-title">入门基础</span>
+              <span class="stage-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已通过</span>
+            </div>
+            <p class="stage-desc">了解 RLHF 基本概念和工作流程</p>
+            <div class="stage-mentors">👤 导师：张老师</div>
+            <div class="stage-time">完成时间：2026-04-18</div>
+            <div class="stage-btn blue"><img src="assets/pixel/icons/stardew/book.png" /> 查看详情</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 路径 左→右 -->
+      <div class="path-segment">
+        <svg viewBox="0 0 600 44" preserveAspectRatio="none">
+          <path d="M 120 0 C 120 22, 480 22, 480 44" stroke="#5B3A29" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.12"/>
+          <path d="M 120 0 C 120 22, 480 22, 480 44" stroke="#E8A93A" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ===== 关卡 2：已完成（右） ===== -->
+      <div class="stage-node-wrap right">
+        <div class="stage-card">
+          <div class="stage-icon completed">
+            <img src="assets/pixel/icons/stardew/checkmark.png" />
+            <span class="stage-num">2</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-title-row">
+              <span class="stage-title">文本理解</span>
+              <span class="stage-tag completed"><img src="assets/pixel/icons/stardew/checkmark.png" /> 已通过</span>
+            </div>
+            <p class="stage-desc">学习文本分类、情感分析等标注方法</p>
+            <div class="stage-mentors">👤 导师：李老师</div>
+            <div class="stage-time">完成时间：2026-04-20</div>
+            <div class="stage-btn blue"><img src="assets/pixel/icons/stardew/book.png" /> 查看详情</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 路径 右→左 -->
+      <div class="path-segment">
+        <svg viewBox="0 0 600 44" preserveAspectRatio="none">
+          <path d="M 480 0 C 480 22, 120 22, 120 44" stroke="#5B3A29" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.12"/>
+          <path d="M 480 0 C 480 22, 120 22, 120 44" stroke="#E8A93A" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ===== 关卡 3：进行中（左）+ 学员角色 ===== -->
+      <div class="stage-node-wrap left" style="position: relative;">
+        <div class="stage-card" id="activeStage">
+          <div class="stage-icon active">
+            <img src="assets/pixel/icons/stardew/flag.png" />
+            <span class="stage-num">3</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-title-row">
+              <span class="stage-title">质量评估</span>
+              <span class="stage-tag active"><img src="assets/pixel/icons/stardew/flag.png" /> 进行中</span>
+            </div>
+            <p class="stage-desc">学习如何评估模型输出质量、进行偏好排序</p>
+            <div class="stage-mentors">👤 导师：王老师、张老师</div>
+            <div class="stage-btn green"><img src="assets/pixel/ready/arrow_green.png" /> 进入关卡</div>
+          </div>
+        </div>
+        <!-- 学员角色站在卡片右边 -->
+        <img class="player-char" src="assets/pixel/ready/avatar_abigail.png"
+             style="position:absolute; right:-60px; bottom:8px; height:72px;" />
+      </div>
+
+      <!-- 路径 左→右（虚线） -->
+      <div class="path-segment">
+        <svg viewBox="0 0 600 44" preserveAspectRatio="none">
+          <path d="M 120 0 C 120 22, 480 22, 480 44" stroke="#C8B8A0" stroke-width="6" fill="none" stroke-dasharray="8 6" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ===== 关卡 4：锁定（右） ===== -->
+      <div class="stage-node-wrap right">
+        <div class="stage-card locked">
+          <div class="stage-icon">
+            <img src="assets/pixel/icons/stardew/lock.png" />
+            <span class="stage-num">4</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-title-row">
+              <span class="stage-title">综合考核</span>
+              <span class="stage-tag locked"><img src="assets/pixel/icons/stardew/lock.png" /> 未解锁</span>
+            </div>
+            <p class="stage-desc">完成前置关卡后解锁最终考核</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 路径 虚线 -->
+      <div class="path-segment">
+        <svg viewBox="0 0 600 44" preserveAspectRatio="none">
+          <path d="M 480 0 C 480 22, 120 22, 120 44" stroke="#C8B8A0" stroke-width="6" fill="none" stroke-dasharray="8 6" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ===== 关卡 5：锁定（左） ===== -->
+      <div class="stage-node-wrap left">
+        <div class="stage-card locked">
+          <div class="stage-icon">
+            <img src="assets/pixel/icons/stardew/lock.png" />
+            <span class="stage-num">5</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-title-row">
+              <span class="stage-title">实战演练</span>
+              <span class="stage-tag locked"><img src="assets/pixel/icons/stardew/lock.png" /> 未解锁</span>
+            </div>
+            <p class="stage-desc">真实数据标注实战练习</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+const bgMap = {
+  meadow: { color: '#E8E1CC', image: "url('assets/pixel/ready/bg_meadow.png')" },
+  path: { color: '#E4DCCC', image: "url('assets/pixel/ready/bg_path.png')" },
+  parchment: { color: '#F5EBDB', image: "url('assets/pixel/ready/bg_parchment.png')" },
+};
+function setBg(name) {
+  const el = document.getElementById('mapArea');
+  el.style.backgroundColor = bgMap[name].color;
+  el.style.backgroundImage = bgMap[name].image;
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

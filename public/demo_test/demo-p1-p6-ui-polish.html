@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P1-P6 UI 优化 Demo</title>
+
+<!-- P1: 个性化字体 -->
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+  /* ===== P2: 自定义像素光标 ===== */
+  /* 这里用内联 SVG data URL 模拟像素箭头光标 (实际项目用 stardew 素材) */
+  body {
+    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="0" y="0" width="2" height="2" fill="%235B3A29"/><rect x="0" y="2" width="2" height="2" fill="%235B3A29"/><rect x="2" y="2" width="2" height="2" fill="%235B3A29"/><rect x="0" y="4" width="2" height="2" fill="%235B3A29"/><rect x="2" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="4" width="2" height="2" fill="%235B3A29"/><rect x="0" y="6" width="2" height="2" fill="%235B3A29"/><rect x="2" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="6" width="2" height="2" fill="%235B3A29"/><rect x="0" y="8" width="2" height="2" fill="%235B3A29"/><rect x="2" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="8" width="2" height="2" fill="%235B3A29"/><rect x="0" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="10" width="2" height="2" fill="%235B3A29"/><rect x="6" y="10" width="2" height="2" fill="%235B3A29"/><rect x="0" y="12" width="2" height="2" fill="%235B3A29"/><rect x="2" y="12" width="2" height="2" fill="%235B3A29"/></svg>') 0 0, auto;
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    color: #3E2723;
+  }
+
+  /* P2: 可交互元素用像素手指 */
+  a, button, .clickable, .project-card, .plan-card, .stage-node, .nav-item {
+    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="4" y="0" width="2" height="2" fill="%235B3A29"/><rect x="6" y="0" width="2" height="2" fill="%235B3A29"/><rect x="4" y="2" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="2" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="0" y="6" width="2" height="2" fill="%235B3A29"/><rect x="2" y="6" width="2" height="2" fill="%235B3A29"/><rect x="4" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="6" width="2" height="2" fill="%235B3A29"/><rect x="10" y="6" width="2" height="2" fill="%235B3A29"/><rect x="0" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="2" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="10" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="0" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="10" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="12" width="2" height="2" fill="%235B3A29"/><rect x="4" y="12" width="2" height="2" fill="%235B3A29"/><rect x="6" y="12" width="2" height="2" fill="%235B3A29"/><rect x="8" y="12" width="2" height="2" fill="%235B3A29"/></svg>') 4 0, pointer;
+  }
+
+  /* ===== P1: 标题字体 ===== */
+  .pixel-title { font-family: "ZCOOL QingKe HuangYou", "PingFang SC", sans-serif; }
+  .pixel-title-en { font-family: "Press Start 2P", monospace; }
+
+  /* ===== P3: 背景氛围层 ===== */
+  .page-bg {
+    min-height: 100vh; position: relative;
+    background: #FFF8E7;
+    /* 纸质纹理叠加 */
+    background-image: url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.025"/></svg>');
+  }
+  /* 底部固定草地装饰条 */
+  .ground-deco {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 48px;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .ground-grass {
+    width: 100%; height: 24px; position: absolute; bottom: 0;
+    background: linear-gradient(to top, #7CAA6E 0%, #9BC48E 60%, transparent 100%);
+    opacity: 0.25;
+  }
+  .ground-bush {
+    width: 100%; height: 32px; position: absolute; bottom: 0;
+    background-image: url('frontend/public/pixel-icons/ui/bush_00.png');
+    background-size: auto 32px; background-repeat: repeat-x;
+    image-rendering: pixelated; opacity: 0.15;
+  }
+
+  /* ===== Layout ===== */
+  .container { max-width: 900px; margin: 0 auto; padding: 20px 24px 80px; position: relative; z-index: 1; }
+
+  /* Nav */
+  .demo-nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 10px; padding: 12px 20px; background: #5B3A29;
+    flex-wrap: wrap; align-items: center;
+  }
+  .demo-nav .title { color: #E8A93A; font-size: 15px; font-weight: bold; margin-right: 8px; font-family: "ZCOOL QingKe HuangYou"; }
+  .demo-nav .toggle { padding: 6px 14px; border: 2px solid #E8A93A; background: #7B5B3A; color: #FFF8E7; font-size: 12px; cursor: pointer; }
+  .demo-nav .toggle:hover, .demo-nav .toggle.active { background: #E8A93A; color: #5B3A29; }
+
+  .section-label {
+    font-size: 14px; font-weight: bold; margin: 28px 0 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label .badge { background: #E8A93A; color: #5B3A29; padding: 2px 10px; font-size: 11px; font-weight: bold; }
+  .section-desc { font-size: 12px; color: #8B7355; margin-bottom: 14px; }
+  hr { border: none; border-top: 2px dashed #C8A882; margin: 24px 0; }
+
+  /* ===== 模拟学员端 Header ===== */
+  .user-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 24px; height: 56px; background: #FFFDF5; border-bottom: 2px solid #E0D5C8;
+    margin-bottom: 20px;
+  }
+  .user-header .logo { font-size: 17px; font-weight: 600; color: #5B3A29; text-decoration: none; }
+  .user-header .nav-right { display: flex; align-items: center; gap: 16px; }
+  .user-header .nav-link { color: #8B7355; text-decoration: none; font-size: 14px; }
+
+  /* ===== P1 字体对比 ===== */
+  .font-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .font-box { border: 2px solid #E0D5C8; padding: 16px; background: #FFFDF5; }
+  .font-box .label { font-size: 11px; color: #8B7355; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ===== 模拟 Banner ===== */
+  .welcome-banner {
+    text-align: center; padding: 48px 24px 52px;
+    position: relative; overflow: hidden;
+    background-color: #E8DFC8;
+    background-image: url('frontend/public/pixel-icons/ui/floor_02.png');
+    background-size: 32px 32px; background-repeat: repeat; image-rendering: pixelated;
+    border: 4px solid #5B3A29; margin-bottom: 24px;
+  }
+  .welcome-banner::before { content: ''; position: absolute; inset: 0; background: rgba(255,248,231,0.75); z-index: 1; }
+  .welcome-banner > * { position: relative; z-index: 2; }
+  .welcome-banner .hero-icon { width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 12px; }
+  .welcome-banner h1 { font-size: 28px; color: #5B3A29; margin-bottom: 10px; }
+  .welcome-banner p { font-size: 15px; color: #8B7355; }
+
+  /* ===== P4: 卡片 Hover 微交互 ===== */
+  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .project-card {
+    background: #FFFDF5; border: 3px solid #E0D5C8; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  /* P4 升级：hover 有"按下弹起"感 */
+  .project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 4px 6px 0 #5B3A29;
+    border-color: #5B3A29;
+  }
+  .project-card:active {
+    transform: translateY(0px);
+    box-shadow: 2px 2px 0 #5B3A29;
+  }
+  .project-cover {
+    height: 120px; display: flex; align-items: center; justify-content: center;
+    border-bottom: 3px solid #E0D5C8; position: relative;
+  }
+  .project-cover .icon {
+    width: 56px; height: 56px; image-rendering: pixelated;
+    transition: transform 0.3s ease;
+  }
+  /* P4: 图标弹跳 */
+  .project-card:hover .icon { animation: icon-hop 0.4s ease; }
+  @keyframes icon-hop {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px) scale(1.1); }
+    60% { transform: translateY(-2px); }
+  }
+  .project-body { padding: 14px 16px; }
+  .project-body h2 { font-size: 16px; color: #5B3A29; margin: 0 0 6px; }
+  .project-body p { font-size: 13px; color: #8B7355; margin: 0 0 10px; }
+
+  /* 进度条 */
+  .progress-wrap { height: 12px; background: #E0D5C8; border: 2px solid #5B3A29; }
+  .progress-fill { height: 100%; transition: width 1.2s cubic-bezier(0.25,0.46,0.45,0.94); }
+  .progress-fill.yellow { background: #E8A93A; }
+  .progress-fill.green { background: #5C8A4D; }
+
+  /* ===== P4: 地图关卡 Hover ===== */
+  .stage-demo {
+    display: flex; align-items: center; gap: 12px;
+    background: #FFFDF5; border: 3px solid #E0D5C8; padding: 14px 16px; max-width: 380px;
+    transition: all 0.2s; margin-bottom: 8px;
+  }
+  .stage-demo:hover {
+    border-color: #E8A93A;
+    animation: border-pixel-flash 0.6s steps(2) infinite;
+  }
+  @keyframes border-pixel-flash {
+    0%, 100% { border-style: solid; }
+    50% { border-style: dashed; }
+  }
+  .stage-demo .node-icon { width: 36px; height: 36px; image-rendering: pixelated; }
+  .stage-demo .node-title { font-size: 14px; font-weight: 600; color: #5B3A29; }
+  .stage-demo .node-status { font-size: 12px; color: #6BBF4E; }
+
+  /* ===== P4: 按钮按下感 ===== */
+  .px-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 22px; font-size: 14px; font-weight: 500;
+    border: 2px solid #5B3A29; color: #fff; background: #5C8A4D;
+    transition: all 0.1s;
+    box-shadow: 3px 3px 0 #3E2723;
+  }
+  .px-btn:hover { box-shadow: 4px 4px 0 #3E2723; transform: translateY(-1px); }
+  .px-btn:active { box-shadow: 1px 1px 0 #3E2723; transform: translateY(2px); }
+
+  /* ===== P5: 页面主题色差异化 ===== */
+  .theme-map { --page-accent: #7CAA6E; --page-bg: #F2F8EE; }
+  .theme-learn { --page-accent: #B8860B; --page-bg: #FFF8E0; }
+  .theme-profile { --page-accent: #4A90B8; --page-bg: #F0F5FA; }
+
+  .theme-card {
+    border: 3px solid var(--page-accent, #E0D5C8);
+    background: var(--page-bg, #FFFDF5);
+    padding: 20px; text-align: center; min-height: 80px;
+  }
+  .theme-card h3 { color: var(--page-accent); }
+
+  /* ===== P6: 管理端统一 ===== */
+  .admin-demo {
+    display: flex; height: 260px; border: 2px solid #E0D5C8; overflow: hidden;
+  }
+  .admin-sidebar-demo {
+    width: 180px; background: #3E2723; padding: 16px 0; flex-shrink: 0;
+  }
+  .admin-sidebar-demo .sidebar-title {
+    color: #E8A93A; font-size: 14px; padding: 0 16px 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .admin-sidebar-demo .sidebar-title img { width: 20px; height: 20px; image-rendering: pixelated; }
+  .admin-nav-item {
+    padding: 9px 16px; font-size: 13px; color: #C8A882;
+    transition: all 0.15s; position: relative;
+  }
+  /* P6 + P4: 侧边栏 hover 小箭头滑入 */
+  .admin-nav-item::before {
+    content: '▸'; position: absolute; left: 4px; opacity: 0;
+    color: #E8A93A; font-size: 10px;
+    transition: all 0.2s; transform: translateX(-8px);
+  }
+  .admin-nav-item:hover {
+    background: #4E342E; color: #FFF8E7;
+  }
+  .admin-nav-item:hover::before { opacity: 1; transform: translateX(0); }
+  .admin-nav-item.active { background: #5D4037; color: #E8A93A; font-weight: 500; }
+  .admin-nav-item.active::before { opacity: 1; transform: translateX(0); }
+
+  .admin-content-demo { flex: 1; background: #FFF8E7; padding: 16px; }
+  /* P6: 表格行左边框高亮 */
+  .admin-table { width: 100%; border-collapse: collapse; }
+  .admin-table th {
+    text-align: left; padding: 10px 14px; background: #F5EFE6;
+    font-size: 12px; color: #8B7355; font-weight: 500; border-bottom: 1px solid #E0D5C8;
+  }
+  .admin-table td {
+    padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #F0EBE3;
+    transition: all 0.15s;
+  }
+  .admin-table tr:hover td {
+    background: #FFFBF2;
+    border-left: 3px solid #E8A93A;
+  }
+  .admin-table tr:hover td:first-child { padding-left: 11px; }
+
+  /* Tags — P6 去圆角 */
+  .px-tag {
+    display: inline-block; padding: 2px 8px;
+    font-size: 11px; font-weight: 500; border: 2px solid;
+  }
+  .px-tag.green { border-color: #A5D6A7; color: #2E7D32; background: #ECF5E8; }
+  .px-tag.orange { border-color: #FFCC80; color: #E65100; background: #FFF8E7; }
+  .px-tag.gray { border-color: #D5C9B8; color: #8B7355; background: #F5EFE0; }
+
+  /* ===== 对比开关 ===== */
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .compare-box { border: 2px solid #E0D5C8; padding: 14px; }
+  .compare-box .label { font-size: 11px; color: #C24A3A; font-weight: bold; margin-bottom: 8px; }
+  .compare-box .label.new { color: #2E7D32; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span class="title">🎨 P1-P6 UI 优化 Demo</span>
+  <span style="color:#C8A882;font-size:12px;">移动鼠标体验像素光标 →</span>
+</div>
+
+<div class="page-bg">
+
+  <!-- P3: 底部草地装饰 -->
+  <div class="ground-deco">
+    <div class="ground-grass"></div>
+    <div class="ground-bush"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- ===== P1: 字体 ===== -->
+    <div class="section-label"><span class="badge">P1</span> 字体个性化对比</div>
+    <p class="section-desc">上: 当前系统字体 | 下: ZCOOL QingKe HuangYou (中文标题) + Press Start 2P (英文像素)</p>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="label">BEFORE — 系统字体</div>
+        <h1 style="font-size:26px; color:#5B3A29; margin-bottom:4px;">欢迎来到培训系统</h1>
+        <p style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</p>
+      </div>
+      <div class="compare-box">
+        <div class="label new">AFTER — 像素风字体</div>
+        <h1 class="pixel-title" style="font-size:26px; color:#5B3A29; margin-bottom:4px;">欢迎来到培训系统</h1>
+        <p style="font-size:14px; color:#8B7355;">选择一个项目，开始你的冒险之旅！</p>
+      </div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="label">BEFORE</div>
+        <div style="font-size:20px; font-weight:600; color:#5B3A29;">🗺️ 标注基础培训</div>
+        <div style="font-size:14px; color:#8B7355; margin-top:4px;">Stage 3 / 8</div>
+      </div>
+      <div class="compare-box">
+        <div class="label new">AFTER</div>
+        <div class="pixel-title" style="font-size:20px; font-weight:600; color:#5B3A29;">🗺️ 标注基础培训</div>
+        <div style="font-size:14px; color:#8B7355; margin-top:4px;"><span class="pixel-title-en" style="font-size:10px;">Stage 3 / 8</span></div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ===== P2: 光标 ===== -->
+    <div class="section-label"><span class="badge">P2</span> 自定义像素光标</div>
+    <p class="section-desc">全局用像素箭头，可交互元素用像素手指。移动鼠标到不同区域体验：</p>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="padding:20px 30px; background:#FFFDF5; border:2px solid #E0D5C8;">普通区域 — 像素箭头 ↖</div>
+      <button class="px-btn">按钮 — 像素手指 ☝</button>
+      <a href="javascript:;" style="padding:20px 30px; background:#FFFDF5; border:2px solid #E0D5C8; color:#4A90B8;">链接 — 像素手指 ☝</a>
+    </div>
+
+    <hr>
+
+    <!-- ===== P3: 背景 ===== -->
+    <div class="section-label"><span class="badge">P3</span> 背景氛围层</div>
+    <p class="section-desc">页面背景叠加极淡纸质纹理（仔细看底色），页面底部固定草地/灌木装饰条（滚到底部看）</p>
+
+    <hr>
+
+    <!-- ===== P4: Hover 微交互 ===== -->
+    <div class="section-label"><span class="badge">P4</span> Hover 微交互升级</div>
+    <p class="section-desc">Hover 卡片看图标弹跳、按钮的按下回弹感、地图关卡的虚线闪烁</p>
+
+    <!-- 模拟项目卡片 -->
+    <div style="margin-bottom:16px; font-size:13px; color:#8B7355;">🃏 项目卡片 — hover 图标弹跳 + 阴影加深：</div>
+    <div class="project-grid">
+      <div class="project-card">
+        <div class="project-cover" style="background:linear-gradient(135deg,#A8E6CF,#88D8B0);">
+          <img class="icon" src="frontend/public/pixel-icons/plans/star_gold.png" onerror="this.textContent='⭐'">
+        </div>
+        <div class="project-body">
+          <h2 class="pixel-title">标注基础培训</h2>
+          <p>学习数据标注的基本流程</p>
+          <div class="progress-wrap"><div class="progress-fill green" style="width:100%;"></div></div>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-cover" style="background:linear-gradient(135deg,#FFD3B6,#FFAAA5);">
+          <img class="icon" src="frontend/public/pixel-icons/plans/sword.png" onerror="this.textContent='⚔️'">
+        </div>
+        <div class="project-body">
+          <h2 class="pixel-title">图像分类进阶</h2>
+          <p>掌握复杂图像分类技巧</p>
+          <div class="progress-wrap"><div class="progress-fill yellow" style="width:65%;"></div></div>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-cover" style="background:linear-gradient(135deg,#B5EAD7,#C7CEEA);">
+          <img class="icon" src="frontend/public/pixel-icons/plans/lightning.png" onerror="this.textContent='⚡'">
+        </div>
+        <div class="project-body">
+          <h2 class="pixel-title">NLP 文本标注</h2>
+          <p>自然语言处理专项训练</p>
+          <div class="progress-wrap"><div class="progress-fill yellow" style="width:30%;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin:20px 0 8px; font-size:13px; color:#8B7355;">🗺️ 地图关卡 — hover 边框虚线闪烁：</div>
+    <div class="stage-demo">
+      <img class="node-icon" src="frontend/public/pixel-icons/ui/checkmark.png" onerror="this.textContent='✅'">
+      <div>
+        <div class="node-title pixel-title">第1关：认识标注工具</div>
+        <div class="node-status">✅ 已完成</div>
+      </div>
+    </div>
+    <div class="stage-demo">
+      <img class="node-icon" src="frontend/public/pixel-icons/ui/flag.png" onerror="this.textContent='🚩'">
+      <div>
+        <div class="node-title pixel-title">第2关：图像分类实操</div>
+        <div class="node-status" style="color:#E8A93A;">🔥 进行中</div>
+      </div>
+    </div>
+
+    <div style="margin:20px 0 8px; font-size:13px; color:#8B7355;">🔘 按钮 — hover 微浮 + active 按下回弹：</div>
+    <div style="display:flex; gap:12px;">
+      <button class="px-btn">进入关卡</button>
+      <button class="px-btn" style="background:#4A90B8;">查看详情</button>
+      <button class="px-btn" style="background:#FFFDF5;color:#5B3A29;border-color:#C8A882;box-shadow:3px 3px 0 #C8A882;">取消</button>
+    </div>
+
+    <hr>
+
+    <!-- ===== P5: 主题色差异化 ===== -->
+    <div class="section-label"><span class="badge">P5</span> 页面主题色差异化</div>
+    <p class="section-desc">不同层级页面微调主色调，增加层次感</p>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+      <div class="theme-card" style="border-color:#C8A882; background:#FFFDF5;">
+        <div style="font-size:12px;color:#8B7355;">项目列表</div>
+        <h3 style="color:#5B3A29; font-size:14px;" class="pixel-title">暖棕 (当前)</h3>
+      </div>
+      <div class="theme-card theme-map">
+        <div style="font-size:12px;color:#8B7355;">培训地图</div>
+        <h3 style="font-size:14px;" class="pixel-title">草地绿</h3>
+      </div>
+      <div class="theme-card theme-learn">
+        <div style="font-size:12px;color:#8B7355;">关卡学习</div>
+        <h3 style="font-size:14px;" class="pixel-title">羊皮纸黄</h3>
+      </div>
+      <div class="theme-card theme-profile">
+        <div style="font-size:12px;color:#8B7355;">个人中心</div>
+        <h3 style="font-size:14px;" class="pixel-title">宁静蓝</h3>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ===== P6: 管理端统一 ===== -->
+    <div class="section-label"><span class="badge">P6</span> 管理端像素风统一</div>
+    <p class="section-desc">直角边框 + 侧边栏箭头滑入 + 表格行左边框高亮 + 像素logo</p>
+    <div class="admin-demo">
+      <div class="admin-sidebar-demo">
+        <div class="sidebar-title pixel-title">
+          <img src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏰'"> 管理后台
+        </div>
+        <div class="admin-nav-item active">📁 项目管理</div>
+        <div class="admin-nav-item">📋 审核管理</div>
+        <div class="admin-nav-item">👥 学员进度</div>
+        <div class="admin-nav-item">👤 用户管理</div>
+        <div class="admin-nav-item">📊 数据看板</div>
+        <div class="admin-nav-item">📝 操作日志</div>
+      </div>
+      <div class="admin-content-demo">
+        <div class="pixel-title" style="font-size:16px; color:#5B3A29; margin-bottom:12px;">📁 项目管理</div>
+        <table class="admin-table">
+          <thead><tr><th>项目名称</th><th>状态</th><th>计划数</th></tr></thead>
+          <tbody>
+            <tr><td><strong>标注基础培训</strong></td><td><span class="px-tag green">已上线</span></td><td>3</td></tr>
+            <tr><td><strong>图像分类进阶</strong></td><td><span class="px-tag orange">草稿</span></td><td>2</td></tr>
+            <tr><td><strong>NLP 文本标注</strong></td><td><span class="px-tag gray">未开始</span></td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- 完整模拟 Banner -->
+    <div class="section-label">📸 完整效果：Banner + 字体 + 背景叠加</div>
+    <div class="welcome-banner">
+      <img class="hero-icon" src="frontend/public/pixel-icons/ui/trophy.png" onerror="this.textContent='🏆'">
+      <h1 class="pixel-title">欢迎来到培训系统</h1>
+      <p>选择一个项目，开始你的冒险之旅！</p>
+      <button class="px-btn" style="margin-top:14px;">🎮 开始冒险</button>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

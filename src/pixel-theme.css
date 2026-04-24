@@ -1,0 +1,484 @@
+/* ===== pixel-theme.css — 星露谷暖色主题 ===== */
+
+:root {
+  /* 核心配色 */
+  --pixel-green: #5C8A4D;
+  --pixel-green-hover: #4E7A3F;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-brown-light: #8B6F5E;
+  --pixel-red: #C24A3A;
+  --pixel-blue: #4A90B8;
+
+  /* 侧边栏 */
+  --pixel-sidebar: #3E2723;
+  --pixel-sidebar-hover: #4E342E;
+  --pixel-sidebar-active: #5D4037;
+
+  /* 边框 & 阴影 */
+  --pixel-border: #E0D5C8;
+  --pixel-shadow: rgba(91, 58, 41, 0.08);
+
+  /* 文字 */
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+
+  /* 圆角 */
+  --pixel-radius: 8px;
+
+  /* P1: 字体 */
+  --pixel-font-title: "ZCOOL QingKe HuangYou", "PingFang SC", sans-serif;
+  --pixel-font-title-en: "Press Start 2P", monospace;
+}
+
+/* ===== P2: 自定义像素光标 ===== */
+body {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="0" y="0" width="2" height="2" fill="%235B3A29"/><rect x="0" y="2" width="2" height="2" fill="%235B3A29"/><rect x="2" y="2" width="2" height="2" fill="%235B3A29"/><rect x="0" y="4" width="2" height="2" fill="%235B3A29"/><rect x="2" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="4" width="2" height="2" fill="%235B3A29"/><rect x="0" y="6" width="2" height="2" fill="%235B3A29"/><rect x="2" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="6" width="2" height="2" fill="%235B3A29"/><rect x="0" y="8" width="2" height="2" fill="%235B3A29"/><rect x="2" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="8" width="2" height="2" fill="%235B3A29"/><rect x="0" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="10" width="2" height="2" fill="%235B3A29"/><rect x="6" y="10" width="2" height="2" fill="%235B3A29"/><rect x="0" y="12" width="2" height="2" fill="%235B3A29"/><rect x="2" y="12" width="2" height="2" fill="%235B3A29"/></svg>') 0 0, auto;
+}
+a, button, [role="button"], .clickable, .project-card, .plan-card, .stage-card, .unit-card:not(.locked), .nav-item, .admin-nav-item, input[type="radio"], input[type="checkbox"], select {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="4" y="0" width="2" height="2" fill="%235B3A29"/><rect x="6" y="0" width="2" height="2" fill="%235B3A29"/><rect x="4" y="2" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="2" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="4" width="2" height="2" fill="%23E8A93A"/><rect x="0" y="6" width="2" height="2" fill="%235B3A29"/><rect x="2" y="6" width="2" height="2" fill="%235B3A29"/><rect x="4" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="6" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="6" width="2" height="2" fill="%235B3A29"/><rect x="10" y="6" width="2" height="2" fill="%235B3A29"/><rect x="0" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="2" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="10" y="8" width="2" height="2" fill="%23E8A93A"/><rect x="0" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="4" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="6" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="8" y="10" width="2" height="2" fill="%23E8A93A"/><rect x="10" y="10" width="2" height="2" fill="%235B3A29"/><rect x="2" y="12" width="2" height="2" fill="%235B3A29"/><rect x="4" y="12" width="2" height="2" fill="%235B3A29"/><rect x="6" y="12" width="2" height="2" fill="%235B3A29"/><rect x="8" y="12" width="2" height="2" fill="%235B3A29"/></svg>') 4 0, pointer;
+}
+
+/* P1: 像素风标题字体 */
+.pixel-title { font-family: var(--pixel-font-title); letter-spacing: 2px; }
+.pixel-title-en { font-family: var(--pixel-font-title-en); letter-spacing: 1px; }
+
+/* P3: 背景氛围层 — 纸质纹理 */
+/* P3: 背景氛围层 — 纸质纹理 */
+body {
+  background: var(--pixel-bg);
+  color: var(--pixel-text);
+  background-image: url('data:image/svg+xml,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%25" height="100%25" filter="url(%23n)" opacity="0.025"/></svg>');
+}
+
+/* P4: 图标弹跳动画（卡片 hover 时触发） */
+@keyframes pixel-icon-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px) scale(1.1); }
+  60% { transform: translateY(-2px); }
+}
+/* P4: 关卡 hover 边框闪烁 */
+@keyframes pixel-border-flash {
+  0%, 100% { border-style: solid; }
+  50% { border-style: dashed; }
+}
+
+/* ===== 通用 page-header ===== */
+.pixel-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.pixel-page-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--pixel-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* ===== 面包屑 ===== */
+.pixel-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--pixel-text-secondary);
+  margin-bottom: 20px;
+}
+.pixel-breadcrumb a {
+  color: var(--pixel-blue);
+  text-decoration: none;
+  cursor: pointer;
+}
+.pixel-breadcrumb a:hover { text-decoration: underline; }
+.pixel-breadcrumb .sep { color: #ccc; }
+
+/* ===== 卡片 ===== */
+.pixel-card {
+  background: var(--pixel-card);
+  border: 1px solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.15s;
+}
+.pixel-card:hover {
+  box-shadow: 0 2px 12px var(--pixel-shadow);
+}
+
+/* ===== Section Card ===== */
+.pixel-section-card {
+  background: var(--pixel-card);
+  border: 1px solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.pixel-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--pixel-border);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--pixel-text);
+}
+.pixel-section-body {
+  padding: 16px 20px;
+}
+
+/* ===== 拖拽手柄 ===== */
+.pixel-drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: grab;
+  padding: 4px 6px;
+  margin-right: 4px;
+  border-radius: 4px;
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 2px;
+  user-select: none;
+}
+.pixel-drag-handle:hover {
+  color: var(--pixel-brown-light);
+  background: rgba(0,0,0,0.04);
+}
+.sortable-ghost {
+  opacity: 0.4;
+  background: #FFF3E0 !important;
+}
+
+/* ===== 图标操作按钮组 ===== */
+.pixel-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.pixel-action-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--pixel-text-secondary);
+  transition: all 0.15s;
+  position: relative;
+}
+.pixel-action-btn:hover {
+  background: #E8E0D4;
+  color: var(--pixel-text);
+}
+.pixel-action-btn.danger:hover {
+  background: #FFEBEE;
+  color: var(--pixel-red);
+}
+.pixel-action-btn .tip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 4px;
+  background: var(--pixel-brown);
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+.pixel-action-btn:hover .tip { display: block; }
+.pixel-action-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--pixel-border);
+  margin: 0 4px;
+}
+
+/* ===== Unit item ===== */
+.pixel-unit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #FAF6EF;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  transition: background 0.15s;
+}
+.pixel-unit-item:hover { background: #F5EDE2; }
+
+/* ===== Custom Tags (替代 Naive UI 默认 tag) ===== */
+.pixel-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.pixel-tag-green { background: #E8F5E9; color: #2E7D32; }
+.pixel-tag-orange { background: #FFF3E0; color: #E65100; }
+.pixel-tag-blue { background: #E3F2FD; color: #1565C0; }
+.pixel-tag-red { background: #FFEBEE; color: #C24A3A; }
+.pixel-tag-gray { background: #F0EBE3; color: #8B7355; }
+
+/* ===== 表格 — 自定义样式 ===== */
+.pixel-table-wrap {
+  background: var(--pixel-card);
+  border: 1px solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  overflow: hidden;
+}
+.pixel-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pixel-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: #F5EFE6;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pixel-text-secondary);
+  border-bottom: 1px solid var(--pixel-border);
+}
+.pixel-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #F0EBE3;
+  color: var(--pixel-text);
+}
+.pixel-table tbody tr:hover {
+  background: #FFFBF2;
+}
+/* P6: 表格行 hover 左边框高亮 */
+.pixel-table tbody tr:hover td:first-child {
+  border-left: 3px solid var(--pixel-gold);
+  padding-left: 13px;
+}
+.pixel-table td strong {
+  font-weight: 500;
+  color: var(--pixel-text);
+}
+
+/* ===== 筛选栏 ===== */
+.pixel-filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.pixel-filter-select {
+  padding: 7px 12px;
+  border: 1px solid var(--pixel-border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--pixel-card);
+  color: var(--pixel-text);
+}
+.pixel-filter-input {
+  padding: 7px 12px;
+  border: 1px solid var(--pixel-border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--pixel-card);
+  color: var(--pixel-text);
+  width: 240px;
+}
+.pixel-filter-input:focus, .pixel-filter-select:focus {
+  outline: none;
+  border-color: var(--pixel-green);
+}
+
+/* ===== 进度条 ===== */
+.pixel-progress {
+  height: 6px;
+  background: #E0D5C8;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pixel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pixel-green), var(--pixel-gold));
+  border-radius: 3px;
+}
+
+/* ===== Stat cards ===== */
+.pixel-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pixel-stat-card {
+  background: var(--pixel-card);
+  border: 1px solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  padding: 20px;
+}
+.pixel-stat-card .label { font-size: 13px; color: var(--pixel-text-secondary); margin-bottom: 8px; }
+.pixel-stat-card .value { font-size: 28px; font-weight: 700; }
+.pixel-stat-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+/* ===== Dropdown ===== */
+.pixel-dropdown { position: relative; display: inline-block; }
+.pixel-dropdown-trigger {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 18px;
+  color: #999;
+}
+.pixel-dropdown-trigger:hover { background: #f0ebe4; }
+.pixel-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  padding-top: 4px;
+  min-width: 120px;
+  z-index: 10;
+  display: none;
+}
+.pixel-dropdown-menu-inner {
+  background: #fff;
+  border: 1px solid var(--pixel-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+.pixel-dropdown:hover .pixel-dropdown-menu { display: block; }
+.pixel-dropdown-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--pixel-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pixel-dropdown-item:hover { background: #f8f4ee; }
+.pixel-dropdown-item.danger { color: var(--pixel-red); }
+
+/* ===== 空状态 ===== */
+.pixel-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--pixel-text-secondary);
+}
+
+/* ===== 按钮 — 自定义像素风按钮 ===== */
+.pixel-btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pixel-btn-primary { background: var(--pixel-green); color: #fff; }
+.pixel-btn-primary:hover { background: var(--pixel-green-hover); }
+.pixel-btn-ghost { background: transparent; color: var(--pixel-blue); border: 1px solid var(--pixel-border); }
+.pixel-btn-ghost:hover { background: rgba(74,144,184,0.06); }
+.pixel-btn-sm { padding: 4px 10px; font-size: 12px; }
+.pixel-btn-text {
+  background: none; border: none; color: var(--pixel-blue);
+  padding: 4px 8px; font-size: 13px; cursor: pointer;
+}
+.pixel-btn-text:hover { text-decoration: underline; }
+.pixel-btn-text.danger { color: var(--pixel-red); }
+
+/* ===== 管理端侧边栏字体覆盖 ===== */
+.admin-sidebar .nav-item {
+  font-size: 14px !important;
+  font-weight: 400;
+  position: relative;
+  transition: all 0.15s;
+}
+/* P6: 侧边栏 hover 小箭头滑入 */
+.admin-sidebar .nav-item::before {
+  content: '▸'; position: absolute; left: 4px; opacity: 0;
+  color: var(--pixel-gold); font-size: 10px;
+  transition: all 0.2s; transform: translateX(-8px);
+}
+.admin-sidebar .nav-item:hover::before { opacity: 1; transform: translateX(0); }
+.admin-sidebar .nav-item.router-link-active::before { opacity: 1; transform: translateX(0); }
+.admin-sidebar .nav-item.router-link-active {
+  font-weight: 500 !important;
+}
+.admin-sidebar .sidebar-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ===== Naive UI 覆盖（管理端全局） ===== */
+
+/* 主色按钮 */
+.admin-layout .n-button--primary-type {
+  --n-color: var(--pixel-green) !important;
+  --n-color-hover: var(--pixel-green-hover) !important;
+  --n-color-pressed: var(--pixel-green-hover) !important;
+}
+
+/* Tag 覆盖 — 让 Naive UI tag 匹配像素风 */
+.admin-content .n-tag {
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* 表格覆盖 */
+.admin-content .n-data-table .n-data-table-th,
+.admin-content .n-table th {
+  background: #F5EFE6 !important;
+  color: var(--pixel-text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-bottom: 1px solid var(--pixel-border) !important;
+}
+.admin-content .n-data-table .n-data-table-td,
+.admin-content .n-table td {
+  font-size: 14px !important;
+  color: var(--pixel-text) !important;
+  border-bottom: 1px solid #F0EBE3 !important;
+}
+.admin-content .n-data-table .n-data-table-tr:hover,
+.admin-content .n-table tbody tr:hover {
+  background: #FFFBF2 !important;
+}
+
+/* Input/Select 覆盖 */
+.admin-content .n-input,
+.admin-content .n-select {
+  --n-border: 1px solid var(--pixel-border) !important;
+  --n-border-hover: 1px solid var(--pixel-green) !important;
+  --n-border-focus: 1px solid var(--pixel-green) !important;
+}
+
+/* Card 覆盖 */
+.admin-content .n-card {
+  background: var(--pixel-card) !important;
+  border: 1px solid var(--pixel-border) !important;
+  border-radius: var(--pixel-radius) !important;
+}

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录页 + 欢迎动画 Demo</title>
+<style>
+:root {
+  --pixel-green: #5C8A4D;
+  --pixel-gold: #E8A93A;
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-red: #C24A3A;
+  --pixel-blue: #4A90B8;
+  --pixel-border: #E0D5C8;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden; }
+
+/* ===== Demo Navigation ===== */
+.demo-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: rgba(62,39,35,0.9); padding: 8px 16px;
+  display: flex; gap: 8px; align-items: center;
+}
+.demo-nav span { color: #E8A93A; font-size: 12px; }
+.demo-btn { padding: 4px 14px; font-size: 12px; border: 2px solid #8B6F5E; background: #5B3A29; color: #E8A93A; cursor: pointer; }
+.demo-btn:hover { background: #8B6F5E; }
+.demo-btn.active { background: #E8A93A; color: #3E2723; border-color: #E8A93A; }
+
+/* ===== 5A: Login Page ===== */
+#page-login {
+  position: fixed; inset: 0; top: 40px;
+  display: flex; align-items: center; justify-content: center;
+  /* 草地背景 */
+  background-color: #4A8C3F;
+  background-image:
+    radial-gradient(ellipse at 20% 80%, rgba(90,160,60,0.5) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(90,160,60,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, transparent 60%, rgba(0,0,0,0.15) 100%);
+  overflow: hidden;
+}
+/* 草地纹理叠加 */
+#page-login::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: url('frontend/public/pixel-icons/ui/floor_02.png');
+  background-size: 48px 48px; background-repeat: repeat;
+  image-rendering: pixelated;
+  opacity: 0.12;
+}
+
+/* 装饰元素 */
+.login-deco {
+  position: absolute; image-rendering: pixelated; pointer-events: none; z-index: 1;
+}
+.deco-tree-l { left: 5%; bottom: 8%; width: 120px; opacity: 0.7; }
+.deco-tree-r { right: 6%; bottom: 12%; width: 100px; opacity: 0.6; }
+.deco-animal-1 { left: 12%; bottom: 5%; width: 48px; animation: animalBob 3s ease-in-out infinite; }
+.deco-animal-2 { right: 14%; bottom: 6%; width: 40px; animation: animalBob 3.5s ease-in-out infinite 0.5s; }
+.deco-animal-3 { left: 40%; bottom: 3%; width: 36px; animation: animalBob 2.8s ease-in-out infinite 1s; }
+
+@keyframes animalBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* 登录面板 */
+.login-panel {
+  position: relative; z-index: 10;
+  width: 380px; max-width: 90vw;
+  background: var(--pixel-card);
+  border: 5px solid var(--pixel-brown);
+  box-shadow: 6px 6px 0 rgba(91,58,41,0.3);
+  padding: 36px 32px 28px;
+  animation: panelIn 0.5s ease;
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 顶部装饰条 */
+.login-panel::before {
+  content: ''; position: absolute; top: -5px; left: -5px; right: -5px; height: 8px;
+  background: repeating-linear-gradient(90deg, var(--pixel-gold) 0px, var(--pixel-gold) 12px, var(--pixel-brown) 12px, var(--pixel-brown) 16px);
+}
+
+.login-logo { text-align: center; margin-bottom: 24px; }
+.login-logo img { width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 8px; }
+.login-logo h1 { font-size: 22px; color: var(--pixel-brown); margin: 0; }
+.login-logo p { font-size: 13px; color: var(--pixel-text-secondary); margin-top: 4px; }
+
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; color: var(--pixel-text-secondary); font-weight: 500; }
+.form-input {
+  padding: 10px 12px; font-size: 14px;
+  border: 3px solid var(--pixel-border); background: #FFFDF5;
+  color: var(--pixel-text); outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--pixel-gold); }
+.form-input::placeholder { color: #C5B89A; }
+
+.login-btn {
+  padding: 11px; font-size: 15px; font-weight: 600;
+  border: 3px solid var(--pixel-brown); cursor: pointer;
+  color: #fff; background: var(--pixel-green);
+  transition: all 0.15s; margin-top: 4px;
+}
+.login-btn:hover { background: #4A7A3D; box-shadow: 3px 3px 0 var(--pixel-brown); }
+
+.login-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 4px 0; color: var(--pixel-text-secondary); font-size: 12px;
+}
+.login-divider::before, .login-divider::after {
+  content: ''; flex: 1; height: 2px; background: var(--pixel-border);
+}
+
+.feishu-btn {
+  padding: 10px; font-size: 14px;
+  border: 3px solid var(--pixel-border); cursor: pointer;
+  color: var(--pixel-brown); background: var(--pixel-card);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+}
+.feishu-btn:hover { border-color: var(--pixel-blue); background: #F5FAFF; box-shadow: 2px 2px 0 rgba(91,58,41,0.1); }
+.feishu-btn svg { width: 18px; height: 18px; }
+
+.login-footer { text-align: center; margin-top: 16px; font-size: 11px; color: var(--pixel-text-secondary); }
+
+/* ===== 5B: Welcome Animation ===== */
+#page-welcome {
+  position: fixed; inset: 0; top: 40px;
+  background: #1a1a2e;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* 星空背景 */
+.stars {
+  position: absolute; inset: 0;
+}
+.star {
+  position: absolute; width: 2px; height: 2px; background: #FFE8A0;
+  animation: twinkle 2s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 对话框 */
+.dialog-box {
+  position: relative; z-index: 10;
+  width: 600px; max-width: 90vw;
+  background: var(--pixel-card);
+  border: 5px solid var(--pixel-brown);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  padding: 28px 32px;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.dialog-box.visible { opacity: 1; transform: translateY(0); }
+
+.dialog-box::before {
+  content: ''; position: absolute; top: -5px; left: -5px; right: -5px; height: 6px;
+  background: repeating-linear-gradient(90deg, var(--pixel-gold) 0px, var(--pixel-gold) 10px, transparent 10px, transparent 14px);
+}
+
+.dialog-speaker {
+  font-size: 14px; font-weight: 600; color: var(--pixel-gold);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.dialog-speaker img { width: 24px; height: 24px; image-rendering: pixelated; }
+
+.dialog-text {
+  font-size: 16px; line-height: 1.8; color: var(--pixel-text);
+  min-height: 80px;
+}
+.dialog-text .cursor {
+  display: inline-block; width: 2px; height: 18px;
+  background: var(--pixel-brown); margin-left: 2px;
+  animation: blink 0.6s step-end infinite;
+  vertical-align: text-bottom;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.dialog-hint {
+  text-align: right; margin-top: 12px; font-size: 12px;
+  color: var(--pixel-text-secondary);
+  animation: hintPulse 1.5s ease-in-out infinite;
+}
+@keyframes hintPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* 角色选择 */
+.avatar-select {
+  position: relative; z-index: 10;
+  width: 600px; max-width: 90vw; margin-top: 20px;
+  background: var(--pixel-card); border: 5px solid var(--pixel-brown);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  padding: 20px 24px;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.avatar-select.visible { opacity: 1; transform: translateY(0); }
+
+.avatar-select h3 { font-size: 15px; color: var(--pixel-brown); margin: 0 0 14px; text-align: center; }
+
+.avatar-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+  max-height: 200px; overflow-y: auto;
+}
+.avatar-option {
+  width: 100%; aspect-ratio: 1; border: 3px solid var(--pixel-border);
+  cursor: pointer; background: var(--pixel-card);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.avatar-option:hover { border-color: var(--pixel-gold); transform: scale(1.08); }
+.avatar-option.selected { border-color: var(--pixel-green); background: #ECF5E8; box-shadow: 0 0 0 2px var(--pixel-green); }
+.avatar-option img { width: 80%; height: 80%; image-rendering: pixelated; object-fit: contain; }
+
+.confirm-row { margin-top: 16px; text-align: center; }
+.confirm-btn {
+  padding: 10px 36px; font-size: 14px; font-weight: 600;
+  border: 3px solid var(--pixel-brown); cursor: pointer;
+  color: #fff; background: var(--pixel-green);
+  opacity: 0.4; pointer-events: none;
+  transition: all 0.15s;
+}
+.confirm-btn.enabled { opacity: 1; pointer-events: auto; }
+.confirm-btn.enabled:hover { background: #4A7A3D; box-shadow: 3px 3px 0 var(--pixel-brown); }
+
+/* 过渡动画 */
+.transition-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--pixel-bg);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+}
+.transition-overlay.active { display: flex; animation: fadeInOut 2s ease forwards; }
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.transition-avatar { width: 64px; height: 64px; image-rendering: pixelated; animation: walkBounce 0.4s steps(2) infinite; }
+@keyframes walkBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.transition-text { font-size: 16px; color: var(--pixel-brown); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="demo-nav">
+  <span>🎮 Step 5 Demo:</span>
+  <button class="demo-btn active" onclick="showPage('login')">5A 登录页</button>
+  <button class="demo-btn" onclick="showPage('welcome')">5B 欢迎动画</button>
+  <button class="demo-btn" onclick="playFull()">完整流程</button>
+</div>
+
+<!-- ===== 5A: Login ===== -->
+<div id="page-login">
+  <!-- 装饰 -->
+  <img class="login-deco deco-tree-l" src="frontend/public/pixel-icons/decorations/tree_01.png" />
+  <img class="login-deco deco-tree-r" src="frontend/public/pixel-icons/decorations/tree_02.png" />
+  <img class="login-deco deco-animal-1" src="frontend/public/pixel-icons/decorations/chicken_white.png" />
+  <img class="login-deco deco-animal-2" src="frontend/public/pixel-icons/decorations/cat.png" />
+  <img class="login-deco deco-animal-3" src="frontend/public/pixel-icons/decorations/junimo.png" />
+
+  <div class="login-panel">
+    <div class="login-logo">
+      <img src="frontend/public/pixel-icons/ui/trophy.png" />
+      <h1>🏰 培训营地</h1>
+      <p>开启你的学习冒险之旅</p>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label>手机号</label>
+        <input class="form-input" type="tel" placeholder="请输入手机号" />
+      </div>
+      <div class="form-group">
+        <label>验证码</label>
+        <div style="display:flex; gap:8px;">
+          <input class="form-input" style="flex:1;" type="text" placeholder="请输入验证码" />
+          <button class="login-btn" style="font-size:12px; padding:8px 14px; white-space:nowrap; margin-top:0;">发送验证码</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="showPage('welcome')">⚔️ 开始冒险</button>
+      <div class="login-divider">或</div>
+      <button class="feishu-btn" onclick="showPage('welcome')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 6.5L10.5 2L21 13.5L13.5 22L3 6.5Z" fill="#4A90B8"/><path d="M3 6.5L13.5 22L10.5 14.5L3 6.5Z" fill="#2D6A9F"/></svg>
+        飞书登录
+      </button>
+    </div>
+    <div class="login-footer">内部培训系统 · 仅限授权人员使用</div>
+  </div>
+</div>
+
+<!-- ===== 5B: Welcome ===== -->
+<div id="page-welcome">
+  <div class="stars" id="starfield"></div>
+
+  <div class="dialog-box" id="dialogBox">
+    <div class="dialog-speaker">
+      <img src="frontend/public/pixel-icons/decorations/junimo.png" /> 精灵向导
+    </div>
+    <div class="dialog-text" id="dialogText"><span class="cursor"></span></div>
+    <div class="dialog-hint" id="dialogHint" style="display:none;">点击继续 ▶</div>
+  </div>
+
+  <div class="avatar-select" id="avatarSelect">
+    <h3>✨ 选择你的冒险伙伴</h3>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <div class="confirm-row">
+      <button class="confirm-btn" id="confirmBtn" onclick="confirmAvatar()">出发！</button>
+    </div>
+  </div>
+</div>
+
+<!-- 过渡层 -->
+<div class="transition-overlay" id="transOverlay">
+  <img class="transition-avatar" id="transAvatar" src="" />
+  <div class="transition-text">冒险开始...</div>
+</div>
+
+<script>
+// 角色列表
+const avatars = ['abigail','alex','caroline','clint','demetrius','elliott','emily',
+  'gunther','gus','haley','harvey','jas','jodi','junimo','kent','krobus','leah',
+  'lewis','linus','marnie','maru','pam','penny','pierre','robin','robot','sam',
+  'sandy','sebastian','shane','vincent','willy','wizard'];
+
+const dialogLines = [
+  '欢迎来到培训营地！🏕️',
+  '在这里，每一个项目都是一段冒险旅程...',
+  '你将闯过一个个关卡，学习新技能，接受挑战！',
+  '不过在出发之前——你需要一个冒险伙伴。',
+];
+
+let currentLine = 0;
+let charIndex = 0;
+let typing = false;
+let selectedAvatar = null;
+let phase = 'dialog'; // dialog -> avatar
+
+// 星空
+function createStars() {
+  const el = document.getElementById('starfield');
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.opacity = Math.random() * 0.5 + 0.2;
+    el.appendChild(star);
+  }
+}
+
+// 打字机效果
+function typeText(text, el, cb) {
+  typing = true;
+  charIndex = 0;
+  el.innerHTML = '';
+  function tick() {
+    if (charIndex < text.length) {
+      el.innerHTML = text.substring(0, charIndex + 1) + '<span class="cursor"></span>';
+      charIndex++;
+      setTimeout(tick, 40 + Math.random() * 30);
+    } else {
+      typing = false;
+      if (cb) cb();
+    }
+  }
+  tick();
+}
+
+function advanceDialog() {
+  if (typing) {
+    // 跳过打字，直接显示完整
+    typing = false;
+    const el = document.getElementById('dialogText');
+    el.innerHTML = dialogLines[currentLine] + '<span class="cursor"></span>';
+    return;
+  }
+  currentLine++;
+  if (currentLine < dialogLines.length) {
+    document.getElementById('dialogHint').style.display = 'none';
+    typeText(dialogLines[currentLine], document.getElementById('dialogText'), () => {
+      document.getElementById('dialogHint').style.display = 'block';
+    });
+  } else {
+    // 对话结束，显示角色选择
+    phase = 'avatar';
+    document.getElementById('dialogBox').style.display = 'none';
+    document.getElementById('avatarSelect').classList.add('visible');
+  }
+}
+
+function initWelcome() {
+  createStars();
+  // 填充角色
+  const grid = document.getElementById('avatarGrid');
+  grid.innerHTML = '';
+  avatars.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'avatar-option';
+    div.innerHTML = `<img src="frontend/public/pixel-icons/avatars/avatar_${a}_head.png" />`;
+    div.onclick = () => selectAvatar(a, div);
+    grid.appendChild(div);
+  });
+
+  // 重置状态
+  currentLine = 0;
+  phase = 'dialog';
+  selectedAvatar = null;
+  document.getElementById('dialogBox').style.display = '';
+  document.getElementById('dialogBox').classList.remove('visible');
+  document.getElementById('avatarSelect').classList.remove('visible');
+  document.getElementById('confirmBtn').classList.remove('enabled');
+  document.getElementById('dialogHint').style.display = 'none';
+  document.getElementById('dialogText').innerHTML = '<span class="cursor"></span>';
+
+  // 启动
+  setTimeout(() => {
+    document.getElementById('dialogBox').classList.add('visible');
+    setTimeout(() => {
+      typeText(dialogLines[0], document.getElementById('dialogText'), () => {
+        document.getElementById('dialogHint').style.display = 'block';
+      });
+    }, 400);
+  }, 300);
+}
+
+function selectAvatar(name, el) {
+  document.querySelectorAll('.avatar-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAvatar = name;
+  document.getElementById('confirmBtn').classList.add('enabled');
+}
+
+function confirmAvatar() {
+  if (!selectedAvatar) return;
+  const overlay = document.getElementById('transOverlay');
+  const img = document.getElementById('transAvatar');
+  img.src = `frontend/public/pixel-icons/avatars/avatar_${selectedAvatar}.png`;
+  overlay.classList.add('active');
+  overlay.style.display = 'flex';
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    // 回到登录页
+    showPage('login');
+    alert('🎉 完整流程结束！实际会跳转到项目列表页');
+  }, 2200);
+}
+
+// 点击推进对话
+document.addEventListener('click', (e) => {
+  if (document.getElementById('page-welcome').style.display !== 'flex') return;
+  if (phase !== 'dialog') return;
+  if (e.target.closest('.demo-nav')) return;
+  advanceDialog();
+});
+
+// 页面切换
+function showPage(name) {
+  document.getElementById('page-login').style.display = name === 'login' ? 'flex' : 'none';
+  document.getElementById('page-welcome').style.display = name === 'welcome' ? 'flex' : 'none';
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  event.target?.classList?.add('active');
+  if (name === 'welcome') initWelcome();
+}
+
+function playFull() {
+  showPage('login');
+  // 模拟 1.5s 后自动进入欢迎
+  setTimeout(() => showPage('welcome'), 1500);
+}
+
+createStars();
+</script>
+</body>
+</html>
