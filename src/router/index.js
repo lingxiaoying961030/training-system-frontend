@@ -170,6 +170,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
+  // 根据角色选择首页
+  function homeRoute() {
+    return userStore.canAccessAdmin ? '/admin/projects' : '/projects'
+  }
+
   // 需要登录但未登录 → 跳登录页
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     return next('/login')
@@ -177,7 +182,12 @@ router.beforeEach((to, from, next) => {
 
   // 已登录访问登录页 → 跳首页
   if (to.meta.guest && userStore.isLoggedIn) {
-    return next('/')
+    return next(homeRoute())
+  }
+
+  // 已登录的管理员访问根路径或学员首页 → 跳管理后台
+  if ((to.path === '/' || to.path === '/projects') && userStore.isLoggedIn && userStore.canAccessAdmin) {
+    return next('/admin/projects')
   }
 
   // 需要管理员权限
