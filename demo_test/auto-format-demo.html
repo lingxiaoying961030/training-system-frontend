@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一键排版 Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    background: #f5f0e1;
+    padding: 20px;
+    color: #5c4033;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'ZCOOL QingKe HuangYou', cursive;
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #8b4513;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #a08060;
+    margin-bottom: 20px;
+  }
+
+  /* 设置区 */
+  .settings {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .settings label {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .settings select, .settings input {
+    padding: 6px 10px;
+    border: 2px solid #c4a882;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+  }
+
+  /* 按钮 */
+  .btn {
+    padding: 10px 24px;
+    border: 3px solid #8b4513;
+    background: #f4a460;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+    transition: all 0.15s;
+  }
+  .btn:hover { background: #e8944e; transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); }
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .btn-secondary {
+    background: #8fbc8f;
+    border-color: #5a8a5a;
+  }
+  .btn-secondary:hover { background: #7aad7a; }
+
+  /* 编辑区 & 预览区 */
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .panel {
+    border: 3px solid #c4a882;
+    border-radius: 8px;
+    background: #fffdf5;
+    overflow: hidden;
+  }
+  .panel-header {
+    background: #8b4513;
+    color: #fff;
+    padding: 10px 16px;
+    font-size: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-header .tag {
+    font-size: 12px;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  /* 编辑器 */
+  #editor {
+    min-height: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px 24px;
+    outline: none;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  #editor:empty::before {
+    content: '从飞书文档复制内容，粘贴到这里...';
+    color: #c4a882;
+    font-style: italic;
+  }
+  #editor h1, #editor h2, #editor h3 {
+    color: #8b4513;
+    margin: 16px 0 8px;
+  }
+  #editor h1 { font-size: 24px; border-bottom: 2px solid #e8d5b8; padding-bottom: 8px; }
+  #editor h2 { font-size: 20px; }
+  #editor h3 { font-size: 17px; }
+  #editor p { margin: 8px 0; }
+  #editor ul, #editor ol { margin: 8px 0 8px 24px; }
+  #editor img { max-width: 100%; border-radius: 4px; margin: 8px 0; }
+  #editor hr {
+    border: none;
+    border-top: 3px dashed #f4a460;
+    margin: 24px 0;
+    position: relative;
+  }
+  #editor blockquote {
+    border-left: 4px solid #f4a460;
+    padding: 8px 16px;
+    margin: 8px 0;
+    background: #fef9f0;
+    color: #8b6914;
+  }
+  #editor pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 12px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-size: 13px;
+  }
+  #editor code {
+    background: #f0e6d3;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  #editor pre code { background: none; padding: 0; }
+  #editor table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+  }
+  #editor th, #editor td {
+    border: 1px solid #c4a882;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  #editor th { background: #f5ecd7; font-weight: bold; }
+
+  /* 预览区 */
+  .preview-body {
+    min-height: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px 24px;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  .preview-body h1, .preview-body h2, .preview-body h3 { color: #8b4513; margin: 16px 0 8px; }
+  .preview-body h1 { font-size: 24px; border-bottom: 2px solid #e8d5b8; padding-bottom: 8px; }
+  .preview-body h2 { font-size: 20px; }
+  .preview-body h3 { font-size: 17px; }
+  .preview-body p { margin: 8px 0; }
+  .preview-body ul, .preview-body ol { margin: 8px 0 8px 24px; }
+  .preview-body img { max-width: 100%; border-radius: 4px; margin: 8px 0; }
+  .preview-body blockquote {
+    border-left: 4px solid #f4a460;
+    padding: 8px 16px;
+    margin: 8px 0;
+    background: #fef9f0;
+  }
+  .preview-body pre {
+    background: #2d2d2d; color: #f8f8f2; padding: 12px 16px;
+    border-radius: 6px; overflow-x: auto; margin: 8px 0; font-size: 13px;
+  }
+  .preview-body code { background: #f0e6d3; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  .preview-body pre code { background: none; padding: 0; }
+  .preview-body table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  .preview-body th, .preview-body td { border: 1px solid #c4a882; padding: 8px 12px; text-align: left; }
+  .preview-body th { background: #f5ecd7; }
+
+  /* 分页控制 */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    border-top: 2px solid #e8d5b8;
+    background: #faf5ea;
+  }
+  .pagination .btn {
+    padding: 6px 16px;
+    font-size: 14px;
+  }
+  .pagination .page-info {
+    font-size: 14px;
+    font-weight: bold;
+    color: #8b4513;
+  }
+
+  /* 空状态 */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #c4a882;
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* 统计 */
+  .stats {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    background: #fffdf5;
+    border: 2px solid #c4a882;
+    border-radius: 6px;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .stat-item .num { font-size: 22px; font-weight: bold; color: #8b4513; }
+  .stat-item .label { font-size: 12px; color: #a08060; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #8b4513;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📝 一键排版 Demo</h1>
+  <p class="subtitle">从飞书文档粘贴内容 → 一键排版 → 预览学员视角</p>
+
+  <!-- 设置 -->
+  <div class="settings">
+    <label>分页方式：</label>
+    <select id="pageMode">
+      <option value="heading">按一级/二级标题分页</option>
+      <option value="length">按字数分页</option>
+      <option value="both">标题优先 + 字数兜底</option>
+    </select>
+    <label>每页约：</label>
+    <input type="number" id="pageSize" value="800" min="300" max="3000" style="width:80px"> 字
+  </div>
+
+  <!-- 按钮 -->
+  <div class="btn-group">
+    <button class="btn" onclick="autoFormat()">✨ 一键排版</button>
+    <button class="btn btn-secondary" onclick="clearAll()">🗑️ 清空</button>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat-item"><div class="num" id="statChars">0</div><div class="label">总字数</div></div>
+    <div class="stat-item"><div class="num" id="statPages">0</div><div class="label">分页数</div></div>
+    <div class="stat-item"><div class="num" id="statHeadings">0</div><div class="label">标题数</div></div>
+    <div class="stat-item"><div class="num" id="statImages">0</div><div class="label">图片数</div></div>
+  </div>
+
+  <!-- 双栏 -->
+  <div class="panels">
+    <!-- 编辑区 -->
+    <div class="panel">
+      <div class="panel-header">
+        📝 编辑区（粘贴内容）
+        <span class="tag">支持富文本粘贴</span>
+      </div>
+      <div id="editor" contenteditable="true"></div>
+    </div>
+
+    <!-- 预览区 -->
+    <div class="panel">
+      <div class="panel-header">
+        👁️ 学员视角预览
+        <span class="tag" id="previewTag">等待排版...</span>
+      </div>
+      <div class="preview-body" id="preview">
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>粘贴内容并点击「一键排版」后预览</p>
+        </div>
+      </div>
+      <div class="pagination" id="pagination" style="display:none">
+        <button class="btn" onclick="prevPage()">◀ 上一页</button>
+        <span class="page-info" id="pageInfo">1 / 1</span>
+        <button class="btn" onclick="nextPage()">下一页 ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let pages = [];
+let currentPage = 0;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function autoFormat() {
+  const editor = document.getElementById('editor');
+  let html = editor.innerHTML.trim();
+
+  if (!html || html === '<br>') {
+    showToast('⚠️ 请先粘贴内容');
+    return;
+  }
+
+  // === Step 1: 清理 HTML ===
+  html = cleanHTML(html);
+
+  // === Step 2: 排版美化 ===
+  html = beautifyHTML(html);
+
+  // === Step 3: 插入分页 ===
+  html = insertPageBreaks(html);
+
+  // 写回编辑器
+  editor.innerHTML = html;
+
+  // === Step 4: 生成预览 ===
+  generatePreview(html);
+
+  showToast('✅ 排版完成！');
+}
+
+function cleanHTML(html) {
+  // 去掉飞书/Word带来的杂样式
+  html = html.replace(/class="[^"]*"/g, '');
+  html = html.replace(/style="[^"]*"/g, '');
+  html = html.replace(/data-[a-z-]+="[^"]*"/g, '');
+  html = html.replace(/<span\s*>(.*?)<\/span>/g, '$1');
+  // 清理空段落
+  html = html.replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, '');
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  // 连续多个br合并
+  html = html.replace(/(<br\s*\/?>){3,}/g, '<br><br>');
+  // 去掉空的div
+  html = html.replace(/<div>\s*<\/div>/g, '');
+  // 纯文本换行转段落
+  html = html.replace(/<div>(.*?)<\/div>/g, '<p>$1</p>');
+  return html;
+}
+
+function beautifyHTML(html) {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+
+  // 图片加圆角
+  container.querySelectorAll('img').forEach(img => {
+    img.style.maxWidth = '100%';
+    img.style.borderRadius = '4px';
+    img.style.margin = '8px 0';
+  });
+
+  // 确保标题标签正确
+  // 有些飞书粘贴出来的标题是加粗文本,尝试识别
+  container.querySelectorAll('p').forEach(p => {
+    const text = p.textContent.trim();
+    // 只有加粗且文字短→可能是标题
+    if (p.children.length === 1 && p.children[0].tagName === 'B' && text.length < 30) {
+      // 不自动转标题，保守处理
+    }
+  });
+
+  return container.innerHTML;
+}
+
+function insertPageBreaks(html) {
+  const mode = document.getElementById('pageMode').value;
+  const maxLen = parseInt(document.getElementById('pageSize').value) || 800;
+
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const children = Array.from(container.children);
+
+  if (children.length === 0) return html;
+
+  // 先移除已有的 hr
+  container.querySelectorAll('hr').forEach(hr => hr.remove());
+
+  const result = [];
+  let currentLen = 0;
+
+  children.forEach((el, i) => {
+    const len = el.textContent.length;
+    const isHeading = /^H[12]$/.test(el.tagName);
+    const isH2 = el.tagName === 'H2';
+    const isH1 = el.tagName === 'H1';
+
+    if (i === 0) {
+      result.push(el.outerHTML);
+      currentLen = len;
+      return;
+    }
+
+    let shouldBreak = false;
+
+    if (mode === 'heading') {
+      shouldBreak = isH1 || isH2;
+    } else if (mode === 'length') {
+      shouldBreak = currentLen >= maxLen;
+    } else { // both
+      if (isH1 || isH2) {
+        shouldBreak = true;
+      } else if (currentLen >= maxLen) {
+        shouldBreak = true;
+      }
+    }
+
+    if (shouldBreak) {
+      result.push('<hr>');
+      currentLen = 0;
+    }
+
+    result.push(el.outerHTML);
+    currentLen += len;
+  });
+
+  return result.join('\n');
+}
+
+function generatePreview(html) {
+  // 按 <hr> 分页
+  pages = html.split(/<hr\s*\/?>/).map(p => p.trim()).filter(p => p);
+  currentPage = 0;
+
+  if (pages.length === 0) {
+    pages = [html];
+  }
+
+  // 统计
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const totalChars = container.textContent.length;
+  const headings = container.querySelectorAll('h1,h2,h3').length;
+  const images = container.querySelectorAll('img').length;
+
+  document.getElementById('stats').style.display = 'flex';
+  document.getElementById('statChars').textContent = totalChars;
+  document.getElementById('statPages').textContent = pages.length;
+  document.getElementById('statHeadings').textContent = headings;
+  document.getElementById('statImages').textContent = images;
+  document.getElementById('previewTag').textContent = `共 ${pages.length} 页`;
+
+  renderPage();
+  document.getElementById('pagination').style.display = pages.length > 1 ? 'flex' : 'none';
+}
+
+function renderPage() {
+  document.getElementById('preview').innerHTML = pages[currentPage];
+  document.getElementById('pageInfo').textContent = `${currentPage + 1} / ${pages.length}`;
+  // 滚动到顶部
+  document.getElementById('preview').scrollTop = 0;
+}
+
+function prevPage() {
+  if (currentPage > 0) { currentPage--; renderPage(); }
+}
+
+function nextPage() {
+  if (currentPage < pages.length - 1) { currentPage++; renderPage(); }
+}
+
+function clearAll() {
+  document.getElementById('editor').innerHTML = '';
+  document.getElementById('preview').innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>粘贴内容并点击「一键排版」后预览</p></div>';
+  document.getElementById('pagination').style.display = 'none';
+  document.getElementById('stats').style.display = 'none';
+  document.getElementById('previewTag').textContent = '等待排版...';
+  pages = [];
+  currentPage = 0;
+  showToast('已清空');
+}
+
+// 监听粘贴事件 - 保留富文本
+document.getElementById('editor').addEventListener('paste', function(e) {
+  // 让浏览器默认处理富文本粘贴
+  setTimeout(() => {
+    showToast('📋 内容已粘贴，点击「一键排版」开始');
+  }, 100);
+});
+</script>
+
+</body>
+</html>

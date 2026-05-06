@@ -48,6 +48,18 @@
         <div class="px-card-footer">
           <button class="uc-btn uc-btn-p" @click="saveArticleContent" :disabled="saving">💾 {{ saving ? '保存中...' : '保存内容' }}</button>
           <button class="uc-btn" @click="showPreview = true">👁 预览学员视角</button>
+          <span style="color:#d4c5a0;font-size:16px;margin-left:4px;">│</span>
+          <button class="uc-btn uc-btn-format" @click="autoFormat">✨ 一键排版</button>
+          <select v-model="formatMode" class="uc-select-sm" @change="onFormatModeChange">
+            <option value="heading">按标题分页</option>
+            <option value="length">按字数分页</option>
+            <option value="both">标题 + 字数</option>
+          </select>
+          <span v-if="formatMode !== 'heading'" style="display:inline-flex;align-items:center;gap:4px;">
+            <span class="px-card-hint">每页约</span>
+            <input type="number" v-model.number="formatPageSize" min="300" max="3000" step="100" class="uc-input-num" style="width:70px;">
+            <span class="px-card-hint">字</span>
+          </span>
           <span class="px-card-hint" style="margin-left: auto;">Ctrl+S 也可以保存</span>
         </div>
       </div>
@@ -204,6 +216,84 @@ const editorRef = shallowRef()
 const articleHtml = ref('')
 const showPreview = ref(false)
 const previewPageIdx = ref(0)
+
+// === 一键排版 ===
+const formatMode = ref('both')
+const formatPageSize = ref(800)
+function onFormatModeChange() {}
+
+function autoFormat() {
+  if (!editorRef.value) return
+  let html = editorRef.value.getHtml()
+  if (!html || html === '<p><br></p>') { message.warning('请先粘贴内容'); return }
+
+  // 1. 清理
+  html = cleanFormatHTML(html)
+  // 2. 分页
+  html = insertFormatPageBreaks(html)
+
+  editorRef.value.setHtml(html)
+  articleHtml.value = html
+
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  const chars = tmp.textContent.length
+  const pageCount = html.split(/<hr\s*\/?>/i).filter(p => p.trim()).length
+  message.success(`排版完成！${chars} 字，分 ${pageCount} 页`)
+}
+
+function cleanFormatHTML(html) {
+  html = html.replace(/\s*class="[^"]*"/g, '')
+  html = html.replace(/\s*style="[^"]*"/g, '')
+  html = html.replace(/\s*data-[a-z-]+="[^"]*"/g, '')
+  html = html.replace(/<span\s*>([\s\S]*?)<\/span>/g, '$1')
+  html = html.replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, '')
+  html = html.replace(/<p>\s*<\/p>/g, '')
+  html = html.replace(/(<br\s*\/?>){3,}/g, '<br><br>')
+  html = html.replace(/<div>([\s\S]*?)<\/div>/g, '<p>$1</p>')
+  html = html.replace(/<hr\s*\/?>/g, '')
+  return html
+}
+
+function insertFormatPageBreaks(html) {
+  const mode = formatMode.value
+  const maxLen = formatPageSize.value || 800
+  const container = document.createElement('div')
+  container.innerHTML = html
+  const children = Array.from(container.children)
+  if (children.length === 0) return html
+
+  const result = []
+  let currentLen = 0
+
+  children.forEach((el, i) => {
+    const len = el.textContent.length
+    const isH1 = el.tagName === 'H1'
+    const isH2 = el.tagName === 'H2'
+
+    if (i === 0) { result.push(el.outerHTML); currentLen = len; return }
+
+    let shouldBreak = false
+    if (mode === 'heading') {
+      shouldBreak = isH1 || isH2
+    } else if (mode === 'length') {
+      shouldBreak = currentLen >= maxLen
+    } else {
+      shouldBreak = (isH1 || isH2) || currentLen >= maxLen
+    }
+
+    if (shouldBreak) {
+      result.push('<hr>')
+      currentLen = 0
+    }
+    result.push(el.outerHTML)
+    currentLen += len
+  })
+
+  let joined = result.join('\n')
+  joined = joined.replace(/^\s*<hr>\s*/, '')
+  return joined
+}
 
 const previewPages = computed(() => {
   const html = articleHtml.value || ''
@@ -414,6 +504,10 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKeydown) })
 .uc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .uc-btn-p { background: var(--pixel-link, #4a90d9); color: #fff; border-color: #3a7bc8; }
 .uc-btn-p:hover { background: #3a7bc8; }
+.uc-btn-format { background: #f4a460; color: #fff; border-color: #d4882a; }
+.uc-btn-format:hover { background: #e8944e; }
+.uc-select-sm { padding: 5px 8px; border: 2px solid #d4c5a0; border-radius: 4px; font-size: 12px; background: #fff; font-family: inherit; cursor: pointer; }
+.uc-select-sm:hover { border-color: var(--pixel-border, #8b6914); }
 
 /* 表单 */
 .uc-form-label { font-size: 12px; font-weight: 600; color: var(--pixel-muted, #9e8a76); margin-bottom: 6px; }
