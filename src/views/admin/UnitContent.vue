@@ -35,7 +35,8 @@
           <span class="px-card-hint">支持富文本 · 用分割线（---）分页</span>
         </div>
         <div class="px-card-body px-card-body-flush">
-          <div class="uc-editor-wrap">
+          <!-- 管理员：编辑器 -->
+          <div v-if="!readonly" class="uc-editor-wrap">
             <Toolbar :editor="editorRef" :defaultConfig="toolbarConfig" class="uc-toolbar" />
             <Editor
               v-model="articleHtml"
@@ -44,23 +45,31 @@
               @onCreated="handleCreated"
             />
           </div>
+          <!-- 导师：只读预览 -->
+          <div v-else class="uc-readonly-body" v-html="articleHtml || '<p style=color:#9e8a76>暂无内容</p>'"></div>
         </div>
         <div class="px-card-footer">
-          <button class="uc-btn uc-btn-p" @click="saveArticleContent" :disabled="saving">💾 {{ saving ? '保存中...' : '保存内容' }}</button>
-          <button class="uc-btn" @click="showPreview = true">👁 预览学员视角</button>
-          <span style="color:#d4c5a0;font-size:16px;margin-left:4px;">│</span>
-          <button class="uc-btn uc-btn-format" @click="autoFormat">✨ 一键排版</button>
-          <select v-model="formatMode" class="uc-select-sm" @change="onFormatModeChange">
-            <option value="heading">按标题分页</option>
-            <option value="length">按字数分页</option>
-            <option value="both">标题 + 字数</option>
-          </select>
-          <span v-if="formatMode !== 'heading'" style="display:inline-flex;align-items:center;gap:4px;">
-            <span class="px-card-hint">每页约</span>
-            <input type="number" v-model.number="formatPageSize" min="300" max="3000" step="100" class="uc-input-num" style="width:70px;">
-            <span class="px-card-hint">字</span>
-          </span>
-          <span class="px-card-hint" style="margin-left: auto;">Ctrl+S 也可以保存</span>
+          <template v-if="!readonly">
+            <button class="uc-btn uc-btn-p" @click="saveArticleContent" :disabled="saving">💾 {{ saving ? '保存中...' : '保存内容' }}</button>
+            <button class="uc-btn" @click="showPreview = true">👁 预览学员视角</button>
+            <span style="color:#d4c5a0;font-size:16px;margin-left:4px;">│</span>
+            <button class="uc-btn uc-btn-format" @click="autoFormat">✨ 一键排版</button>
+            <select v-model="formatMode" class="uc-select-sm" @change="onFormatModeChange">
+              <option value="heading">按标题分页</option>
+              <option value="length">按字数分页</option>
+              <option value="both">标题 + 字数</option>
+            </select>
+            <span v-if="formatMode !== 'heading'" style="display:inline-flex;align-items:center;gap:4px;">
+              <span class="px-card-hint">每页约</span>
+              <input type="number" v-model.number="formatPageSize" min="300" max="3000" step="100" class="uc-input-num" style="width:70px;">
+              <span class="px-card-hint">字</span>
+            </span>
+            <span class="px-card-hint" style="margin-left: auto;">Ctrl+S 也可以保存</span>
+          </template>
+          <template v-else>
+            <button class="uc-btn" @click="showPreview = true">👁 预览学员视角</button>
+            <span class="px-card-hint" style="margin-left: auto;">📖 只读模式</span>
+          </template>
         </div>
       </div>
 
@@ -71,11 +80,13 @@
           <span class="px-card-hint">支持 B站视频链接</span>
         </div>
         <div class="px-card-body">
-          <div class="uc-form-label">视频链接</div>
-          <div class="uc-input-row">
-            <input v-model="videoUrl" class="uc-input" placeholder="粘贴 B站视频链接，如 https://www.bilibili.com/video/BV1xxxxx">
-            <button class="uc-btn uc-btn-p" @click="saveVideoContent" :disabled="saving">💾 保存</button>
-          </div>
+          <template v-if="!readonly">
+            <div class="uc-form-label">视频链接</div>
+            <div class="uc-input-row">
+              <input v-model="videoUrl" class="uc-input" placeholder="粘贴 B站视频链接，如 https://www.bilibili.com/video/BV1xxxxx">
+              <button class="uc-btn uc-btn-p" @click="saveVideoContent" :disabled="saving">💾 保存</button>
+            </div>
+          </template>
           <div v-if="videoEmbedUrl" style="margin-top: 16px;">
             <div class="uc-form-label">📺 视频预览</div>
             <div class="uc-video-preview">
@@ -182,6 +193,10 @@ import { NSwitch, useMessage } from 'naive-ui'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import '@wangeditor/editor/dist/css/style.css'
 import api from '../../api/index.js'
+import { useUserStore } from '../../stores/user.js'
+
+const userStore = useUserStore()
+const readonly = computed(() => !userStore.isAdmin)
 
 const route = useRoute()
 const router = useRouter()
@@ -508,6 +523,19 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', onKeydown) })
 .uc-btn-format:hover { background: #e8944e; }
 .uc-select-sm { padding: 5px 8px; border: 2px solid #d4c5a0; border-radius: 4px; font-size: 12px; background: #fff; font-family: inherit; cursor: pointer; }
 .uc-select-sm:hover { border-color: var(--pixel-border, #8b6914); }
+
+/* 导师只读预览 */
+.uc-readonly-body { padding: 20px 24px; font-size: 15px; line-height: 1.8; color: #333; max-height: calc(100vh - 280px); overflow-y: auto; background: #fff; }
+.uc-readonly-body :deep(h1), .uc-readonly-body :deep(h2), .uc-readonly-body :deep(h3) { color: #1d1d1f; margin: 16px 0 8px; }
+.uc-readonly-body :deep(p) { margin: 0 0 12px; }
+.uc-readonly-body :deep(img) { max-width: 100%; height: auto; border-radius: 4px; }
+.uc-readonly-body :deep(blockquote) { border-left: 4px solid #E8A93A; background: #FFF8E7; padding: 10px 16px; margin: 12px 0; }
+.uc-readonly-body :deep(table) { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.uc-readonly-body :deep(th), .uc-readonly-body :deep(td) { border: 1px solid #d4c5a0; padding: 8px 12px; }
+.uc-readonly-body :deep(th) { background: #faf5ea; font-weight: 600; }
+.uc-readonly-body :deep(pre) { background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }
+.uc-readonly-body :deep(hr) { border: none; border-top: 2px dashed #d4c5a0; margin: 16px 0; }
+.uc-readonly-body :deep(ul), .uc-readonly-body :deep(ol) { padding-left: 24px; margin: 8px 0; }
 
 /* 表单 */
 .uc-form-label { font-size: 12px; font-weight: 600; color: var(--pixel-muted, #9e8a76); margin-bottom: 6px; }

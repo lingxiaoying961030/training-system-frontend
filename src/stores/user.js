@@ -10,6 +10,11 @@ export const useUserStore = defineStore('user', () => {
     const roles = userInfo.value?.roles || []
     return roles.includes('admin')
   })
+  // 能访问管理后台（admin/mentor/guide/data_mentor）
+  const canAccessAdmin = computed(() => {
+    const roles = userInfo.value?.roles || []
+    return roles.some(r => ['admin', 'mentor', 'guide', 'data_mentor'].includes(r))
+  })
 
   function setToken(newToken) {
     token.value = newToken
@@ -72,7 +77,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   return {
-    token, userInfo, isLoggedIn, isAdmin,
+    token, userInfo, isLoggedIn, isAdmin, canAccessAdmin,
     setToken, setUserInfo, logout, init
   }
 })

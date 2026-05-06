@@ -181,7 +181,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 需要管理员权限
-  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+  if (to.meta.requiresAdmin && !userStore.canAccessAdmin) {
     return next('/')
   }
 

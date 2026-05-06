@@ -2,7 +2,7 @@
   <div class="question-bank-page">
     <div class="pixel-page-header">
       <h2><span>📝</span> 题库管理</h2>
-      <button class="pixel-btn" @click="showUploadModal = true">📤 上传题目</button>
+      <button v-if="!readonly" class="pixel-btn" @click="showUploadModal = true">📤 上传题目</button>
     </div>
 
     <!-- 统计卡片 -->
@@ -100,8 +100,8 @@
                   </span>
                   <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
                   <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
-                  <button class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
-                  <button class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
+                  <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
+                  <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
                 </div>
                 <!-- 预览展开 -->
                 <div v-if="previewId && sg.questions.find(q => q.id === previewId)" class="qb-preview-box">
@@ -129,8 +129,8 @@
               </span>
               <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
               <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
-              <button class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
-              <button class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
+              <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
+              <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
             </div>
             <div v-if="previewId && group.questions.find(q => q.id === previewId)" class="qb-preview-box">
               <div class="qb-preview-close" @click="previewId = null">✕ 关闭</div>
@@ -149,7 +149,7 @@
     </template>
 
     <!-- 批量操作 -->
-    <div v-if="selectedIds.length > 0" class="qb-batch-bar">
+    <div v-if="selectedIds.length > 0 && !readonly" class="qb-batch-bar">
       已选 <strong>{{ selectedIds.length }}</strong> 题
       <button class="pixel-btn-sm" @click="showMoveModal = true">📦 移动到关卡</button>
       <button class="pixel-btn-sm" @click="batchSwitchPool">🔄 切换题池</button>
@@ -284,6 +284,10 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import api from '../../api/index.js'
 import { useToast } from '../../composables/useToast.js'
+import { useUserStore } from '../../stores/user.js'
+
+const userStore = useUserStore()
+const readonly = computed(() => !userStore.isAdmin)
 import { marked } from 'marked'
 
 marked.setOptions({ breaks: true, gfm: true })

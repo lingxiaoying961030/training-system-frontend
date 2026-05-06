@@ -41,14 +41,14 @@
             <router-link to="/admin/students" class="nav-item sub">
               <span class="nav-icon">📈</span> 学员进度
             </router-link>
-            <router-link to="/admin/users" class="nav-item sub">
+            <router-link v-if="userStore.isAdmin" to="/admin/users" class="nav-item sub">
               <span class="nav-icon">🔑</span> 账号管理
             </router-link>
           </div>
         </div>
 
-        <!-- 系统 -->
-        <div class="nav-group">
+        <!-- 系统（仅管理员可见） -->
+        <div v-if="userStore.isAdmin" class="nav-group">
           <div class="nav-group-title" @click="toggleGroup('system')">
             <span>⚙️ 系统</span>
             <span class="nav-arrow">{{ groupOpen.system ? '▾' : '▸' }}</span>

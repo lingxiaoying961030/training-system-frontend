@@ -5,7 +5,7 @@
       <div class="pm-tree">
         <div class="pm-tree-header">
           <span>📁 项目结构</span>
-          <button class="pm-btn-sm" @click="createProject">+ 新项目</button>
+          <button v-if="!readonly" class="pm-btn-sm" @click="createProject">+ 新项目</button>
         </div>
         <div class="pm-tree-body">
           <div v-if="treeLoading" style="padding: 20px; text-align: center; color: var(--pixel-muted);">加载中...</div>
@@ -53,9 +53,9 @@
           <div class="pm-detail-header">
             <h3>📁 {{ selected.data.name }}</h3>
             <div class="pm-actions">
-              <button class="pm-btn-sm" @click="editProject(selected.data)">✏️ 编辑</button>
-              <button class="pm-btn-sm" @click="createPlan">+ 新建计划</button>
-              <button class="pm-btn-sm danger" @click="deleteProject(selected.data)">🗑</button>
+              <button v-if="!readonly" class="pm-btn-sm" @click="editProject(selected.data)">✏️ 编辑</button>
+              <button v-if="!readonly" class="pm-btn-sm" @click="createPlan">+ 新建计划</button>
+              <button v-if="!readonly" class="pm-btn-sm danger" @click="deleteProject(selected.data)">🗑</button>
             </div>
           </div>
           <div class="pm-desc">{{ selected.data.description || '暂无描述' }}</div>
@@ -81,9 +81,9 @@
           <div class="pm-detail-header">
             <h3>📋 {{ selected.data.name }}</h3>
             <div class="pm-actions">
-              <button class="pm-btn-sm" @click="editPlan(selected.data)">✏️ 编辑</button>
-              <button class="pm-btn-sm" @click="createStage">+ 新建关卡</button>
-              <button class="pm-btn-sm danger" @click="deletePlan(selected.data)">🗑</button>
+              <button v-if="!readonly" class="pm-btn-sm" @click="editPlan(selected.data)">✏️ 编辑</button>
+              <button v-if="!readonly" class="pm-btn-sm" @click="createStage">+ 新建关卡</button>
+              <button v-if="!readonly" class="pm-btn-sm danger" @click="deletePlan(selected.data)">🗑</button>
             </div>
           </div>
           <div class="pm-desc">{{ selected.data.description || '暂无描述' }}</div>
@@ -121,8 +121,8 @@
               <span class="pm-status-tag" :class="selected.data.status">{{ statusLabel(selected.data.status) }}</span>
             </h3>
             <div class="pm-actions">
-              <button class="pm-btn-sm" @click="editStage(selected.data)">✏️ 编辑信息</button>
-              <button class="pm-btn-sm danger" @click="deleteStage(selected.data)">🗑</button>
+              <button v-if="!readonly" class="pm-btn-sm" @click="editStage(selected.data)">✏️ 编辑信息</button>
+              <button v-if="!readonly" class="pm-btn-sm danger" @click="deleteStage(selected.data)">🗑</button>
             </div>
           </div>
 
@@ -158,7 +158,7 @@
             <div v-if="stageTab === 'units'" class="pm-tab-panel">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span style="font-size: 12px; color: var(--pixel-muted);">⠿ 拖拽调整顺序 · 共 {{ units.length }} 个单元</span>
-                <button class="pm-btn-sm pm-btn-primary" style="background:#4a90d9;color:#fff;border-color:#3a7bc8" @click="createUnit">+ 添加单元</button>
+                <button v-if="!readonly" class="pm-btn-sm pm-btn-primary" style="background:#4a90d9;color:#fff;border-color:#3a7bc8" @click="createUnit">+ 添加单元</button>
               </div>
               <div v-if="unitsLoading" style="color: var(--pixel-muted); font-size: 13px; padding: 20px;">加载中...</div>
               <div v-else-if="units.length === 0" class="pm-empty-inline">暂无学习单元，点击上方按钮添加</div>
@@ -172,9 +172,10 @@
                       <span v-if="unit.is_required" class="pm-unit-req">必学</span>
                       <span v-else class="pm-unit-opt">选学</span>
                       <div class="pm-unit-actions">
-                        <button class="pm-btn-xs" @click="$router.push(`/admin/units/${unit.id}/content`)" :title="contentBtnLabel(unit.unit_type)">📝 {{ contentBtnLabel(unit.unit_type) }}</button>
-                        <button class="pm-btn-xs" @click="editUnit(unit)">⚙️</button>
-                        <button class="pm-btn-xs pm-btn-danger" @click="deleteUnit(unit)">🗑</button>
+                        <button v-if="!readonly" class="pm-btn-xs" @click="$router.push(`/admin/units/${unit.id}/content`)" :title="contentBtnLabel(unit.unit_type)">📝 {{ contentBtnLabel(unit.unit_type) }}</button>
+                        <button v-if="readonly && (unit.unit_type === 'article' || unit.unit_type === 'video')" class="pm-btn-xs" @click="$router.push(`/admin/units/${unit.id}/content`)">👁 查看内容</button>
+                        <button v-if="!readonly" class="pm-btn-xs" @click="editUnit(unit)">⚙️</button>
+                        <button v-if="!readonly" class="pm-btn-xs pm-btn-danger" @click="deleteUnit(unit)">🗑</button>
                       </div>
                     </div>
                   </template>
@@ -187,7 +188,7 @@
               <div v-for="qu in quizUnits" :key="qu.id" class="pm-quiz-config">
                 <div class="pm-quiz-hdr">
                   <span>{{ qu.unit_type === 'practice' ? '📝 练习配置' : '🎯 测验配置' }} · {{ qu.title }}</span>
-                  <button class="pm-btn-xs" @click="$router.push(`/admin/units/${qu.id}/content`)">📝 编辑配置</button>
+                  <button v-if="!readonly" class="pm-btn-xs" @click="$router.push(`/admin/units/${qu.id}/content`)">📝 编辑配置</button>
                 </div>
                 <div class="pm-quiz-body">
                   <div class="pm-quiz-info">
@@ -200,7 +201,7 @@
             <!-- 导师 Tab -->
             <div v-if="stageTab === 'mentors'" class="pm-tab-panel">
               <div style="margin-bottom: 12px;">
-                <button class="pm-btn-sm pm-btn-primary" style="background:#4a90d9;color:#fff;border-color:#3a7bc8" @click="addMentor">+ 添加导师</button>
+                <button v-if="!readonly" class="pm-btn-sm pm-btn-primary" style="background:#4a90d9;color:#fff;border-color:#3a7bc8" @click="addMentor">+ 添加导师</button>
               </div>
               <div v-if="mentors.length === 0" class="pm-empty-inline">暂未分配导师</div>
               <div v-for="m in mentors" :key="m.id" class="pm-mentor-card">
@@ -209,7 +210,7 @@
                   <div class="pm-mentor-name">{{ m.training_users?.name || '未知' }}</div>
                   <div class="pm-mentor-role">导师</div>
                 </div>
-                <button class="pm-btn-xs pm-btn-danger" @click="removeMentor(m)">移除</button>
+                <button v-if="!readonly" class="pm-btn-xs pm-btn-danger" @click="removeMentor(m)">移除</button>
               </div>
             </div>
           </div>
@@ -257,9 +258,12 @@ import { useRouter, useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import api from '../../api/index.js'
 import { useToast } from '../../composables/useToast.js'
+import { useUserStore } from '../../stores/user.js'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
+const readonly = computed(() => !userStore.isAdmin)
 const toast = useToast()
 
 async function doSave() {
