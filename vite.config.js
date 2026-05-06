@@ -30,11 +30,22 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'naive-ui': ['naive-ui'],
-          'wangeditor': ['@wangeditor/editor', '@wangeditor/editor-for-vue'],
-          'echarts': ['echarts'],
-          'vendor': ['vue', 'vue-router', 'pinia', 'axios']
+        // Rolldown（Vite 8）要求 manualChunks 为函数，对象形式会报错
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('naive-ui')) return 'naive-ui'
+          if (id.includes('@wangeditor') || id.includes('wangeditor')) return 'wangeditor'
+          if (id.includes('echarts') || id.includes('zrender') || id.includes('vue-echarts')) {
+            return 'echarts'
+          }
+          if (
+            id.includes('vue-router') ||
+            id.includes('pinia') ||
+            /node_modules[\\/]axios[\\/]/.test(id) ||
+            /node_modules[\\/]vue[\\/]/.test(id)
+          ) {
+            return 'vendor'
+          }
         }
       }
     }
