@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api'
+const API_BASE = '/api'
 const CACHE_KEY = 'site_settings_cache'
 const CACHE_TTL = 5 * 60 * 1000 // 5分钟本地缓存
 

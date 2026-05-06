@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from '../router/index.js'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3002/api' : '/api'),
+  baseURL: '/api',
   timeout: 60000,
   withCredentials: false
 })
