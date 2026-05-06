@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
+import api from '../api/index.js'
 
-const API_BASE = '/api'
+const API_BASE = api.defaults.baseURL
 const CACHE_KEY = 'site_settings_cache'
 const CACHE_TTL = 5 * 60 * 1000 // 5分钟本地缓存
 

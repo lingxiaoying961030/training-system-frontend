@@ -1,8 +1,31 @@
 import axios from 'axios'
 import router from '../router/index.js'
 
+function resolveApiBaseURL() {
+  const configuredBaseURL = import.meta.env.VITE_API_URL?.trim()
+  if (configuredBaseURL) {
+    return configuredBaseURL
+  }
+
+  if (typeof window === 'undefined') {
+    return '/api'
+  }
+
+  const { protocol, hostname, pathname } = window.location
+
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `${protocol}//${hostname}:3002/api`
+  }
+
+  if (pathname.startsWith('/lxy-training/')) {
+    return '/lxy-training/api'
+  }
+
+  return '/api'
+}
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: resolveApiBaseURL(),
   timeout: 60000,
   withCredentials: false
 })
