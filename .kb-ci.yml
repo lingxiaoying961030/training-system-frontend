@@ -1,0 +1,36 @@
+variables:
+  IMAGE_REPO: $DOCKER_REGISTRY/crazy-team/$CI_PROJECT_NAME
+  BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+  BUILDKIT_IMAGE: uhub.service.ucloud.cn/ai-mas-public/buildkit:v0.29.0-rootless
+
+.buildkit_image:
+  tags:
+    - crazy-team-ci
+  image:
+    name: $BUILDKIT_IMAGE
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG
+  before_script:
+    - mkdir -p ~/.docker
+    - |
+      cat > ~/.docker/config.json <<EOF
+      {
+        "auths": {
+          "${DOCKER_REGISTRY}": {
+            "username": "${DOCKER_REGISTRY_USER}",
+            "password": "${DOCKER_REGISTRY_PASSWORD}"
+          }
+        }
+      }
+      EOF
+    - export IMAGE_TAG_SAFE="${CI_COMMIT_TAG//\//-}"
+    - echo "IMAGE_TAG_SAFE=$IMAGE_TAG_SAFE"
+  script:
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=. \
+        --local dockerfile=. \
+        --output type=image,name=${IMAGE_REPO}:${IMAGE_TAG_SAFE},push=true
+    - echo "pushed ${IMAGE_REPO}:${IMAGE_TAG_SAFE}"
