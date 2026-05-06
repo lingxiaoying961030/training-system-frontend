@@ -92,22 +92,24 @@
                 <div class="qb-stage-meta">{{ sg.open ? '▲' : '▼' }}</div>
               </div>
               <div v-show="sg.open">
-                <div v-for="q in sg.pagedQuestions" :key="q.id" class="qb-item">
-                  <input type="checkbox" :checked="selectedIds.includes(q.id)" @change="toggleSelect(q.id)">
-                  <span class="qb-type" :class="q.question_type">{{ typeLabel(q.question_type) }}</span>
-                  <span class="qb-text" @click="togglePreview(q.id)">
-                    {{ q.content?.substring(0, 80) }}{{ q.content?.length > 80 ? '...' : '' }}
-                  </span>
-                  <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
-                  <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
-                  <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
-                  <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
+                <div v-for="q in sg.pagedQuestions" :key="q.id">
+                  <div class="qb-item">
+                    <input type="checkbox" :checked="selectedIds.includes(q.id)" @change="toggleSelect(q.id)">
+                    <span class="qb-type" :class="q.question_type">{{ typeLabel(q.question_type) }}</span>
+                    <span class="qb-text" @click="togglePreview(q.id)">
+                      {{ q.content?.substring(0, 80) }}{{ q.content?.length > 80 ? '...' : '' }}
+                    </span>
+                    <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
+                    <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
+                    <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
+                    <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
+                  </div>
+                  <div v-if="previewId === q.id" class="qb-preview-box">
+                    <div class="qb-preview-close" @click="previewId = null">✕ 关闭</div>
+                    <div v-html="renderPreview(q)"></div>
+                  </div>
                 </div>
-                <!-- 预览展开 -->
-                <div v-if="previewId && sg.questions.find(q => q.id === previewId)" class="qb-preview-box">
-                  <div class="qb-preview-close" @click="previewId = null">✕ 关闭</div>
-                  <div v-html="renderPreview(sg.questions.find(q => q.id === previewId))"></div>
-                </div>
+                <!-- 分页 -->
                 <div v-if="sg.questions.length > sg.pageSize" class="qb-pagination">
                   <button class="qb-btn" :disabled="sg.page <= 1" @click="sg.page--">← 上一页</button>
                   <span>{{ sg.page }} / {{ Math.ceil(sg.questions.length / sg.pageSize) }}</span>
@@ -121,20 +123,22 @@
             <div class="qb-general-hint" v-if="group.type === 'general'">
               ⚠️ 通用题未指定关卡，该项目下所有关卡的练习和测验都可能抽到
             </div>
-            <div v-for="q in group.pagedQuestions" :key="q.id" class="qb-item">
-              <input type="checkbox" :checked="selectedIds.includes(q.id)" @change="toggleSelect(q.id)">
-              <span class="qb-type" :class="q.question_type">{{ typeLabel(q.question_type) }}</span>
-              <span class="qb-text" @click="togglePreview(q.id)">
-                {{ q.content?.substring(0, 80) }}{{ q.content?.length > 80 ? '...' : '' }}
-              </span>
-              <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
-              <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
-              <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
-              <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
-            </div>
-            <div v-if="previewId && group.questions.find(q => q.id === previewId)" class="qb-preview-box">
-              <div class="qb-preview-close" @click="previewId = null">✕ 关闭</div>
-              <div v-html="renderPreview(group.questions.find(q => q.id === previewId))"></div>
+            <div v-for="q in group.pagedQuestions" :key="q.id">
+              <div class="qb-item">
+                <input type="checkbox" :checked="selectedIds.includes(q.id)" @change="toggleSelect(q.id)">
+                <span class="qb-type" :class="q.question_type">{{ typeLabel(q.question_type) }}</span>
+                <span class="qb-text" @click="togglePreview(q.id)">
+                  {{ q.content?.substring(0, 80) }}{{ q.content?.length > 80 ? '...' : '' }}
+                </span>
+                <span class="qb-pool">{{ q.question_pool === 'exercise' ? '练习' : '测验' }}</span>
+                <button class="qb-btn" @click="togglePreview(q.id)" title="预览">👁</button>
+                <button v-if="!readonly" class="qb-btn" @click="editQuestion(q)" title="编辑">✏️</button>
+                <button v-if="!readonly" class="qb-btn" @click="confirmDelete(q)" title="删除">🗑</button>
+              </div>
+              <div v-if="previewId === q.id" class="qb-preview-box">
+                <div class="qb-preview-close" @click="previewId = null">✕ 关闭</div>
+                <div v-html="renderPreview(q)"></div>
+              </div>
             </div>
             <div v-if="group.questions.length > group.pageSize" class="qb-pagination">
               <button class="qb-btn" :disabled="group.page <= 1" @click="group.page--">← 上一页</button>
