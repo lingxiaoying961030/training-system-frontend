@@ -8,7 +8,7 @@
     <!-- 对话框 -->
     <div v-if="phase === 'dialog'" class="dialog-box" :class="{ visible: dialogVisible }">
       <div class="dialog-speaker">
-        <img src="/pixel-icons/decorations/deco_junimo.png" /> {{ siteSettings.get('welcome_speaker', 'Junimo 精灵') }}
+        <img :src="$base + '/pixel-icons/decorations/deco_junimo.png'" /> {{ siteSettings.get('welcome_speaker', 'Junimo 精灵') }}
       </div>
       <div class="dialog-text" v-html="displayedText + '<span class=\'cursor\'></span>'"></div>
       <div v-if="canAdvance" class="dialog-hint">点击任意位置继续 ▶</div>
@@ -21,7 +21,7 @@
         <div v-for="a in avatarList" :key="a"
           class="avo" :class="{ selected: selectedAvatar === a }"
           @click.stop="selectAvatar(a)">
-          <img :src="`/pixel-icons/avatars/avatar_${a}_head.png`" />
+          <img :src="$base + `/pixel-icons/avatars/avatar_${a}_head.png`" />
         </div>
       </div>
       <div class="confirm-row">
@@ -33,7 +33,7 @@
 
     <!-- 过渡 -->
     <div v-if="phase === 'transition'" class="trans">
-      <img :src="`/pixel-icons/avatars/avatar_${selectedAvatar}.png`" />
+      <img :src="$base + `/pixel-icons/avatars/avatar_${selectedAvatar}.png`" />
       <p>冒险开始...</p>
     </div>
   </div>
@@ -43,6 +43,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { AVATARS } from '../pixel-map.js'
+import { BASE } from '../asset-url.js'
+
+const letterBg = `url('${BASE}/pixel-icons/ui/letterBG_clean.png') center / 100% 100% no-repeat`
 import api from '../api/index.js'
 import { useUserStore } from '../stores/user.js'
 
@@ -179,7 +182,7 @@ onMounted(() => {
 
 .dialog-box {
   position: relative; z-index: 10; width: 560px; max-width: 90vw;
-  background: url('/pixel-icons/ui/letterBG_clean.png') center / 100% 100% no-repeat;
+  background: v-bind(letterBg);
   border: 4px solid var(--pixel-brown, #5B3A29);
   box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
   padding: 22px 26px;
@@ -198,7 +201,7 @@ onMounted(() => {
 
 .avatar-select {
   position: relative; z-index: 10; width: 560px; max-width: 90vw;
-  background: url('/pixel-icons/ui/letterBG_clean.png') center / 100% 100% no-repeat;
+  background: v-bind(letterBg);
   border: 4px solid var(--pixel-brown, #5B3A29);
   box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
   padding: 18px 22px;

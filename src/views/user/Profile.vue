@@ -5,7 +5,7 @@
     <template v-else-if="profile">
       <!-- 个人信息卡片 -->
       <div class="user-card">
-        <img src="/pixel-icons/dobo/notebookModal_v1.png" class="banner-bg" alt="" />
+        <img :src="$base + '/pixel-icons/dobo/notebookModal_v1.png'" class="banner-bg" alt="" />
         <div class="banner-content user-card-inner">
         <div class="user-avatar-wrap" @click="showAvatarPicker = true">
           <img :src="currentAvatarFull" class="user-avatar-img" />
@@ -92,6 +92,10 @@ import { ref, computed, onMounted } from 'vue'
 import api from '../../api/index.js'
 import { AVATARS, getAvatarHead, getAvatarFull } from '../../pixel-map.js'
 import { getProjectIcon, getPlanIcon } from '../../pixel-icons.js'
+import { assetUrl, BASE } from '../../asset-url.js'
+
+const progressFillYellowBg = `url('${BASE}/pixel-icons/ui/progressBar_yellow.png')`
+const progressFillGreenBg = `url('${BASE}/pixel-icons/ui/progressBar_green.png')`
 import { useUserStore } from '../../stores/user.js'
 
 const userStore = useUserStore()
@@ -112,8 +116,8 @@ function getProjectIconSrc(proj) { return getProjectIcon(proj) }
 function getPlanIconSrc(plan) { return getPlanIcon(plan) }
 
 function stageStatusIcon(status) {
-  const map = { completed: '/pixel-icons/ui/checkmark.png', active: '/pixel-icons/ui/flag.png', failed: '/pixel-icons/ui/star_gold.png', locked: '/pixel-icons/ui/lock.png' }
-  return map[status] || '/pixel-icons/ui/lock.png'
+  const map = { completed: assetUrl('/pixel-icons/ui/checkmark.png'), active: assetUrl('/pixel-icons/ui/flag.png'), failed: assetUrl('/pixel-icons/ui/star_gold.png'), locked: assetUrl('/pixel-icons/ui/lock.png') }
+  return map[status] || assetUrl('/pixel-icons/ui/lock.png')
 }
 
 async function saveAvatar() {
@@ -311,8 +315,8 @@ onMounted(async () => {
   background: #E0D5C8;
   border: 1px solid #D0C5B8;
 }
-.progress-fill-yellow { height: 100%; background-image: url('/pixel-icons/ui/progressBar_yellow.png'); background-size: cover; image-rendering: pixelated; }
-.progress-fill-green { height: 100%; background-image: url('/pixel-icons/ui/progressBar_green.png'); background-size: cover; image-rendering: pixelated; }
+.progress-fill-yellow { height: 100%; background-image: v-bind(progressFillYellowBg); background-size: cover; image-rendering: pixelated; }
+.progress-fill-green { height: 100%; background-image: v-bind(progressFillGreenBg); background-size: cover; image-rendering: pixelated; }
 .progress-text-sm { font-size: 11px; color: var(--pixel-text-secondary); min-width: 28px; text-align: right; }
 .expand-icon { color: var(--pixel-text-secondary); font-size: 11px; }
 

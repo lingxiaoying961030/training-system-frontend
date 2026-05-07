@@ -1,25 +1,25 @@
 <template>
   <div class="login-page">
     <!-- 云朵 -->
-    <img class="cloud-deco cloud-1" src="/pixel-icons/ui/clouds_small.png" />
-    <img class="cloud-deco cloud-2" src="/pixel-icons/ui/clouds_small.png" />
+    <img class="cloud-deco cloud-1" :src="$base + '/pixel-icons/ui/clouds_small.png'" />
+    <img class="cloud-deco cloud-2" :src="$base + '/pixel-icons/ui/clouds_small.png'" />
 
     <!-- 底部草地+灌木 -->
     <div class="ground"></div>
-    <img class="ground-bush gb1" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb2" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb3" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb4" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb5" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb6" src="/pixel-icons/ui/bush_00.png" />
-    <img class="ground-bush gb7" src="/pixel-icons/ui/bush_00.png" />
+    <img class="ground-bush gb1" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb2" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb3" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb4" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb5" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb6" :src="$base + '/pixel-icons/ui/bush_00.png'" />
+    <img class="ground-bush gb7" :src="$base + '/pixel-icons/ui/bush_00.png'" />
 
     <!-- 树和动物 -->
-    <img class="login-deco deco-tree-l" src="/pixel-icons/decorations/deco_tree1.png" />
-    <img class="login-deco deco-tree-r" src="/pixel-icons/decorations/deco_tree2.png" />
-    <img class="login-deco deco-a1" src="/pixel-icons/decorations/deco_chicken.png" />
-    <img class="login-deco deco-a2" src="/pixel-icons/decorations/deco_cat.png" />
-    <img class="login-deco deco-a3" src="/pixel-icons/decorations/deco_junimo.png" />
+    <img class="login-deco deco-tree-l" :src="$base + '/pixel-icons/decorations/deco_tree1.png'" />
+    <img class="login-deco deco-tree-r" :src="$base + '/pixel-icons/decorations/deco_tree2.png'" />
+    <img class="login-deco deco-a1" :src="$base + '/pixel-icons/decorations/deco_chicken.png'" />
+    <img class="login-deco deco-a2" :src="$base + '/pixel-icons/decorations/deco_cat.png'" />
+    <img class="login-deco deco-a3" :src="$base + '/pixel-icons/decorations/deco_junimo.png'" />
 
     <!-- 登录面板 -->
     <div class="login-panel">
@@ -60,6 +60,9 @@ import { useRouter, useRoute } from 'vue-router'
 import api from '../api/index.js'
 import { useUserStore } from '../stores/user.js'
 import { useSiteSettingsStore as useSiteSettings } from '../stores/siteSettings.js'
+import { BASE } from '../asset-url.js'
+
+const panelBg = `url('${BASE}/pixel-icons/ui/letterBG_clean.png') center / 100% 100% no-repeat`
 
 const router = useRouter()
 const route = useRoute()
@@ -189,7 +192,7 @@ onMounted(() => {
 .login-panel {
   position: relative; z-index: 10;
   width: 360px; max-width: 88vw;
-  background: url('/pixel-icons/ui/letterBG_clean.png') center / 100% 100% no-repeat;
+  background: v-bind(panelBg);
   border: 4px solid var(--pixel-brown, #5B3A29);
   box-shadow: 5px 5px 0 rgba(91,58,41,0.3);
   padding: 28px 26px 22px;

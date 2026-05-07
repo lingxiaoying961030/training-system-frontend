@@ -2,7 +2,7 @@
   <div class="plans-page">
     <!-- 顶部 Header（方案A风格） -->
     <div class="plans-header">
-      <img src="/pixel-icons/dobo/notebookModal_v1.png" class="banner-bg" alt="" />
+      <img :src="$base + '/pixel-icons/dobo/notebookModal_v1.png'" class="banner-bg" alt="" />
       <div class="banner-content">
         <div class="plans-breadcrumb">
           <router-link to="/projects">全部项目</router-link>
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div v-else-if="!plans.length" class="pixel-empty-fancy">
-      <img src="/pixel-icons/plans/book.png" class="empty-icon" />
+      <img :src="$base + '/pixel-icons/plans/book.png'" class="empty-icon" />
       <div class="empty-title">暂无学习计划</div>
       <div class="empty-sub">管理员还在准备中...</div>
     </div>
@@ -35,7 +35,7 @@
         @click="$router.push(`/plans/${plan.id}/map`)"
       >
         <div class="plan-wood-label">
-          <img src="/pixel-icons/dobo/wood_label.png" class="wood-bg" alt="" />
+          <img :src="$base + '/pixel-icons/dobo/wood_label.png'" class="wood-bg" alt="" />
           <span class="wood-text">{{ plan.name }}</span>
         </div>
         <div class="plan-inner">
@@ -57,7 +57,7 @@
               ></div>
             </div>
             <span class="plan-progress-text">
-              <img :src="getPlanProgress(plan.id).status === 'completed' ? '/pixel-icons/ui/trophy.png' : '/pixel-icons/ui/star_gold.png'" alt="" />
+              <img :src="getPlanProgress(plan.id).status === 'completed' ? $base + '/pixel-icons/ui/trophy.png' : $base + '/pixel-icons/ui/star_gold.png'" alt="" />
               {{ getPlanProgress(plan.id).completedStages }}/{{ getPlanProgress(plan.id).totalStages }}
             </span>
           </div>
@@ -73,6 +73,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../../api/index.js'
 import { PLAN_ICONS, getPlanIcon, hashId } from '../../pixel-icons.js'
+import { assetUrl } from '../../asset-url.js'
 
 const route = useRoute()
 const projectId = route.params.projectId
@@ -86,9 +87,9 @@ const progressMap = ref({})
 const progressReady = ref(false)
 
 function getPlanStatusIcon(status) {
-  if (status === 'completed') return '/pixel-icons/ui/checkmark.png'
-  if (status === 'in_progress') return '/pixel-icons/ui/flag.png'
-  if (status === 'not_started') return '/pixel-icons/ui/lock.png'
+  if (status === 'completed') return assetUrl('/pixel-icons/ui/checkmark.png')
+  if (status === 'in_progress') return assetUrl('/pixel-icons/ui/flag.png')
+  if (status === 'not_started') return assetUrl('/pixel-icons/ui/lock.png')
   return ''
 }
 

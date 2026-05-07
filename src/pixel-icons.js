@@ -1,6 +1,8 @@
+import { assetUrl } from './asset-url.js'
+
 /**
  * 像素图标池配置
- * 
+ *
  * 增删图标步骤：
  * 1. 把 png 文件放到 public/pixel-icons/projects/ 或 plans/ 目录
  * 2. 在下面对应数组里加上/删掉文件名
@@ -47,13 +49,13 @@ export function hashId(id) {
 }
 
 export function getProjectIcon(project) {
-  if (project.icon) return `/pixel-icons/projects/${project.icon}`
-  return `/pixel-icons/projects/${PROJECT_ICONS[hashId(project.id) % PROJECT_ICONS.length]}`
+  if (project.icon) return assetUrl(`/pixel-icons/projects/${project.icon}`)
+  return assetUrl(`/pixel-icons/projects/${PROJECT_ICONS[hashId(project.id) % PROJECT_ICONS.length]}`)
 }
 
 export function getPlanIcon(plan) {
-  if (plan.icon) return `/pixel-icons/plans/${plan.icon}`
-  return `/pixel-icons/plans/${PLAN_ICONS[hashId(plan.id) % PLAN_ICONS.length]}`
+  if (plan.icon) return assetUrl(`/pixel-icons/plans/${plan.icon}`)
+  return assetUrl(`/pixel-icons/plans/${PLAN_ICONS[hashId(plan.id) % PLAN_ICONS.length]}`)
 }
 
 export function getCoverGradient(id) {

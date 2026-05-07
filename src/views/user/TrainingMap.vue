@@ -2,7 +2,7 @@
   <div class="map-page">
     <!-- Header -->
     <div class="map-header">
-      <img src="/pixel-icons/dobo/notebookModal_v1.png" class="banner-bg" alt="" />
+      <img :src="$base + '/pixel-icons/dobo/notebookModal_v1.png'" class="banner-bg" alt="" />
       <div class="banner-content">
         <div class="map-breadcrumb">
           <router-link v-if="projectId" :to="`/projects/${projectId}/plans`">返回计划列表</router-link>
@@ -19,7 +19,7 @@
       <div v-for="i in 4" :key="i" class="skel-stage"><div class="skel-circle"></div><div class="skel-lines"><div class="skel-line w80"></div><div class="skel-line w60"></div></div></div>
     </div>
     <div v-else-if="!stages.length" class="pixel-empty-fancy">
-      <img src="/pixel-icons/plans/sword.png" class="empty-icon" />
+      <img :src="$base + '/pixel-icons/plans/sword.png'" class="empty-icon" />
       <div class="empty-title">暂未开放关卡</div>
       <div class="empty-sub">冒险地图正在绘制中...</div>
     </div>
@@ -27,9 +27,9 @@
     <!-- Map Area -->
     <div v-else class="map-area" :style="mapBgStyle">
       <!-- 固定树（左右底部） -->
-      <img class="deco" src="/pixel-icons/decorations/deco_tree1.png"
+      <img class="deco" :src="$base + '/pixel-icons/decorations/deco_tree1.png'"
            style="left:-4px; bottom:-6px; height:100px; opacity:0.45;" />
-      <img class="deco" src="/pixel-icons/decorations/deco_tree2.png"
+      <img class="deco" :src="$base + '/pixel-icons/decorations/deco_tree2.png'"
            style="right:-2px; bottom:-6px; height:90px; opacity:0.4;" />
 
       <!-- 随机装饰动物 -->
@@ -83,7 +83,7 @@
                 </div>
                 <div v-if="stage.status !== 'locked'" class="stage-btn"
                      :class="stage.status === 'completed' ? 'blue' : 'green'">
-                  <img :src="stage.status === 'completed' ? '/pixel-icons/plans/book.png' : '/pixel-icons/ui/arrow_green.png'" />
+                  <img :src="stage.status === 'completed' ? $base + '/pixel-icons/plans/book.png' : $base + '/pixel-icons/ui/arrow_green.png'" />
                   {{ stage.status === 'completed' ? '查看详情' : '进入关卡' }}
                 </div>
               </div>
@@ -110,6 +110,7 @@ import api from '../../api/index.js'
 import { getMapBackground, generateDecorations, getAvatarFull } from '../../pixel-map.js'
 import { useUserStore } from '../../stores/user.js'
 import { useSiteSettingsStore } from '../../stores/siteSettings.js'
+import { assetUrl } from '../../asset-url.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -151,12 +152,12 @@ function getPathD(index) {
 
 function getStageIcon(status) {
   const map = {
-    completed: '/pixel-icons/ui/checkmark.png',
-    active: '/pixel-icons/ui/flag.png',
-    failed: '/pixel-icons/ui/star_gold.png',
-    locked: '/pixel-icons/ui/lock.png',
+    completed: assetUrl('/pixel-icons/ui/checkmark.png'),
+    active: assetUrl('/pixel-icons/ui/flag.png'),
+    failed: assetUrl('/pixel-icons/ui/star_gold.png'),
+    locked: assetUrl('/pixel-icons/ui/lock.png'),
   }
-  return map[status] || '/pixel-icons/ui/flag.png'
+  return map[status] || assetUrl('/pixel-icons/ui/flag.png')
 }
 
 function statusLabel(status) {

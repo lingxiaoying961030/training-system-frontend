@@ -12,7 +12,7 @@
                :style="{ width: progressPercent + '%' }"></div>
         </div>
         <span class="progress-label">
-          <img :src="progressPercent >= 100 ? '/pixel-icons/ui/trophy.png' : '/pixel-icons/ui/star_gold.png'" alt="" />
+          <img :src="progressPercent >= 100 ? $base + '/pixel-icons/ui/trophy.png' : $base + '/pixel-icons/ui/star_gold.png'" alt="" />
           {{ completedCount }} / {{ units.length }} 已完成
         </span>
       </div>
@@ -59,10 +59,10 @@
             <div v-else class="article-body" v-html="unit.content?.body || '<p>暂无内容</p>'"></div>
             <div v-if="unit.progress.status !== 'completed'" class="unit-action">
               <button class="px-btn green" @click="completeUnit(unit)">
-                <img src="/pixel-icons/ui/checkmark.png" /> 我已学完
+                <img :src="$base + '/pixel-icons/ui/checkmark.png'" /> 我已学完
               </button>
             </div>
-            <div v-else class="done-msg"><img src="/pixel-icons/ui/checkmark.png" /> 已完成</div>
+            <div v-else class="done-msg"><img :src="$base + '/pixel-icons/ui/checkmark.png'" /> 已完成</div>
           </template>
 
           <!-- 视频 -->
@@ -73,10 +73,10 @@
             <p v-else class="no-content">暂未配置视频</p>
             <div v-if="unit.progress.status !== 'completed'" class="unit-action">
               <button class="px-btn green" @click="completeUnit(unit)">
-                <img src="/pixel-icons/ui/checkmark.png" /> 我已看完
+                <img :src="$base + '/pixel-icons/ui/checkmark.png'" /> 我已看完
               </button>
             </div>
-            <div v-else class="done-msg"><img src="/pixel-icons/ui/checkmark.png" /> 已完成</div>
+            <div v-else class="done-msg"><img :src="$base + '/pixel-icons/ui/checkmark.png'" /> 已完成</div>
           </template>
 
           <!-- 练习：逐题模式 -->
@@ -84,12 +84,12 @@
             <div v-if="!quizStates[unit.id]" class="quiz-intro">
               <p>本单元为练习，每道题提交后可立即查看解析。</p>
               <button class="px-btn green" @click="startQuiz(unit)">
-                <img src="/pixel-icons/plans/sword.png" /> 开始做题
+                <img :src="$base + '/pixel-icons/plans/sword.png'" /> 开始做题
               </button>
             </div>
             <div v-else-if="quizStates[unit.id].finished" class="quiz-summary">
               <div class="status-card">
-                <img src="/pixel-icons/ui/trophy.png" />
+                <img :src="$base + '/pixel-icons/ui/trophy.png'" />
                 <h3>📝 练习完成！</h3>
                 <p>答对 {{ quizStates[unit.id].correctCount }} / {{ quizStates[unit.id].questions.length }} 题</p>
               </div>
@@ -137,7 +137,7 @@
               <div v-else class="practice-feedback">
                 <div class="fb" :class="{ correct: quizStates[unit.id].lastCorrect, wrong: !quizStates[unit.id].lastCorrect }"
                      :ref="el => { if (el && quizStates[unit.id].lastCorrect) fbRefs[unit.id] = el }">
-                  <img :src="quizStates[unit.id].lastCorrect ? '/pixel-icons/ui/checkmark.png' : '/pixel-icons/plans/exclamation.png'" />
+                  <img :src="quizStates[unit.id].lastCorrect ? $base + '/pixel-icons/ui/checkmark.png' : $base + '/pixel-icons/plans/exclamation.png'" />
                   {{ quizStates[unit.id].lastCorrect ? '回答正确！' : '回答错误' }}
                 </div>
                 <p v-if="!quizStates[unit.id].lastCorrect" class="correct-answer">正确答案：{{ currentQuestion(unit).question_type === 'judge' ? judgeLabel(currentQuestion(unit), currentQuestion(unit).answer) : currentQuestion(unit).answer }}</p>
@@ -175,7 +175,7 @@
               <!-- 待审核 -->
               <div v-else-if="practicalStates[unit.id].status === 'pending'">
                 <div class="status-card">
-                  <img src="/pixel-icons/ui/flag.png" />
+                  <img :src="$base + '/pixel-icons/ui/flag.png'" />
                   <h3>已申报，等待审核中...</h3>
                   <p>申报时间：{{ formatPracticalTime(practicalStates[unit.id].submittedAt) }}</p>
                 </div>
@@ -184,7 +184,7 @@
               <!-- 已通过 -->
               <div v-else-if="practicalStates[unit.id].status === 'approved'">
                 <div class="status-card passed">
-                  <img src="/pixel-icons/ui/trophy.png" />
+                  <img :src="$base + '/pixel-icons/ui/trophy.png'" />
                   <h3>审核通过！</h3>
                   <p class="score-text">得分：{{ practicalStates[unit.id].score }}/10</p>
                   <p v-if="practicalStates[unit.id].comment">💬 {{ practicalStates[unit.id].comment }}</p>
@@ -195,7 +195,7 @@
               <!-- 未通过 -->
               <div v-else-if="practicalStates[unit.id].status === 'rejected'">
                 <div class="status-card failed">
-                  <img src="/pixel-icons/plans/exclamation.png" />
+                  <img :src="$base + '/pixel-icons/plans/exclamation.png'" />
                   <h3>审核未通过</h3>
                   <p class="score-text">得分：{{ practicalStates[unit.id].score }}/10</p>
                   <p v-if="practicalStates[unit.id].comment">💬 {{ practicalStates[unit.id].comment }}</p>
@@ -210,7 +210,7 @@
             <div v-if="!quizStates[unit.id] && unit.progress.status !== 'completed' && unit.progress.status !== 'failed'">
               <p class="quiz-intro">本单元为测验，完成后需达到 80 分才能通过，每人最多 2 次机会。</p>
               <button class="px-btn green" @click="startQuiz(unit)">
-                <img src="/pixel-icons/plans/sword.png" /> 开始做题
+                <img :src="$base + '/pixel-icons/plans/sword.png'" /> 开始做题
               </button>
             </div>
             <!-- 已完成/未通过：显示上次成绩和重做 -->
@@ -262,7 +262,7 @@
             <div v-else class="quiz-result">
               <div class="status-card" :class="{ passed: quizStates[unit.id].result.score >= 80, failed: quizStates[unit.id].result.score < 80 }"
                    :ref="el => { if (el && quizStates[unit.id].result.score >= 80) quizPassRef = el }">
-                <img :src="quizStates[unit.id].result.score >= 80 ? '/pixel-icons/ui/trophy.png' : '/pixel-icons/plans/exclamation.png'" />
+                <img :src="quizStates[unit.id].result.score >= 80 ? $base + '/pixel-icons/ui/trophy.png' : $base + '/pixel-icons/plans/exclamation.png'" />
                 <h3>{{ quizStates[unit.id].result.score >= 80 ? '🎉 恭喜通过！' : '😅 未通过' }}</h3>
                 <p>得分：{{ quizStates[unit.id].result.score ?? 0 }} / 100（答对 {{ quizStates[unit.id].result.correct ?? 0 }} / {{ quizStates[unit.id].result.total ?? 0 }}）</p>
                 <p v-if="quizStates[unit.id].result.remainingAttempts !== null" class="sub-text">
@@ -291,7 +291,7 @@
     </div>
 
     <div v-if="units.length > 0 && completedCount === units.length" class="all-done" ref="allDoneRef">
-      <img src="/pixel-icons/ui/trophy.png" />
+      <img :src="$base + '/pixel-icons/ui/trophy.png'" />
       <h2>🎊 恭喜通关！</h2>
       <p>本关卡全部完成！</p>
     </div>
@@ -305,6 +305,7 @@ import { useDialog } from 'naive-ui'
 import api from '../../api/index.js'
 import { marked } from 'marked'
 import { starBurst, shakeEl, fireworkBurst, junimoCelebrate } from '../../pixel-particles.js'
+import { assetUrl } from '../../asset-url.js'
 
 // marked 配置
 marked.setOptions({ breaks: true, gfm: true })
@@ -346,15 +347,15 @@ const progressPercent = computed(() => {
 
 // 单元图标
 const unitTypeIcons = {
-  article: '/pixel-icons/plans/book.png',
-  video: '/pixel-icons/plans/star_gold.png',
-  practice: '/pixel-icons/plans/sword.png',
-  quiz: '/pixel-icons/plans/lightning.png',
-  practical: '/pixel-icons/plans/trophy.png'
+  article: assetUrl('/pixel-icons/plans/book.png'),
+  video: assetUrl('/pixel-icons/plans/star_gold.png'),
+  practice: assetUrl('/pixel-icons/plans/sword.png'),
+  quiz: assetUrl('/pixel-icons/plans/lightning.png'),
+  practical: assetUrl('/pixel-icons/plans/trophy.png')
 }
 function unitIconSrc(unit) {
-  if (unit.progress.status === 'locked') return '/pixel-icons/ui/lock.png'
-  return unitTypeIcons[unit.unit_type] || '/pixel-icons/plans/question.png'
+  if (unit.progress.status === 'locked') return assetUrl('/pixel-icons/ui/lock.png')
+  return unitTypeIcons[unit.unit_type] || assetUrl('/pixel-icons/plans/question.png')
 }
 
 // 状态标签
@@ -369,12 +370,12 @@ function statusText(unit) {
 function statusClass(unit) { return unit.progress.status }
 function statusTagIcon(unit) {
   const s = unit.progress.status
-  if (s === 'completed') return '/pixel-icons/ui/checkmark.png'
-  if (s === 'locked') return '/pixel-icons/ui/lock.png'
-  if (s === 'active') return '/pixel-icons/ui/flag.png'
-  if (s === 'pending_review') return '/pixel-icons/ui/flag.png'
-  if (s === 'failed') return '/pixel-icons/plans/exclamation.png'
-  return '/pixel-icons/ui/flag.png'
+  if (s === 'completed') return assetUrl('/pixel-icons/ui/checkmark.png')
+  if (s === 'locked') return assetUrl('/pixel-icons/ui/lock.png')
+  if (s === 'active') return assetUrl('/pixel-icons/ui/flag.png')
+  if (s === 'pending_review') return assetUrl('/pixel-icons/ui/flag.png')
+  if (s === 'failed') return assetUrl('/pixel-icons/plans/exclamation.png')
+  return assetUrl('/pixel-icons/ui/flag.png')
 }
 
 function typeLabel(type) {

@@ -2,9 +2,9 @@
   <div class="projects-page">
     <!-- 欢迎 Banner（方案A：田园纹理） -->
     <div class="welcome-banner">
-      <img src="/pixel-icons/dobo/notebookModal_v1.png" class="banner-bg" alt="" />
+      <img :src="$base + '/pixel-icons/dobo/notebookModal_v1.png'" class="banner-bg" alt="" />
       <div class="banner-content">
-        <img src="/pixel-icons/ui/trophy.png" class="hero-icon" alt="" />
+        <img :src="$base + '/pixel-icons/ui/trophy.png'" class="hero-icon" alt="" />
         <h1>{{ siteSettings.get('banner_title', '欢迎来到培训系统') }}</h1>
         <p class="subtitle">{{ siteSettings.get('banner_subtitle', '选择一个项目，开始你的冒险之旅！') }}</p>
       </div>
@@ -23,12 +23,12 @@
       </div>
     </div>
     <div v-else-if="!projects.length" class="pixel-empty-fancy">
-      <img src="/pixel-icons/decorations/deco_junimo.png" class="empty-icon" />
+      <img :src="$base + '/pixel-icons/decorations/deco_junimo.png'" class="empty-icon" />
       <div class="empty-title">暂无开放项目</div>
       <div class="empty-sub">冒险尚未开启，耐心等待吧 ⏳</div>
     </div>
     <div v-else-if="!filteredProjects.length" class="pixel-empty-fancy">
-      <img src="/pixel-icons/dobo/close_icon_64px.png" class="empty-icon" />
+      <img :src="$base + '/pixel-icons/dobo/close_icon_64px.png'" class="empty-icon" />
       <div class="empty-title">没有找到匹配项目</div>
       <div class="empty-sub">换个关键词试试？</div>
     </div>
@@ -42,7 +42,7 @@
         @click="$router.push(`/projects/${p.id}/plans`)"
       >
         <div class="wood-label">
-            <img src="/pixel-icons/dobo/wood_label.png" class="wood-label-bg" alt="" />
+            <img :src="$base + '/pixel-icons/dobo/wood_label.png'" class="wood-label-bg" alt="" />
             <span class="wood-label-text">{{ p.name }}</span>
           </div>
         <div class="project-cover" :style="{ background: getCoverGradient(p.id) }">
@@ -59,7 +59,7 @@
               ></div>
             </div>
             <div class="progress-text">
-              <img :src="getProjectStatus(p.id) === 'completed' ? '/pixel-icons/ui/trophy.png' : '/pixel-icons/ui/star_gold.png'" alt="" />
+              <img :src="getProjectStatus(p.id) === 'completed' ? $base + '/pixel-icons/ui/trophy.png' : $base + '/pixel-icons/ui/star_gold.png'" alt="" />
               {{ getProjectProgress(p.id).text }}
             </div>
           </template>
@@ -73,6 +73,9 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import api from '../../api/index.js'
 import { PROJECT_ICONS, COVER_GRADIENTS, getProjectIcon, getCoverGradient, hashId } from '../../pixel-icons.js'
+import { assetUrl, BASE } from '../../asset-url.js'
+
+const floorTextureBg = `url('${BASE}/pixel-icons/ui/floor_02.png') repeat`
 import { useSiteSettingsStore } from '../../stores/siteSettings.js'
 
 const siteSettings = useSiteSettingsStore()
@@ -91,8 +94,8 @@ const filteredProjects = computed(() => {
 })
 
 function getStatusIcon(status) {
-  if (status === 'completed') return '/pixel-icons/ui/checkmark.png'
-  if (status === 'in_progress') return '/pixel-icons/ui/flag.png'
+  if (status === 'completed') return assetUrl('/pixel-icons/ui/checkmark.png')
+  if (status === 'in_progress') return assetUrl('/pixel-icons/ui/flag.png')
   return ''
 }
 
@@ -223,7 +226,7 @@ onMounted(async () => {
 /* 纹理叠层 */
 .project-cover::before {
   content: ''; position: absolute; inset: 0;
-  background: url('/pixel-icons/ui/floor_02.png') repeat;
+  background: v-bind(floorTextureBg);
   background-size: 24px; image-rendering: pixelated;
   opacity: 0.06; z-index: 0;
 }

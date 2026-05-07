@@ -58,7 +58,7 @@
               :class="{ active: form.icon === icon }"
               @click="form.icon = icon"
             >
-              <img :src="`/pixel-icons/projects/${icon}`" />
+              <img :src="$base + `/pixel-icons/projects/${icon}`" />
             </div>
             <div class="icon-option" :class="{ active: !form.icon }" @click="form.icon = ''" title="自动分配">
               🎲

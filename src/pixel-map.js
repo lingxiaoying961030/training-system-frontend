@@ -1,3 +1,5 @@
+import { assetUrl } from './asset-url.js'
+
 /**
  * 地图装饰配置
  * 背景、装饰动物、角色头像的集中管理
@@ -5,9 +7,9 @@
 
 // 地图背景池（按 planId hash 随机分配）
 export const MAP_BACKGROUNDS = [
-  { color: '#E8E1CC', image: '/pixel-icons/backgrounds/bg_meadow.png' },
-  { color: '#E4DCCC', image: '/pixel-icons/backgrounds/bg_path.png' },
-  { color: '#F5EBDB', image: '/pixel-icons/backgrounds/bg_parchment.png' },
+  { color: '#E8E1CC', image: assetUrl('/pixel-icons/backgrounds/bg_meadow.png') },
+  { color: '#E4DCCC', image: assetUrl('/pixel-icons/backgrounds/bg_path.png') },
+  { color: '#F5EBDB', image: assetUrl('/pixel-icons/backgrounds/bg_parchment.png') },
 ]
 
 // 装饰动物池（随机散布在地图边缘）
@@ -63,7 +65,7 @@ export function getAvatarHead(key, userId) {
     key = AVATARS[idx].key
   }
   if (!key) key = 'abigail'
-  return `/pixel-icons/avatars/avatar_${key}_head.png`
+  return assetUrl(`/pixel-icons/avatars/avatar_${key}_head.png`)
 }
 
 export function getAvatarFull(key, userId) {
@@ -72,7 +74,7 @@ export function getAvatarFull(key, userId) {
     key = AVATARS[idx].key
   }
   if (!key) key = 'abigail'
-  return `/pixel-icons/avatars/avatar_${key}.png`
+  return assetUrl(`/pixel-icons/avatars/avatar_${key}.png`)
 }
 
 // 基于种子的伪随机（同一 id 总是得到相同结果）
@@ -128,6 +130,6 @@ export function generateDecorations(planId) {
     }
     style.top = `${slot.base.top + offsetY}%`
 
-    return { src: `/pixel-icons/decorations/${file}`, style }
+    return { src: assetUrl(`/pixel-icons/decorations/${file}`), style }
   })
 }

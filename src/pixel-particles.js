@@ -1,3 +1,5 @@
+import { assetUrl } from './asset-url.js'
+
 /**
  * pixel-particles.js — 像素风粒子动画工具
  * 纯 DOM + CSS 动画，无依赖
@@ -90,7 +92,7 @@ export function starBurst(anchor) {
   for (let i = 0; i < count; i++) {
     const star = document.createElement('img')
     star.className = 'px-star-particle'
-    star.src = '/pixel-icons/ui/star_gold.png'
+    star.src = assetUrl('/pixel-icons/ui/star_gold.png')
     const angle = (Math.PI * 2 / count) * i + rnd(-0.5, 0.5)
     const dist = rnd(40, 60)
     star.style.cssText = `
@@ -159,7 +161,7 @@ export function junimoCelebrate(container, duration = 5000) {
   positions.forEach((x, i) => {
     const j = document.createElement('img')
     j.className = 'px-junimo'
-    j.src = '/pixel-icons/decorations/deco_junimo.png'
+    j.src = assetUrl('/pixel-icons/decorations/deco_junimo.png')
     const dir = i % 2 === 0 ? 1 : -1
     j.style.cssText = `left:${x}%; --j-dur:${rnd(600, 900)}ms; --j-delay:${i * 150}ms; --j-dir:${dir};`
     container.appendChild(j)

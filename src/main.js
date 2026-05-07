@@ -4,10 +4,12 @@ import router from './router/index.js'
 import App from './App.vue'
 import { useUserStore } from './stores/user.js'
 import { useSiteSettingsStore } from './stores/siteSettings.js'
+import { BASE } from './asset-url.js'
 import './style.css'
 import './pixel-theme.css'
 
 const app = createApp(App)
+app.config.globalProperties.$base = BASE
 const pinia = createPinia()
 app.use(pinia)
 app.use(router)
