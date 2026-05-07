@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>修复 Demo - 问题 1/2/3</title>
+<style>
+:root {
+  --pixel-bg: #FFF8E7;
+  --pixel-card: #FFFDF5;
+  --pixel-brown: #5B3A29;
+  --pixel-border: #E0D5C8;
+  --pixel-gold: #E8A93A;
+  --pixel-green: #5C8A4D;
+  --pixel-blue: #4A90B8;
+  --pixel-red: #C24A3A;
+  --pixel-text: #3E2723;
+  --pixel-text-secondary: #8B7355;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--pixel-bg); font-family: -apple-system, sans-serif; padding: 24px; color: var(--pixel-text); }
+h2 { color: var(--pixel-brown); margin: 24px 0 12px; font-size: 18px; border-bottom: 2px solid var(--pixel-border); padding-bottom: 6px; }
+.section { background: var(--pixel-card); border: 3px solid var(--pixel-border); padding: 20px; margin-bottom: 24px; }
+.label { font-size: 12px; color: #999; margin-bottom: 8px; }
+
+/* ===== 问题1：代码块自动换行 ===== */
+.demo-before pre {
+  background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px;
+  overflow-x: auto; margin: 12px 0; font-size: 13px; line-height: 1.5;
+}
+.demo-after pre {
+  background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px;
+  margin: 12px 0; font-size: 13px; line-height: 1.5;
+  /* 修复：自动换行 */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+/* ===== 问题2：测验通过后隐藏重做按钮 ===== */
+.status-card { text-align: center; padding: 24px; border: 3px solid var(--pixel-border); background: var(--pixel-card); }
+.status-card.passed { border-color: var(--pixel-green); background: #F5FAF2; }
+.status-card h3 { font-size: 16px; color: var(--pixel-brown); margin: 8px 0; }
+.status-card p { font-size: 13px; color: var(--pixel-text-secondary); margin: 2px 0; }
+.px-btn { display: inline-flex; align-items: center; gap: 4px; padding: 8px 20px; font-size: 13px; font-weight: 500; border: 2px solid var(--pixel-brown); cursor: pointer; color: #fff; margin-top: 12px; }
+.px-btn.outline { background: var(--pixel-card); color: var(--pixel-brown); border-color: var(--pixel-border); }
+.px-btn.green { background: var(--pixel-green); }
+.done-label { color: var(--pixel-green); font-size: 13px; margin-top: 12px; font-weight: 500; }
+
+/* ===== 问题3：测验结果逐题翻页 + 带选项 ===== */
+.result-navigator { margin-top: 16px; }
+.result-question { padding: 16px; border: 2px solid var(--pixel-border); background: var(--pixel-card); margin-bottom: 12px; }
+.result-question.wrong { border-color: var(--pixel-gold); border-left-width: 4px; }
+.result-question.correct { border-color: var(--pixel-green); border-left-width: 4px; }
+.q-text { font-size: 14px; font-weight: 500; color: var(--pixel-brown); margin-bottom: 8px; }
+.q-type { font-size: 11px; color: var(--pixel-blue); font-weight: normal; margin-left: 4px; }
+.q-content { font-size: 14px; line-height: 1.7; margin-bottom: 10px; padding: 10px 14px; background: #FDFAF0; border: 2px solid var(--pixel-border); }
+.result-opt { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 2px solid var(--pixel-border); font-size: 14px; background: var(--pixel-card); margin-bottom: 4px; }
+.result-opt.user-selected { border-color: var(--pixel-blue); background: #F0F5FA; }
+.result-opt.is-correct { border-color: var(--pixel-green); background: #ECF5E8; }
+.result-opt.user-wrong { border-color: var(--pixel-red); background: #FFF0EE; }
+.result-opt .opt-marker { font-size: 11px; padding: 1px 6px; border: 1px solid; margin-left: auto; }
+.result-opt .opt-marker.correct-marker { border-color: var(--pixel-green); color: var(--pixel-green); }
+.result-opt .opt-marker.wrong-marker { border-color: var(--pixel-red); color: var(--pixel-red); }
+.result-answer-row { margin-top: 8px; font-size: 13px; color: var(--pixel-text-secondary); }
+.result-answer-row span { margin-right: 16px; }
+.analysis { color: var(--pixel-blue); font-size: 13px; line-height: 1.5; margin-top: 6px; }
+.result-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.result-nav-info { font-size: 13px; color: var(--pixel-text-secondary); }
+.result-dots { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.result-dot { width: 24px; height: 24px; border: 2px solid var(--pixel-border); display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; background: var(--pixel-card); }
+.result-dot.current { border-color: var(--pixel-brown); font-weight: bold; }
+.result-dot.dot-correct { background: #ECF5E8; border-color: var(--pixel-green); }
+.result-dot.dot-wrong { background: #FFF0EE; border-color: var(--pixel-red); }
+</style>
+</head>
+<body>
+
+<h1 style="text-align:center; color: var(--pixel-brown); margin-bottom: 24px;">🔧 修复 Demo</h1>
+
+<!-- ===== 问题1 ===== -->
+<h2>问题 1：代码块自动换行</h2>
+
+<div class="section">
+  <p class="label">❌ 修复前（需要左右滑动）</p>
+  <div class="demo-before">
+    <pre><code>const veryLongVariableName = someFunction(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15)</code></pre>
+    <pre><code>export default function processTrainingData(studentList, projectConfig, planSettings, stageDefinitions, unitProgressMap, quizResultHistory) { return studentList.filter(s => s.isActive).map(s => calculateProgress(s, projectConfig, planSettings, stageDefinitions, unitProgressMap, quizResultHistory)) }</code></pre>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">✅ 修复后（自动换行，无需滑动）</p>
+  <div class="demo-after">
+    <pre><code>const veryLongVariableName = someFunction(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15)</code></pre>
+    <pre><code>export default function processTrainingData(studentList, projectConfig, planSettings, stageDefinitions, unitProgressMap, quizResultHistory) { return studentList.filter(s => s.isActive).map(s => calculateProgress(s, projectConfig, planSettings, stageDefinitions, unitProgressMap, quizResultHistory)) }</code></pre>
+  </div>
+</div>
+
+<!-- ===== 问题2 ===== -->
+<h2>问题 2：测验通过后隐藏重做按钮</h2>
+
+<div class="section">
+  <p class="label">❌ 修复前（通过了还显示重做按钮）</p>
+  <div class="status-card passed">
+    <h3>🎉 恭喜通过！</h3>
+    <p>得分：90 / 100（答对 9 / 10）</p>
+    <p style="font-size:12px; color: var(--pixel-text-secondary);">剩余机会：1 次</p>
+  </div>
+  <div style="text-align: center;">
+    <button class="px-btn outline">重新做题（剩余 1 次）</button>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">✅ 修复后（通过后不显示重做按钮，展示已通过提示）</p>
+  <div class="status-card passed">
+    <h3>🎉 恭喜通过！</h3>
+    <p>得分：90 / 100（答对 9 / 10）</p>
+  </div>
+  <div style="text-align: center;">
+    <p class="done-label">✅ 测验已通过，无需重做</p>
+  </div>
+</div>
+
+<!-- ===== 问题3 ===== -->
+<h2>问题 3：测验结果 — 逐题翻页 + 带选项</h2>
+
+<div class="section">
+  <p class="label">✅ 修复后效果（点击导航切换题目）</p>
+  
+  <div class="status-card passed" style="margin-bottom: 16px;">
+    <h3>🎉 恭喜通过！</h3>
+    <p>得分：80 / 100（答对 4 / 5）</p>
+  </div>
+
+  <!-- 题目导航点 -->
+  <div class="result-dots" id="resultDots"></div>
+
+  <!-- 当前题目 -->
+  <div class="result-navigator" id="resultArea"></div>
+
+  <!-- 翻页按钮 -->
+  <div class="result-nav">
+    <button class="px-btn outline" id="prevBtn" onclick="navQuestion(-1)">← 上一题</button>
+    <span class="result-nav-info" id="navInfo"></span>
+    <button class="px-btn outline" id="nextBtn" onclick="navQuestion(1)">下一题 →</button>
+  </div>
+</div>
+
+<script>
+// 模拟测验结果数据
+const mockResults = [
+  {
+    index: 1, type: '单选', content: '以下哪个是 Vue3 的组合式 API？',
+    options: [
+      { key: 'A', text: 'data()' },
+      { key: 'B', text: 'setup()' },
+      { key: 'C', text: 'created()' },
+      { key: 'D', text: 'mounted()' },
+    ],
+    userAnswer: 'B', correctAnswer: 'B', isCorrect: true,
+    analysis: 'setup() 是 Vue3 组合式 API 的入口函数。'
+  },
+  {
+    index: 2, type: '多选', content: '以下哪些是 JavaScript 的基本数据类型？',
+    options: [
+      { key: 'A', text: 'String' },
+      { key: 'B', text: 'Array' },
+      { key: 'C', text: 'Number' },
+      { key: 'D', text: 'Object' },
+    ],
+    userAnswer: 'AC', correctAnswer: 'AC', isCorrect: true,
+    analysis: 'String 和 Number 是基本类型，Array 和 Object 是引用类型。'
+  },
+  {
+    index: 3, type: '判断', content: 'Vue3 中 ref() 和 reactive() 的作用完全相同。',
+    options: [
+      { key: 'A', text: '对' },
+      { key: 'B', text: '错' },
+    ],
+    userAnswer: 'B', correctAnswer: 'B', isCorrect: true,
+    analysis: 'ref() 用于基本类型，reactive() 用于对象类型，它们的使用方式不同。'
+  },
+  {
+    index: 4, type: '单选', content: 'Pinia 是 Vue 的什么工具？',
+    options: [
+      { key: 'A', text: '路由管理' },
+      { key: 'B', text: '状态管理' },
+      { key: 'C', text: 'UI 组件库' },
+      { key: 'D', text: '构建工具' },
+    ],
+    userAnswer: 'A', correctAnswer: 'B', isCorrect: false,
+    analysis: 'Pinia 是 Vue 官方推荐的状态管理库，替代 Vuex。'
+  },
+  {
+    index: 5, type: '单选', content: 'Vite 的主要优势是什么？',
+    options: [
+      { key: 'A', text: '更好的 CSS 支持' },
+      { key: 'B', text: '更快的开发服务器启动' },
+      { key: 'C', text: '内置状态管理' },
+      { key: 'D', text: '自动生成 API' },
+    ],
+    userAnswer: 'B', correctAnswer: 'B', isCorrect: true,
+    analysis: 'Vite 利用原生 ES Module，实现了极快的冷启动。'
+  },
+]
+
+let currentIdx = 0
+
+function renderDots() {
+  const container = document.getElementById('resultDots')
+  container.innerHTML = mockResults.map((r, i) => {
+    const cls = ['result-dot']
+    if (i === currentIdx) cls.push('current')
+    cls.push(r.isCorrect ? 'dot-correct' : 'dot-wrong')
+    return `<div class="${cls.join(' ')}" onclick="goQuestion(${i})">${i + 1}</div>`
+  }).join('')
+}
+
+function renderQuestion() {
+  const r = mockResults[currentIdx]
+  const area = document.getElementById('resultArea')
+  
+  const optionsHtml = r.options.map(opt => {
+    const classes = ['result-opt']
+    const isUserSelected = r.userAnswer.includes(opt.key)
+    const isCorrectOpt = r.correctAnswer.includes(opt.key)
+    
+    if (isUserSelected && isCorrectOpt) classes.push('is-correct')
+    else if (isUserSelected && !isCorrectOpt) classes.push('user-wrong')
+    else if (isCorrectOpt) classes.push('is-correct')
+    
+    let marker = ''
+    if (isCorrectOpt) marker = '<span class="opt-marker correct-marker">正确</span>'
+    if (isUserSelected && !isCorrectOpt) marker = '<span class="opt-marker wrong-marker">你选</span>'
+    if (isUserSelected && isCorrectOpt) marker = '<span class="opt-marker correct-marker">✓ 你选</span>'
+    
+    return `<div class="${classes.join(' ')}">${opt.key}. ${opt.text} ${marker}</div>`
+  }).join('')
+
+  area.innerHTML = `
+    <div class="result-question ${r.isCorrect ? 'correct' : 'wrong'}">
+      <p class="q-text">${r.index}. <span class="q-type">[${r.type}]</span></p>
+      <div class="q-content">${r.content}</div>
+      ${optionsHtml}
+      <div class="result-answer-row">
+        <span>你的答案：${r.userAnswer || '未作答'}</span>
+        <span>正确答案：${r.correctAnswer}</span>
+        <span style="color: ${r.isCorrect ? 'var(--pixel-green)' : 'var(--pixel-red)'}; font-weight: 500;">${r.isCorrect ? '✓ 正确' : '✗ 错误'}</span>
+      </div>
+      ${r.analysis ? `<p class="analysis">💡 ${r.analysis}</p>` : ''}
+    </div>
+  `
+  
+  document.getElementById('navInfo').textContent = `${currentIdx + 1} / ${mockResults.length}`
+  document.getElementById('prevBtn').disabled = currentIdx === 0
+  document.getElementById('nextBtn').disabled = currentIdx === mockResults.length - 1
+  renderDots()
+}
+
+function navQuestion(delta) {
+  currentIdx = Math.max(0, Math.min(mockResults.length - 1, currentIdx + delta))
+  renderQuestion()
+}
+
+function goQuestion(idx) {
+  currentIdx = idx
+  renderQuestion()
+}
+
+renderQuestion()
+</script>
+
+</body>
+</html>

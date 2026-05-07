@@ -6,7 +6,7 @@
       </div>
       <div class="header-right">
         <router-link to="/projects" class="nav-link">全部项目</router-link>
-        <div class="avatar-menu" @mouseenter="showMenu = true" @mouseleave="showMenu = false">
+        <div class="avatar-menu" v-if="!loggingOut" @mouseenter="showMenu = true" @mouseleave="showMenu = false">
           <img :src="avatarHead" class="nav-avatar" />
           <div v-if="showMenu" class="avatar-dropdown">
             <div class="avatar-dropdown-inner">
@@ -38,12 +38,15 @@ const router = useRouter()
 const userStore = useUserStore()
 const siteSettings = useSiteSettingsStore()
 const showMenu = ref(false)
+const loggingOut = ref(false)
 
 const avatarHead = computed(() => getAvatarHead(userStore.userInfo?.avatar, userStore.userInfo?.id))
 
 function handleLogout() {
+  loggingOut.value = true
+  showMenu.value = false
   userStore.logout()
-  router.push('/login')
+  router.replace('/login')
 }
 </script>
 

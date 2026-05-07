@@ -216,9 +216,11 @@
             <!-- 已完成/未通过：显示上次成绩和重做 -->
             <div v-else-if="!quizStates[unit.id]" class="quiz-result-info">
               <p>上次得分：{{ unit.progress.score }}分（{{ unit.progress.score >= 80 ? '通过' : '未通过' }}）</p>
-              <p v-if="unit.progress.attempt_count >= 2" class="attempts-warn">⚠️ 已用完所有机会</p>
-              <button v-if="unit.progress.attempt_count < 2" class="px-btn outline" @click="retryQuiz(unit)">重新做题（剩余 {{ 2 - unit.progress.attempt_count }} 次）</button>
-              <p v-else class="attempts-warn">如需重做，请联系管理员重置</p>
+              <template v-if="unit.progress.status !== 'completed'">
+                <p v-if="unit.progress.attempt_count >= 2" class="attempts-warn">⚠️ 已用完所有机会</p>
+                <button v-if="unit.progress.attempt_count < 2" class="px-btn outline" @click="retryQuiz(unit)">重新做题（剩余 {{ 2 - unit.progress.attempt_count }} 次）</button>
+                <p v-else class="attempts-warn">如需重做，请联系管理员重置</p>
+              </template>
             </div>
             <div v-else-if="!quizStates[unit.id].submitted" class="quiz-area">
               <p class="quiz-progress">第 {{ quizStates[unit.id].currentIndex + 1 }} / {{ quizStates[unit.id].questions.length }} 题</p>
@@ -265,20 +267,52 @@
                 <img :src="quizStates[unit.id].result.score >= 80 ? $base + '/pixel-icons/ui/trophy.png' : $base + '/pixel-icons/plans/exclamation.png'" />
                 <h3>{{ quizStates[unit.id].result.score >= 80 ? '🎉 恭喜通过！' : '😅 未通过' }}</h3>
                 <p>得分：{{ quizStates[unit.id].result.score ?? 0 }} / 100（答对 {{ quizStates[unit.id].result.correct ?? 0 }} / {{ quizStates[unit.id].result.total ?? 0 }}）</p>
-                <p v-if="quizStates[unit.id].result.remainingAttempts !== null" class="sub-text">
+                <p v-if="quizStates[unit.id].result.score < 80 && quizStates[unit.id].result.remainingAttempts !== null" class="sub-text">
                   剩余机会：{{ quizStates[unit.id].result.remainingAttempts }} 次
                 </p>
               </div>
               <!-- 通过时才展示错题详情 -->
               <template v-if="quizStates[unit.id].result.score >= 80">
-                <div v-for="(d, idx) in quizStates[unit.id].result.details" :key="idx" class="result-item" :class="{ wrong: !d.isCorrect }">
-                  <p><strong>{{ idx + 1 }}.</strong></p>
-                  <div class="q-content-md result-content" v-html="renderMd(d.content)"></div>
-                  <p>你的答案：{{ d.userAnswer || '未作答' }} | 正确答案：{{ d.correctAnswer }}</p>
-                  <p v-if="d.analysis" class="analysis">💡 {{ d.analysis }}</p>
+                <!-- 题号导航点 -->
+                <div class="result-dots">
+                  <div v-for="(d, idx) in quizStates[unit.id].result.details" :key="idx"
+                    class="result-dot"
+                    :class="{ current: (resultViewIndex[unit.id] || 0) === idx, 'dot-correct': d.isCorrect, 'dot-wrong': !d.isCorrect }"
+                    @click="resultViewIndex[unit.id] = idx">
+                    {{ idx + 1 }}
+                  </div>
+                </div>
+                <!-- 当前题目 -->
+                <div class="result-item" :class="{ wrong: !currentResultDetail(unit.id).isCorrect }">
+                  <p class="q-text">{{ (resultViewIndex[unit.id] || 0) + 1 }}.
+                    <span class="q-type" v-if="currentResultDetail(unit.id).questionType">[{{ typeLabel(currentResultDetail(unit.id).questionType) }}]</span>
+                  </p>
+                  <div class="q-content-md result-content" v-html="renderMd(currentResultDetail(unit.id).content)"></div>
+                  <!-- 选项列表 -->
+                  <div class="result-options" v-if="currentResultDetail(unit.id).options">
+                    <div v-for="opt in currentResultDetail(unit.id).options" :key="opt.key"
+                      class="result-opt"
+                      :class="resultOptClass(currentResultDetail(unit.id), opt.key)">
+                      {{ opt.key }}. <span v-html="renderMdInline(opt.text)"></span>
+                      <span v-if="currentResultDetail(unit.id).correctAnswer.includes(opt.key) && currentResultDetail(unit.id).userAnswer?.includes(opt.key)" class="opt-marker correct-marker">✓ 你选</span>
+                      <span v-else-if="currentResultDetail(unit.id).correctAnswer.includes(opt.key)" class="opt-marker correct-marker">正确</span>
+                      <span v-else-if="currentResultDetail(unit.id).userAnswer?.includes(opt.key)" class="opt-marker wrong-marker">你选</span>
+                    </div>
+                  </div>
+                  <div class="result-answer-row">
+                    <p>你的答案：{{ currentResultDetail(unit.id).userAnswer || '未作答' }}</p>
+                    <p>正确答案：{{ currentResultDetail(unit.id).correctAnswer }}</p>
+                  </div>
+                  <p v-if="currentResultDetail(unit.id).analysis" class="analysis">💡 {{ currentResultDetail(unit.id).analysis }}</p>
+                </div>
+                <!-- 翻页 -->
+                <div class="unit-action quiz-nav">
+                  <button class="px-btn outline" :disabled="!(resultViewIndex[unit.id] || 0)" @click="resultViewIndex[unit.id] = (resultViewIndex[unit.id] || 0) - 1">← 上一题</button>
+                  <span class="result-nav-info">{{ (resultViewIndex[unit.id] || 0) + 1 }} / {{ quizStates[unit.id].result.details.length }}</span>
+                  <button class="px-btn outline" :disabled="(resultViewIndex[unit.id] || 0) >= quizStates[unit.id].result.details.length - 1" @click="resultViewIndex[unit.id] = (resultViewIndex[unit.id] || 0) + 1">下一题 →</button>
                 </div>
               </template>
-              <div class="unit-action">
+              <div class="unit-action" v-if="quizStates[unit.id].result.score < 80">
                 <button v-if="quizStates[unit.id].result.remainingAttempts > 0" class="px-btn outline" @click="retryQuiz(unit)">
                   重新做题（剩余 {{ quizStates[unit.id].result.remainingAttempts }} 次）
                 </button>
@@ -337,6 +371,7 @@ const practicalStates = reactive({})
 const practicalSubmitting = ref(false)
 const fbRefs = reactive({})
 const quizPassRef = ref(null)
+const resultViewIndex = reactive({})
 const allDoneRef = ref(null)
 
 const completedCount = computed(() => units.value.filter(u => u.progress.status === 'completed').length)
@@ -649,7 +684,39 @@ async function submitQuiz(unit) {
 
 function retryQuiz(unit) {
   delete quizStates[unit.id]
+  delete resultViewIndex[unit.id]
   startQuiz(unit)
+}
+
+function currentResultDetail(unitId) {
+  const idx = resultViewIndex[unitId] || 0
+  const state = quizStates[unitId]
+  const details = state?.result?.details || []
+  const detail = details[idx] || {}
+  // 如果后端没返回 options，从前端缓存的 questions 里取
+  if (!detail.options && state?.questions) {
+    const q = state.questions.find(q => q.id === detail.questionId)
+    if (q) {
+      detail.options = [
+        q.option_a ? { key: 'A', text: q.option_a } : null,
+        q.option_b ? { key: 'B', text: q.option_b } : null,
+        q.option_c ? { key: 'C', text: q.option_c } : null,
+        q.option_d ? { key: 'D', text: q.option_d } : null,
+      ].filter(Boolean)
+      if (!detail.questionType) detail.questionType = q.question_type
+    }
+  }
+  return detail
+}
+
+function resultOptClass(detail, key) {
+  const classes = []
+  const isUserSelected = detail.userAnswer?.includes(key)
+  const isCorrectOpt = detail.correctAnswer?.includes(key)
+  if (isUserSelected && isCorrectOpt) classes.push('is-correct')
+  else if (isUserSelected && !isCorrectOpt) classes.push('user-wrong')
+  else if (isCorrectOpt) classes.push('is-correct')
+  return classes
 }
 
 async function loadPracticalStatus(unit) {
@@ -800,7 +867,7 @@ onMounted(async () => {
 .article-body :deep(table) { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
 .article-body :deep(th), .article-body :deep(td) { border: 1px solid var(--pixel-border, #E0D5C8); padding: 8px 12px; text-align: left; }
 .article-body :deep(th) { background: #faf5ea; font-weight: 600; }
-.article-body :deep(pre) { background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px; overflow-x: auto; margin: 12px 0; font-size: 13px; line-height: 1.5; }
+.article-body :deep(pre) { background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px; margin: 12px 0; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
 .article-body :deep(code) { background: #F5EFE0; padding: 2px 6px; font-size: 13px; border-radius: 3px; border: 1px solid var(--pixel-border, #E0D5C8); }
 .article-body :deep(pre code) { background: none; padding: 0; border: none; color: inherit; }
 .article-body :deep(ul), .article-body :deep(ol) { padding-left: 24px; margin: 8px 0; }
@@ -908,6 +975,23 @@ onMounted(async () => {
 .result-item { padding: 10px 14px; margin-bottom: 6px; border: 2px solid var(--pixel-border, #E0D5C8); background: var(--pixel-card, #FFFDF5); font-size: 14px; }
 .result-item.wrong { border-color: var(--pixel-gold, #E8A93A); border-left-width: 4px; }
 .result-item p { margin: 3px 0; }
+
+/* 测验结果逐题翻页 */
+.result-dots { display: flex; gap: 6px; margin: 12px 0 4px; flex-wrap: wrap; }
+.result-dot { width: 24px; height: 24px; border: 2px solid var(--pixel-border, #E0D5C8); display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; background: var(--pixel-card, #FFFDF5); }
+.result-dot.current { border-color: var(--pixel-brown, #5B3A29); font-weight: bold; }
+.result-dot.dot-correct { background: #ECF5E8; border-color: var(--pixel-green, #5C8A4D); }
+.result-dot.dot-wrong { background: #FFF0EE; border-color: var(--pixel-red, #C24A3A); }
+.result-options { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.result-opt { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 2px solid var(--pixel-border, #E0D5C8); font-size: 14px; background: var(--pixel-card, #FFFDF5); }
+.result-opt.is-correct { border-color: var(--pixel-green, #5C8A4D); background: #ECF5E8; }
+.result-opt.user-wrong { border-color: var(--pixel-red, #C24A3A); background: #FFF0EE; }
+.opt-marker { font-size: 11px; padding: 1px 6px; border: 1px solid; margin-left: auto; }
+.opt-marker.correct-marker { border-color: var(--pixel-green, #5C8A4D); color: var(--pixel-green, #5C8A4D); }
+.opt-marker.wrong-marker { border-color: var(--pixel-red, #C24A3A); color: var(--pixel-red, #C24A3A); }
+.result-answer-row { margin-top: 8px; font-size: 13px; color: var(--pixel-text-secondary, #8B7355); }
+.result-answer-row p { margin: 2px 0; }
+.result-nav-info { font-size: 13px; color: var(--pixel-text-secondary, #8B7355); }
 
 /* All done */
 .all-done {

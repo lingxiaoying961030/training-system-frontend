@@ -9,7 +9,7 @@
           <router-link v-else to="/projects">返回项目</router-link>
           <span v-if="planName"> / {{ planName }}</span>
         </div>
-        <h1>🗺️ {{ planName || '培训地图' }}</h1>
+        <h1>🗺️ {{ planName || '&nbsp;' }}</h1>
         <p class="map-subtitle">{{ siteSettings.get('map_subtitle', '闯关式学习，一步步成为专业标注员！') }}</p>
       </div>
     </div>
