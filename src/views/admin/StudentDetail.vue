@@ -89,6 +89,13 @@
                       {{ unitChipLabel(unit) }}
                     </span>
                   </div>
+                  <!-- 错题按钮（不用展开就能看到） -->
+                  <template v-for="unit in stage.units" :key="'wrong-'+unit.id">
+                    <button v-if="unit.unit_type === 'quiz' && unit.wrong_answers && unit.wrong_answers.length > 0"
+                      class="btn-wrong-inline" @click.stop="openWrongAnswers(unit, stage)">
+                      📋 错题({{ unit.wrong_answers.length }})
+                    </button>
+                  </template>
                 </li>
               </ul>
               <!-- 展开的关卡详情 -->
@@ -108,6 +115,9 @@
                     <span v-if="unit.unit_type === 'quiz' && (unit.attempt_count || 0) > 0" class="unit-action">
                       <button class="btn-reset" @click.stop="resetUnit(unit.id)">重置</button>
                     </span>
+                    <span v-if="unit.unit_type === 'quiz' && unit.wrong_answers && unit.wrong_answers.length > 0" class="unit-action">
+                      <button class="btn-wrong" @click.stop="openWrongAnswers(unit, stage)">📋 错题({{ unit.wrong_answers.length }})</button>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -117,6 +127,46 @@
         </div>
       </div>
     </template>
+
+    <!-- 错题详情弹窗 -->
+    <Teleport to="body">
+      <div v-if="wrongModal.visible" class="wrong-overlay" @click.self="wrongModal.visible = false">
+        <div class="wrong-modal">
+          <div class="wrong-modal-header">
+            <h3>📋 错题详情 — {{ wrongModal.unitTitle }}</h3>
+            <button class="wrong-modal-close" @click="wrongModal.visible = false">✕</button>
+          </div>
+          <div class="wrong-modal-body">
+            <div class="wrong-stats">
+              <span>答错：<strong>{{ wrongModal.items.length }}</strong> 题</span>
+              <span v-if="wrongModal.score !== null">得分：<strong>{{ wrongModal.score }}</strong> 分</span>
+            </div>
+            <div v-for="(item, idx) in wrongModal.items" :key="idx" class="wrong-item">
+              <div class="wrong-q-header">
+                <span class="wrong-q-num">第 {{ idx + 1 }} 题</span>
+                <span v-if="item.questionType" class="wrong-q-type">{{ quizTypeLabel(item.questionType) }}</span>
+              </div>
+              <div class="wrong-q-content">{{ item.content }}</div>
+              <template v-if="item.options && item.options.length">
+                <div v-for="opt in item.options" :key="opt.key"
+                  class="wrong-opt"
+                  :class="wrongOptClass(item, opt.key)">
+                  {{ opt.key }}. {{ opt.text }}
+                  <span v-if="item.correctAnswer?.includes(opt.key) && item.userAnswer?.includes(opt.key)" class="opt-marker correct-marker">✓ 学员选</span>
+                  <span v-else-if="item.correctAnswer?.includes(opt.key)" class="opt-marker correct-marker">正确答案</span>
+                  <span v-else-if="item.userAnswer?.includes(opt.key)" class="opt-marker wrong-marker">学员选</span>
+                </div>
+              </template>
+              <div class="wrong-answer-row">
+                <p>学员答案：{{ item.userAnswer || '未作答' }}</p>
+                <p>正确答案：{{ item.correctAnswer }}</p>
+              </div>
+              <div v-if="item.analysis" class="wrong-analysis">💡 {{ item.analysis }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -137,6 +187,30 @@ const loading = ref(true)
 const expandedStages = ref([])
 const groupedProgress = ref([])
 
+// 错题弹窗
+const wrongModal = ref({ visible: false, unitTitle: '', score: null, items: [] })
+
+function openWrongAnswers(unit, stage) {
+  wrongModal.value = {
+    visible: true,
+    unitTitle: unit.title || stage?.title || '测验',
+    score: unit.score,
+    items: unit.wrong_answers || []
+  }
+}
+
+function wrongOptClass(item, key) {
+  const isUserSelected = item.userAnswer?.includes(key)
+  const isCorrect = item.correctAnswer?.includes(key)
+  if (isUserSelected && isCorrect) return 'is-correct'
+  if (isUserSelected && !isCorrect) return 'user-wrong'
+  if (isCorrect) return 'is-correct'
+  return ''
+}
+
+function quizTypeLabel(type) {
+  return { single: '单选', multiple: '多选', judge: '判断' }[type] || type
+}
 // 新增 mentor 分配相关
 const showAddMentor = ref(false)
 const addForm = ref({ projectId: '', planId: '', mentorId: '' })
@@ -541,4 +615,36 @@ onMounted(() => {
 .stage-status.locked { background: #f5f5f5; color: #999; }
 
 .empty-plan { font-size: 13px; color: #999; padding: 8px 0; }
+
+/* 查看错题按钮 */
+.btn-wrong { padding: 4px 10px; background: #FFF8E7; border: 1px solid var(--pixel-gold, #E8A93A); color: var(--pixel-brown, #5B3A29); border-radius: 4px; font-size: 12px; cursor: pointer; }
+.btn-wrong:hover { background: #FFECB3; }
+.btn-wrong-inline { padding: 2px 8px; background: #FFF8E7; border: 1px solid var(--pixel-gold, #E8A93A); color: var(--pixel-brown, #5B3A29); border-radius: 4px; font-size: 11px; cursor: pointer; flex-shrink: 0; }
+.btn-wrong-inline:hover { background: #FFECB3; }
+
+/* 错题弹窗 */
+.wrong-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.wrong-modal { background: var(--pixel-card, #FFFDF5); border: 3px solid var(--pixel-brown, #5B3A29); width: 640px; max-width: 92vw; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 6px 6px 0 rgba(91,58,41,0.15); }
+.wrong-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #F5EFE0; border-bottom: 2px solid var(--pixel-border, #E0D5C8); }
+.wrong-modal-header h3 { font-size: 15px; color: var(--pixel-brown, #5B3A29); margin: 0; }
+.wrong-modal-close { cursor: pointer; font-size: 18px; color: var(--pixel-text-secondary, #8B7355); border: none; background: none; }
+.wrong-modal-close:hover { color: var(--pixel-brown, #5B3A29); }
+.wrong-modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.wrong-stats { display: flex; gap: 16px; padding: 10px 16px; background: #FFF0EE; border: 2px solid #EF9A9A; margin-bottom: 16px; font-size: 13px; }
+.wrong-stats span { color: var(--pixel-text-secondary, #8B7355); }
+.wrong-stats strong { color: var(--pixel-red, #C24A3A); }
+.wrong-item { border: 2px solid var(--pixel-border, #E0D5C8); margin-bottom: 12px; padding: 14px 16px; border-left: 4px solid var(--pixel-red, #C24A3A); }
+.wrong-q-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.wrong-q-num { font-size: 14px; font-weight: 600; color: var(--pixel-brown, #5B3A29); }
+.wrong-q-type { font-size: 11px; color: var(--pixel-blue, #4A90B8); background: #F0F5FA; padding: 1px 6px; border: 1px solid #B8D4E8; }
+.wrong-q-content { font-size: 14px; line-height: 1.7; margin-bottom: 10px; padding: 8px 12px; background: #FDFAF0; border: 2px solid var(--pixel-border, #E0D5C8); }
+.wrong-opt { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border: 2px solid var(--pixel-border, #E0D5C8); font-size: 13px; background: var(--pixel-card, #FFFDF5); margin-bottom: 3px; }
+.wrong-opt.is-correct { border-color: var(--pixel-green, #5C8A4D); background: #ECF5E8; }
+.wrong-opt.user-wrong { border-color: var(--pixel-red, #C24A3A); background: #FFF0EE; }
+.opt-marker { font-size: 10px; padding: 1px 5px; border: 1px solid; margin-left: auto; }
+.opt-marker.correct-marker { border-color: var(--pixel-green, #5C8A4D); color: var(--pixel-green, #5C8A4D); }
+.opt-marker.wrong-marker { border-color: var(--pixel-red, #C24A3A); color: var(--pixel-red, #C24A3A); }
+.wrong-answer-row { margin-top: 8px; font-size: 12px; color: var(--pixel-text-secondary, #8B7355); }
+.wrong-answer-row p { margin: 2px 0; }
+.wrong-analysis { color: var(--pixel-blue, #4A90B8); font-size: 12px; line-height: 1.5; margin-top: 4px; padding: 6px 10px; background: #F0F5FA; border-left: 3px solid var(--pixel-blue, #4A90B8); }
 </style>
