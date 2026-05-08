@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务8 笔记框 + 任务9 不通过标记 Demo</title>
+<style>
+:root {
+  --pixel-card: #fffbf0;
+  --pixel-border: #8b6914;
+  --pixel-text: #4a3728;
+  --pixel-muted: #9e8a76;
+  --pixel-link: #4a90d9;
+  --pixel-green: #5C8A4D;
+  --pixel-red: #C24A3A;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5edd8; color: var(--pixel-text); padding: 24px; }
+h1 { font-size: 20px; margin-bottom: 6px; color: #5B3A29; }
+h2 { font-size: 16px; margin: 32px 0 14px; color: #5B3A29; padding-bottom: 8px; border-bottom: 2px dashed #d4c5a0; }
+h3 { font-size: 14px; margin: 20px 0 10px; color: #5B3A29; }
+.subtitle { font-size: 13px; color: var(--pixel-muted); margin-bottom: 24px; }
+.demo-note { background: #fff8e7; border: 2px solid #e8d5a0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.8; }
+.demo-note strong { color: #d4882a; }
+.demo-section { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+.demo-section-title { padding: 12px 16px; background: #f0e6d2; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e0d5c8; }
+.demo-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ==================== 任务8：笔记框 ==================== */
+/* 学员端 - 做题时的笔记 */
+.quiz-area { padding: 16px; }
+.q-text { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.q-content { font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
+.options { margin-bottom: 12px; }
+.opt { display: block; padding: 8px 12px; margin: 4px 0; border: 2px solid #e0d5c8; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+.opt:hover { border-color: var(--pixel-border); background: #faf5ea; }
+.opt.selected { border-color: var(--pixel-link); background: #e3f2fd; }
+.opt input { margin-right: 6px; }
+
+/* 笔记输入框 */
+.note-box { margin: 12px 0; }
+.note-label { font-size: 12px; color: var(--pixel-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+.note-textarea { width: 100%; padding: 8px 12px; border: 2px solid #e0d5c8; border-radius: 6px; font-size: 12px; font-family: inherit; resize: vertical; min-height: 50px; max-height: 120px; background: #fdfcf5; color: var(--pixel-text); transition: border-color 0.2s; }
+.note-textarea:focus { outline: none; border-color: var(--pixel-link); background: #fff; }
+.note-textarea::placeholder { color: #c8b89a; }
+.note-hint { font-size: 11px; color: #c8b89a; margin-top: 3px; }
+
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+.px-btn { padding: 8px 16px; border: 2px solid; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+.px-btn.green { background: var(--pixel-green); color: #fff; border-color: #4E7A3F; }
+.px-btn.outline { background: var(--pixel-card); color: var(--pixel-text); border-color: #d4c5a0; }
+
+/* 管理端 - 错题详情中的笔记 */
+.wrong-item { margin-bottom: 16px; padding: 14px; background: #fdfaf0; border: 2px solid #e0d5c8; border-radius: 8px; }
+.wrong-q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.wrong-q-num { background: #e8d5a0; color: #5B3A29; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.wrong-q-type { background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+.wrong-q-content { font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
+.wrong-opt { padding: 5px 10px; margin: 3px 0; border-radius: 4px; font-size: 13px; }
+.wrong-opt.correct { background: #e8f5e9; border: 1px solid #a5d6a7; }
+.wrong-opt.wrong { background: #ffebee; border: 1px solid #ef9a9a; }
+.opt-marker { font-size: 10px; margin-left: 6px; padding: 1px 5px; border-radius: 3px; }
+.correct-marker { background: #c8e6c9; color: #2e7d32; }
+.wrong-marker { background: #ffcdd2; color: #c62828; }
+.wrong-analysis { margin-top: 8px; padding: 8px 12px; background: #f0faf0; border-left: 3px solid #a5d6a7; font-size: 12px; line-height: 1.6; }
+
+/* 笔记显示（管理端） */
+.wrong-note { margin-top: 8px; padding: 8px 12px; background: #fff8e7; border-left: 3px solid #e8d5a0; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.6; }
+.wrong-note-label { font-size: 11px; font-weight: 600; color: #d4882a; margin-bottom: 3px; }
+.wrong-note-text { color: var(--pixel-text); }
+.wrong-note-empty { color: #c8b89a; font-style: italic; }
+
+/* ==================== 任务9：不通过标记 ==================== */
+/* 通用标签 */
+.px-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid; }
+.px-tag-green { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+.px-tag-blue { background: #e3f2fd; color: #1976d2; border-color: #90caf9; }
+.px-tag-orange { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+.px-tag-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+.px-tag-gray { background: #f0f0f0; color: #666; border-color: #ddd; }
+
+/* 进度条 */
+.px-progress { height: 8px; background: #e8dcc8; border-radius: 4px; overflow: hidden; min-width: 60px; }
+.px-progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.px-progress-fill.green { background: var(--pixel-green); }
+.px-progress-fill.red { background: var(--pixel-red); }
+.px-progress-fill.orange { background: #E8A93A; }
+
+/* 表格 */
+.pixel-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pixel-table th { background: #f5edd8; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; color: var(--pixel-muted); border-bottom: 2px solid #e0d5c8; }
+.pixel-table td { padding: 10px 14px; border-bottom: 1px solid #f0e6d2; vertical-align: middle; }
+
+/* 培训地图节点 */
+.map-demo { padding: 16px; display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.map-node { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100px; }
+.map-icon { width: 56px; height: 56px; border: 3px solid; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.map-icon.completed { border-color: var(--pixel-green); background: #ECF5E8; }
+.map-icon.active { border-color: var(--pixel-link); background: #E3F2FD; }
+.map-icon.failed { border-color: var(--pixel-red); background: #FFF0EE; }
+.map-icon.locked { border-color: #d4c5a0; background: #f0e6d2; opacity: 0.5; }
+.map-icon.blocked { border-color: var(--pixel-red); background: #FFF0EE; }
+.map-label { font-size: 11px; text-align: center; max-width: 100px; }
+.map-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+.map-tag.green { background: #e8f5e9; color: #2e7d32; }
+.map-tag.blue { background: #e3f2fd; color: #1976d2; }
+.map-tag.red { background: #ffebee; color: #c62828; }
+.map-tag.gray { background: #f0f0f0; color: #999; }
+.map-tag.orange { background: #fff3e0; color: #e65100; }
+
+/* 方案卡片 */
+.scheme-card { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.scheme-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.scheme-desc { font-size: 12px; color: var(--pixel-muted); margin-bottom: 12px; line-height: 1.7; }
+.scheme-pros { font-size: 12px; margin-top: 8px; padding: 8px 12px; background: #f0faf0; border-radius: 4px; }
+.scheme-cons { font-size: 12px; margin-top: 6px; padding: 8px 12px; background: #fff5f3; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>📄 任务8 & 任务9 Demo</h1>
+<div class="subtitle">笔记框功能 + 不通过标记方案</div>
+
+<!-- ==================== 任务8 ==================== -->
+<h2>📝 任务8：测验笔记框</h2>
+
+<div class="demo-note">
+  <strong>学员端</strong>：做题时每道题下方有可选笔记框，记录答题思路<br>
+  <strong>管理端</strong>：错题详情弹窗中，答错的题目显示学员笔记（有则显示，无则不显示）
+</div>
+
+<div class="demo-cols">
+  <!-- 学员端效果 -->
+  <div>
+    <h3>👩‍🎓 学员端 — 做题时</h3>
+    <div class="demo-section">
+      <div class="demo-section-title">📝 测验 · 第 2 / 5 题</div>
+      <div class="quiz-area">
+        <p class="q-text">2. <span style="font-size:11px;color:var(--pixel-link)">[单选]</span></p>
+        <div class="q-content">以下关于 <code style="background:#f0e6d2;padding:1px 4px;border-radius:3px">JSON</code> 格式的说法，<strong>正确</strong>的是：</div>
+        <div class="options">
+          <label class="opt selected"><input type="radio" name="demo_q" checked> A. JSON的key必须用双引号包裹</label>
+          <label class="opt"><input type="radio" name="demo_q"> B. JSON支持注释语法</label>
+          <label class="opt"><input type="radio" name="demo_q"> C. JSON的value不能是数组</label>
+          <label class="opt"><input type="radio" name="demo_q"> D. JSON文件扩展名为.xml</label>
+        </div>
+
+        <!-- 笔记框 -->
+        <div class="note-box">
+          <div class="note-label">📝 答题笔记 <span style="font-size:10px;color:#c8b89a">（可选）</span></div>
+          <textarea class="note-textarea" placeholder="记录你的答题思路、疑问或想法...">我选A是因为记得JSON规范要求key必须双引号，不像JS对象可以不加引号</textarea>
+          <div class="note-hint">笔记仅自己和导师可见</div>
+        </div>
+
+        <div class="quiz-nav">
+          <button class="px-btn outline">← 上一题</button>
+          <button class="px-btn green">下一题 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理端效果 -->
+  <div>
+    <h3>👨‍💼 管理端 — 错题详情</h3>
+    <div class="demo-section">
+      <div class="demo-section-title">📋 错题详情 — 第一关测验</div>
+      <div style="padding: 14px;">
+        <!-- 有笔记的错题 -->
+        <div class="wrong-item">
+          <div class="wrong-q-header">
+            <span class="wrong-q-num">第 2 题</span>
+            <span class="wrong-q-type">单选</span>
+          </div>
+          <div class="wrong-q-content">以下关于 <code style="background:#f0e6d2;padding:1px 4px;border-radius:3px">JSON</code> 格式的说法，<strong>正确</strong>的是：</div>
+          <div class="wrong-opt wrong">A. JSON的key必须用双引号包裹 <span class="opt-marker correct-marker">正确答案</span></div>
+          <div class="wrong-opt" style="background:#ffebee;border:1px solid #ef9a9a">B. JSON支持注释语法 <span class="opt-marker wrong-marker">学员选</span></div>
+          <div class="wrong-opt">C. JSON的value不能是数组</div>
+          <div class="wrong-opt">D. JSON文件扩展名为.xml</div>
+          <div class="wrong-analysis">💡 JSON规范要求key必须用双引号，不支持注释</div>
+          <!-- 学员笔记 -->
+          <div class="wrong-note">
+            <div class="wrong-note-label">📝 学员笔记</div>
+            <div class="wrong-note-text">我以为JSON和JS一样支持 // 注释，看来是记混了</div>
+          </div>
+        </div>
+
+        <!-- 无笔记的错题 -->
+        <div class="wrong-item">
+          <div class="wrong-q-header">
+            <span class="wrong-q-num">第 4 题</span>
+            <span class="wrong-q-type">判断</span>
+          </div>
+          <div class="wrong-q-content">Python中列表和元组可以互相转换。</div>
+          <div class="wrong-opt" style="background:#e8f5e9;border:1px solid #a5d6a7">A. 对 <span class="opt-marker correct-marker">正确答案</span></div>
+          <div class="wrong-opt" style="background:#ffebee;border:1px solid #ef9a9a">B. 错 <span class="opt-marker wrong-marker">学员选</span></div>
+          <div class="wrong-analysis">💡 可以用 list() 和 tuple() 互相转换</div>
+          <!-- 无笔记 — 不显示笔记区域 -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 任务9 ==================== -->
+<h2>🚫 任务9：不通过标记 — 三种方案对比</h2>
+
+<div class="demo-note">
+  <strong>场景</strong>：学员在测验中用完所有机会仍未通过（status=failed, attempts exhausted），当前在学员进度/培训地图中仍显示"进行中"，无法区分。<br>
+  下面展示三种方案，每种包含：培训地图节点 + 学员进度表格 两个视角。
+</div>
+
+<!-- 方案 A -->
+<div class="scheme-card">
+  <div class="scheme-title">🅰️ 方案A：在原有状态上增加"不通过"（推荐）</div>
+  <div class="scheme-desc">
+    当学员测验次数用完且未通过时，关卡状态从 active 变为 <strong>failed</strong>。培训地图显示红色标记，学员列表显示❌标签。<br>
+    管理员重置测验后，状态恢复为 active。
+  </div>
+
+  <h3>培训地图效果</h3>
+  <div class="demo-section">
+    <div class="map-demo">
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第一关：标注规范</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第二关：数据清洗</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon failed">❌</div>
+        <div class="map-label">第三关：质量检查</div>
+        <span class="map-tag red">未通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon locked">🔒</div>
+        <div class="map-label">第四关：实战演练</div>
+        <span class="map-tag gray">未解锁</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>学员进度表格效果</h3>
+  <div class="demo-section">
+    <table class="pixel-table">
+      <thead><tr><th>姓名</th><th>当前进度</th><th>状态</th><th>Mentor</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>张三</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              AI标注基础 › 质量检查
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill green" style="width:50%"></div></div>
+              2/4
+            </div>
+          </td>
+          <td><span class="px-tag px-tag-red">❌ 测验未通过</span></td>
+          <td>王导师</td>
+        </tr>
+        <tr>
+          <td><strong>李四</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              AI标注基础 › 数据清洗
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill green" style="width:25%"></div></div>
+              1/4
+            </div>
+          </td>
+          <td><span class="px-tag px-tag-blue">📖 学习中</span></td>
+          <td>李导师</td>
+        </tr>
+        <tr>
+          <td><strong>王五</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              AI标注基础
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill green" style="width:100%"></div></div>
+              4/4
+            </div>
+          </td>
+          <td><span class="px-tag px-tag-green">✅ 全部通关</span></td>
+          <td>-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scheme-pros">✅ 优点：直观清晰；和现有 completed/active/locked 状态体系一致；管理员一眼看出谁卡住了</div>
+  <div class="scheme-cons">⚠️ 注意：需要在后端判断"测验次数用完 + 未通过"时自动设置 stage_progress 为 failed</div>
+</div>
+
+<!-- 方案 B -->
+<div class="scheme-card">
+  <div class="scheme-title">🅱️ 方案B：保留"进行中"但加警告子标签</div>
+  <div class="scheme-desc">
+    关卡状态仍为 active（进行中），但在标签旁附加⚠️警告图标和"测验未通过"文案。<br>
+    适合不想改状态流转逻辑的场景。
+  </div>
+
+  <h3>培训地图效果</h3>
+  <div class="demo-section">
+    <div class="map-demo">
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第一关：标注规范</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第二关：数据清洗</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon active" style="border-color:#E8A93A;background:#FFF8E7">
+          <span style="font-size:16px">📖</span>
+        </div>
+        <div class="map-label">第三关：质量检查</div>
+        <span class="map-tag blue">进行中</span>
+        <span class="map-tag orange" style="margin-top:2px">⚠️ 测验未通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon locked">🔒</div>
+        <div class="map-label">第四关：实战演练</div>
+        <span class="map-tag gray">未解锁</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>学员进度表格效果</h3>
+  <div class="demo-section">
+    <table class="pixel-table">
+      <thead><tr><th>姓名</th><th>当前进度</th><th>状态</th><th>Mentor</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>张三</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              AI标注基础 › 质量检查
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill orange" style="width:50%"></div></div>
+              2/4
+            </div>
+          </td>
+          <td>
+            <span class="px-tag px-tag-blue">📖 学习中</span>
+            <span class="px-tag px-tag-orange" style="margin-left:4px">⚠️ 测验卡住</span>
+          </td>
+          <td>王导师</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scheme-pros">✅ 优点：不改现有状态流转，改动最小</div>
+  <div class="scheme-cons">⚠️ 缺点：两个标签略显杂乱；"进行中"和"测验未通过"语义矛盾</div>
+</div>
+
+<!-- 方案 C -->
+<div class="scheme-card">
+  <div class="scheme-title">🅲 方案C：新增"受阻"状态（blocked）</div>
+  <div class="scheme-desc">
+    新增 <strong>blocked</strong> 状态，语义为"进行中但遇到阻碍"。比 failed 更温和，不像"不通过"那样有终结感。<br>
+    适合想保留"这个关卡还没放弃，只是暂时卡住"的语义。
+  </div>
+
+  <h3>培训地图效果</h3>
+  <div class="demo-section">
+    <div class="map-demo">
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第一关：标注规范</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon completed">✅</div>
+        <div class="map-label">第二关：数据清洗</div>
+        <span class="map-tag green">已通过</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon blocked" style="border-color:#E8A93A;background:#FFF5F0">
+          <span style="font-size:20px">⚠️</span>
+        </div>
+        <div class="map-label">第三关：质量检查</div>
+        <span class="map-tag orange">需要帮助</span>
+      </div>
+      <div class="map-node">
+        <div class="map-icon locked">🔒</div>
+        <div class="map-label">第四关：实战演练</div>
+        <span class="map-tag gray">未解锁</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>学员进度表格效果</h3>
+  <div class="demo-section">
+    <table class="pixel-table">
+      <thead><tr><th>姓名</th><th>当前进度</th><th>状态</th><th>Mentor</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>张三</strong></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              AI标注基础 › 质量检查
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill orange" style="width:50%"></div></div>
+              2/4
+            </div>
+          </td>
+          <td><span class="px-tag px-tag-orange">⚠️ 需要帮助</span></td>
+          <td>王导师</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scheme-pros">✅ 优点：语义温和，不给学员压力；暗示需要导师介入</div>
+  <div class="scheme-cons">⚠️ 缺点：新增状态值，状态流转更复杂；和 failed 语义有重叠</div>
+</div>
+
+<!-- 方案对比 -->
+<h2>📊 三种方案对比</h2>
+<div class="demo-section">
+  <table class="pixel-table">
+    <thead><tr><th>维度</th><th>🅰️ failed 状态</th><th>🅱️ 子标签</th><th>🅲 blocked 状态</th></tr></thead>
+    <tbody>
+      <tr><td><strong>改动量</strong></td><td>中等（状态流转+UI）</td><td>最小（仅UI）</td><td>较大（新状态+全链路）</td></tr>
+      <tr><td><strong>语义清晰度</strong></td><td>⭐⭐⭐ 最清晰</td><td>⭐⭐ 有矛盾</td><td>⭐⭐⭐ 清晰</td></tr>
+      <tr><td><strong>和现有体系兼容</strong></td><td>✅ stage_progress 已有 failed</td><td>✅ 不改状态</td><td>⚠️ 需全链路加新值</td></tr>
+      <tr><td><strong>管理员感知</strong></td><td>❌红色一眼看到</td><td>⚠️橙色，需看两个标签</td><td>⚠️橙色，但只有一个</td></tr>
+      <tr><td><strong>学员感受</strong></td><td>较直接（不通过）</td><td>温和（还在进行中）</td><td>温和（需要帮助）</td></tr>
+      <tr><td style="font-weight:700;color:#d4882a">推荐指数</td><td style="font-weight:700;color:#d4882a">⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="demo-note">
+  <strong>我的推荐</strong>：方案A。原因：<br>
+  1. <code>training_stage_progress</code> 表本身已有 failed 状态值，培训地图也已经写好了 failed 的图标/颜色/文案，只是当前后端没有在"测验耗尽"时设置它<br>
+  2. 只需在后端提交测验的逻辑里加一个判断：如果 score < passScore 且 attemptCount >= maxAttempts → 设 stage_progress = failed<br>
+  3. 管理员重置测验次数时，同步把 stage_progress 恢复为 active<br>
+  4. 改动量小，语义最清晰
+</div>
+
+</body>
+</html>

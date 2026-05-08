@@ -162,6 +162,10 @@
                 <p>正确答案：{{ item.correctAnswer }}</p>
               </div>
               <div v-if="item.analysis" class="wrong-analysis">💡 <span v-html="renderMd(item.analysis)"></span></div>
+              <div v-if="item.note" class="wrong-note">
+                <div class="wrong-note-label">📝 学员笔记</div>
+                <div class="wrong-note-text">{{ item.note }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -661,4 +665,7 @@ onMounted(() => {
 .wrong-answer-row { margin-top: 8px; font-size: 12px; color: var(--pixel-text-secondary, #8B7355); }
 .wrong-answer-row p { margin: 2px 0; }
 .wrong-analysis { color: var(--pixel-blue, #4A90B8); font-size: 12px; line-height: 1.5; margin-top: 4px; padding: 6px 10px; background: #F0F5FA; border-left: 3px solid var(--pixel-blue, #4A90B8); }
+.wrong-note { margin-top: 8px; padding: 8px 12px; background: #FFF8E7; border-left: 3px solid #E8D5A0; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.6; }
+.wrong-note-label { font-size: 11px; font-weight: 600; color: #D4882A; margin-bottom: 3px; }
+.wrong-note-text { color: var(--pixel-text, #4a3728); }
 </style>

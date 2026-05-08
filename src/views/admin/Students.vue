@@ -60,6 +60,7 @@
                       <div class="pixel-progress-fill" :style="{ width: (student.currentPlan.completedStages / student.currentPlan.totalStages * 100) + '%' }"></div>
                     </div>
                     <span style="font-size: 11px; color: #aaa;">{{ student.currentPlan.completedStages }}/{{ student.currentPlan.totalStages }}</span>
+                    <span v-if="student.currentPlan.hasFailed" class="prog-failed-tag">❌ 测验未通过</span>
                   </div>
                 </template>
                 <template v-else>
@@ -102,6 +103,7 @@
               <span>{{ plan.name }}</span>
               <span style="display: flex; align-items: center; gap: 6px;">
                 <span v-if="plan.status === 'completed'" class="pixel-tag pixel-tag-green" style="font-size: 11px; padding: 1px 6px;">已通关</span>
+                <span v-else-if="plan.status === 'failed'" class="pixel-tag pixel-tag-red" style="font-size: 11px; padding: 1px 6px;">❌ 测验卡住</span>
                 <span v-else-if="plan.status === 'in_progress'" class="pixel-tag pixel-tag-blue" style="font-size: 11px; padding: 1px 6px;">学习中</span>
                 <span v-else class="pixel-tag pixel-tag-gray" style="font-size: 11px; padding: 1px 6px;">未开始</span>
                 <div v-if="plan.totalStages > 0" class="pixel-progress" style="width: 50px;">
@@ -258,6 +260,10 @@ onMounted(() => { loadFilters(); loadStudents() })
 .px-page-num:hover { border-color: var(--pixel-border, #8b6914); background: #f0e6d2; }
 .px-page-num.active { background: var(--pixel-link, #4a90d9); color: #fff; border-color: #3a7bc8; }
 .px-page-total { margin-left: 8px; font-size: 11px; color: var(--pixel-muted, #9e8a76); }
+
+/* failed 标签 */
+.prog-failed-tag { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; background: #ffebee; color: #c62828; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.pixel-tag-red { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
 
 /* Hover 弹窗 */
 .progress-hover-trigger { cursor: pointer; }

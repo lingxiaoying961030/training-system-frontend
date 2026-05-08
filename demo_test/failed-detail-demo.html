@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务9 学员进度不通过标记 + 数据看板 Demo</title>
+<style>
+:root {
+  --pixel-card: #fffbf0;
+  --pixel-border: #8b6914;
+  --pixel-text: #4a3728;
+  --pixel-muted: #9e8a76;
+  --pixel-link: #4a90d9;
+  --pixel-green: #5C8A4D;
+  --pixel-red: #C24A3A;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5edd8; color: var(--pixel-text); padding: 24px; }
+h1 { font-size: 20px; margin-bottom: 6px; color: #5B3A29; }
+h2 { font-size: 16px; margin: 28px 0 14px; color: #5B3A29; padding-bottom: 8px; border-bottom: 2px dashed #d4c5a0; }
+.subtitle { font-size: 13px; color: var(--pixel-muted); margin-bottom: 24px; }
+.demo-note { background: #fff8e7; border: 2px solid #e8d5a0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.8; }
+.demo-note strong { color: #d4882a; }
+.demo-section { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+.demo-section-title { padding: 12px 16px; background: #f0e6d2; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e0d5c8; }
+
+/* 表格 */
+.pixel-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pixel-table th { background: #f5edd8; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; color: var(--pixel-muted); border-bottom: 2px solid #e0d5c8; }
+.pixel-table td { padding: 10px 14px; border-bottom: 1px solid #f0e6d2; vertical-align: top; }
+.pixel-table tr:hover td { background: #faf8f0; }
+
+/* 标签 */
+.px-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.px-tag-green { background: #e8f5e9; color: #2e7d32; }
+.px-tag-blue { background: #e3f2fd; color: #1976d2; }
+.px-tag-red { background: #ffebee; color: #c62828; }
+.px-tag-gray { background: #f0f0f0; color: #999; }
+
+/* 进度条 */
+.px-progress { height: 8px; background: #e8dcc8; border-radius: 4px; overflow: hidden; display: inline-block; vertical-align: middle; }
+.px-progress-fill { height: 100%; border-radius: 4px; }
+.fill-green { background: var(--pixel-green); }
+.fill-red { background: var(--pixel-red); }
+
+/* 进度行 */
+.prog-row { display: flex; align-items: center; gap: 6px; font-size: 12px; flex-wrap: wrap; }
+.prog-project { color: var(--pixel-link); font-weight: 500; }
+.prog-sep { color: #ccc; font-size: 10px; }
+.prog-plan { color: var(--pixel-text); }
+.prog-nums { font-size: 11px; color: #aaa; }
+.prog-failed-tag { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; background: #ffebee; color: #c62828; border-radius: 3px; font-size: 10px; font-weight: 600; }
+
+/* 多项目进度（一个学员多行） */
+.multi-prog { display: flex; flex-direction: column; gap: 4px; }
+
+/* Hover弹窗 */
+.popover { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; padding: 14px 18px; max-width: 440px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); margin: 12px 0; }
+.popover-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.popover-project { margin-bottom: 8px; }
+.popover-project-name { font-size: 12px; font-weight: 600; color: var(--pixel-link); margin-bottom: 4px; }
+.popover-plan { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; border-bottom: 1px dashed #e8dcc8; }
+.popover-plan:last-child { border-bottom: none; }
+.popover-plan-right { display: flex; align-items: center; gap: 6px; }
+
+/* ==================== 数据看板 ==================== */
+.dash-stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.dash-stat { flex: 1; min-width: 120px; background: var(--pixel-card); border: 2px solid #e0d5c8; border-radius: 8px; padding: 14px 16px; text-align: center; }
+.dash-stat-num { font-size: 28px; font-weight: 700; }
+.dash-stat-label { font-size: 12px; color: var(--pixel-muted); margin-top: 2px; }
+.dash-stat-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+.dash-stat.total .dash-stat-num { color: #5B3A29; }
+.dash-stat.training .dash-stat-num { color: var(--pixel-link); }
+.dash-stat.completed .dash-stat-num { color: var(--pixel-green); }
+.dash-stat.failed .dash-stat-num { color: var(--pixel-red); }
+.dash-stat.failed { border-color: #f0c8c8; }
+
+.dash-project { background: var(--pixel-card); border: 2px solid #e0d5c8; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+.dash-project-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.dash-project-name { font-size: 14px; font-weight: 600; }
+.dash-project-stats { display: flex; gap: 12px; font-size: 12px; color: var(--pixel-muted); }
+.dash-bar { height: 20px; background: #e8dcc8; border-radius: 4px; overflow: hidden; display: flex; }
+.dash-bar-seg { height: 100%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 600; }
+.dash-bar-green { background: var(--pixel-green); }
+.dash-bar-blue { background: var(--pixel-link); }
+.dash-bar-red { background: var(--pixel-red); }
+.dash-bar-gray { background: #ccc; }
+.dash-legend { display: flex; gap: 14px; margin-top: 6px; font-size: 11px; color: var(--pixel-muted); }
+.dash-legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+/* 标注 */
+.anno { background: #ffe0b2; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; color: #e65100; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<h1>📄 任务9 详细 Demo — 不通过标记</h1>
+<div class="subtitle">学员进度表格（多项目多场景）+ 数据看板统计</div>
+
+<!-- ==================== 学员进度表格 ==================== -->
+<h2>📊 学员进度 — 多场景展示</h2>
+
+<div class="demo-note">
+  <strong>不加独立「状态」列</strong>，在现有「当前项目-计划进度」列中直接体现不通过标记。<br>
+  以下模拟 6 种不同学员状态。
+</div>
+
+<div class="demo-section">
+  <div class="demo-section-title">📊 学员进度</div>
+  <table class="pixel-table">
+    <thead>
+      <tr>
+        <th style="width:80px">姓名</th>
+        <th>当前项目-计划进度</th>
+        <th style="width:80px">Mentor</th>
+        <th style="width:70px">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 情况1：正常学习中，单项目 -->
+      <tr>
+        <td><strong>张三</strong></td>
+        <td>
+          <div class="prog-row">
+            <span class="prog-project">AI标注培训</span>
+            <span class="prog-sep">›</span>
+            <span class="prog-plan">标注基础</span>
+            <span class="prog-sep">›</span>
+            <span>数据清洗</span>
+            <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:25%"></div></div>
+            <span class="prog-nums">1/4</span>
+          </div>
+        </td>
+        <td>王导师</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+
+      <!-- 情况2：某关卡测验不通过（卡住） -->
+      <tr>
+        <td><strong>李四</strong></td>
+        <td>
+          <div class="prog-row">
+            <span class="prog-project">AI标注培训</span>
+            <span class="prog-sep">›</span>
+            <span class="prog-plan">标注基础</span>
+            <span class="prog-sep">›</span>
+            <span>质量检查</span>
+            <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:50%"></div></div>
+            <span class="prog-nums">2/4</span>
+            <span class="prog-failed-tag">❌ 测验未通过</span> <span class="anno">← 新增</span>
+          </div>
+        </td>
+        <td>王导师</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+
+      <!-- 情况3：多项目，一个通关一个卡住 -->
+      <tr>
+        <td><strong>王五</strong></td>
+        <td>
+          <div class="multi-prog">
+            <div class="prog-row">
+              <span class="prog-project">AI标注培训</span>
+              <span class="prog-sep">›</span>
+              <span class="prog-plan">标注基础</span>
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:100%"></div></div>
+              <span class="prog-nums">4/4</span>
+              <span class="px-tag px-tag-green">✅ 已通关</span>
+            </div>
+            <div class="prog-row">
+              <span class="prog-project">数据清洗培训</span>
+              <span class="prog-sep">›</span>
+              <span class="prog-plan">数据预处理</span>
+              <span class="prog-sep">›</span>
+              <span>异常检测</span>
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:33%"></div></div>
+              <span class="prog-nums">1/3</span>
+              <span class="prog-failed-tag">❌ 测验未通过</span>
+            </div>
+          </div>
+        </td>
+        <td>李导师</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+
+      <!-- 情况4：全部通关 -->
+      <tr>
+        <td><strong>赵六</strong></td>
+        <td>
+          <div class="prog-row">
+            <span class="px-tag px-tag-green">✅ 全部通关</span>
+            <span style="font-size:12px;color:#aaa;margin-left:4px">2个项目</span>
+          </div>
+        </td>
+        <td>-</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+
+      <!-- 情况5：多项目，都在学习中 -->
+      <tr>
+        <td><strong>孙七</strong></td>
+        <td>
+          <div class="multi-prog">
+            <div class="prog-row">
+              <span class="prog-project">AI标注培训</span>
+              <span class="prog-sep">›</span>
+              <span class="prog-plan">标注进阶</span>
+              <span class="prog-sep">›</span>
+              <span>多模态标注</span>
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:50%"></div></div>
+              <span class="prog-nums">1/2</span>
+            </div>
+            <div class="prog-row">
+              <span class="prog-project">数据清洗培训</span>
+              <span class="prog-sep">›</span>
+              <span class="prog-plan">数据预处理</span>
+              <span class="prog-sep">›</span>
+              <span>格式转换</span>
+              <div class="px-progress" style="width:60px"><div class="px-progress-fill fill-green" style="width:0%"></div></div>
+              <span class="prog-nums">0/3</span>
+            </div>
+          </div>
+        </td>
+        <td>王导师</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+
+      <!-- 情况6：未开始 -->
+      <tr>
+        <td><strong>周八</strong></td>
+        <td>
+          <span style="color:#aaa;font-size:13px">未开始</span>
+        </td>
+        <td>-</td>
+        <td><a href="#" style="color:var(--pixel-link);font-size:12px;text-decoration:none">查看详情</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Hover 弹窗效果 -->
+<h2>🔍 Hover 弹窗 — 详细进度（王五的 hover 效果）</h2>
+<div class="demo-note">鼠标悬停学员进度时弹出的全量进度弹窗，failed 关卡用红色标签标识。</div>
+
+<div class="popover">
+  <div class="popover-title">📚 王五 · 全部学习进度</div>
+  <div class="popover-project">
+    <div class="popover-project-name">📘 AI标注培训</div>
+    <div class="popover-plan">
+      <span>标注基础</span>
+      <div class="popover-plan-right">
+        <span class="px-tag px-tag-green" style="font-size:10px;padding:1px 6px">已通关</span>
+        <div class="px-progress" style="width:50px"><div class="px-progress-fill fill-green" style="width:100%"></div></div>
+        <span style="font-size:11px;color:#aaa">4/4</span>
+      </div>
+    </div>
+  </div>
+  <div class="popover-project">
+    <div class="popover-project-name">📘 数据清洗培训</div>
+    <div class="popover-plan">
+      <span>数据预处理</span>
+      <div class="popover-plan-right">
+        <span class="px-tag px-tag-red" style="font-size:10px;padding:1px 6px">❌ 测验卡住</span>
+        <div class="px-progress" style="width:50px"><div class="px-progress-fill fill-green" style="width:33%"></div></div>
+        <span style="font-size:11px;color:#aaa">1/3</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 数据看板 ==================== -->
+<h2>📊 数据看板 — 新增不通过统计</h2>
+
+<div class="demo-note">
+  <strong>现有统计</strong>：总学员数、学习中、已通关、平均通关天数<br>
+  <strong>新增</strong>：<span class="anno">测验受阻</span> 统计卡片 + 项目进度条中增加红色段
+</div>
+
+<h3 style="font-size:14px;margin:16px 0 10px">全局统计卡片</h3>
+<div class="dash-stats">
+  <div class="dash-stat total">
+    <div class="dash-stat-num">47</div>
+    <div class="dash-stat-label">👥 总学员数</div>
+  </div>
+  <div class="dash-stat training">
+    <div class="dash-stat-num">28</div>
+    <div class="dash-stat-label">📖 学习中</div>
+    <div class="dash-stat-sub">占比 60%</div>
+  </div>
+  <div class="dash-stat completed">
+    <div class="dash-stat-num">12</div>
+    <div class="dash-stat-label">✅ 已通关</div>
+    <div class="dash-stat-sub">通关率 26%</div>
+  </div>
+  <div class="dash-stat failed">
+    <div class="dash-stat-num">5</div>
+    <div class="dash-stat-label">❌ 测验受阻</div>
+    <div class="dash-stat-sub">占学习中 18%</div>
+    <span class="anno">新增</span>
+  </div>
+</div>
+
+<h3 style="font-size:14px;margin:16px 0 10px">各项目进度分布</h3>
+
+<!-- 项目1 -->
+<div class="dash-project">
+  <div class="dash-project-header">
+    <div class="dash-project-name">📁 AI标注培训</div>
+    <div class="dash-project-stats">
+      <span>学员 <strong>32</strong></span>
+      <span>通过率 <strong>38%</strong></span>
+    </div>
+  </div>
+  <div class="dash-bar">
+    <div class="dash-bar-seg dash-bar-green" style="width:38%" title="已通关 12人">12</div>
+    <div class="dash-bar-seg dash-bar-blue" style="width:40%" title="学习中 13人">13</div>
+    <div class="dash-bar-seg dash-bar-red" style="width:9%" title="测验受阻 3人">3</div>
+    <div class="dash-bar-seg dash-bar-gray" style="width:13%" title="未开始 4人">4</div>
+  </div>
+  <div class="dash-legend">
+    <span><span class="dash-legend-dot" style="background:var(--pixel-green)"></span>已通关 12</span>
+    <span><span class="dash-legend-dot" style="background:var(--pixel-link)"></span>学习中 13</span>
+    <span><span class="dash-legend-dot" style="background:var(--pixel-red)"></span>测验受阻 3 <span class="anno">新增</span></span>
+    <span><span class="dash-legend-dot" style="background:#ccc"></span>未开始 4</span>
+  </div>
+</div>
+
+<!-- 项目2 -->
+<div class="dash-project">
+  <div class="dash-project-header">
+    <div class="dash-project-name">📁 数据清洗培训</div>
+    <div class="dash-project-stats">
+      <span>学员 <strong>18</strong></span>
+      <span>通过率 <strong>22%</strong></span>
+    </div>
+  </div>
+  <div class="dash-bar">
+    <div class="dash-bar-seg dash-bar-green" style="width:22%" title="已通关 4人">4</div>
+    <div class="dash-bar-seg dash-bar-blue" style="width:44%" title="学习中 8人">8</div>
+    <div class="dash-bar-seg dash-bar-red" style="width:11%" title="测验受阻 2人">2</div>
+    <div class="dash-bar-seg dash-bar-gray" style="width:23%" title="未开始 4人">4</div>
+  </div>
+  <div class="dash-legend">
+    <span><span class="dash-legend-dot" style="background:var(--pixel-green)"></span>已通关 4</span>
+    <span><span class="dash-legend-dot" style="background:var(--pixel-link)"></span>学习中 8</span>
+    <span><span class="dash-legend-dot" style="background:var(--pixel-red)"></span>测验受阻 2</span>
+    <span><span class="dash-legend-dot" style="background:#ccc"></span>未开始 4</span>
+  </div>
+</div>
+
+</body>
+</html>

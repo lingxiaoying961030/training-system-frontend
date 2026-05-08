@@ -48,6 +48,12 @@
               <div class="label">平均通关天数</div>
               <div class="val">{{ data.avgDays || '-' }}</div>
             </div>
+            <div class="a-stat s5" v-if="data.failed > 0">
+              <div class="icon">❌</div>
+              <div class="label">测验受阻</div>
+              <div class="val">{{ data.failed }}</div>
+              <div class="sub">占学习中 {{ data.inTraining ? Math.round(data.failed / (data.inTraining + data.failed) * 100) : 0 }}%</div>
+            </div>
           </div>
 
           <!-- 项目概览 -->
@@ -64,6 +70,7 @@
                 <span>学员 <strong>{{ proj.totalStudents }}</strong></span>
                 <span>在训 <strong>{{ proj.inTraining }}</strong></span>
                 <span>通关 <strong>{{ proj.completed }}</strong></span>
+                <span v-if="proj.failed > 0" style="color:#C24A3A">受阻 <strong>{{ proj.failed }}</strong></span>
               </div>
               <div class="a-prog"><div class="a-prog-fill" :style="{ width: proj.passRate + '%' }"></div></div>
               <div class="a-prog-text">通过率 {{ proj.passRate }}%</div>
@@ -151,6 +158,9 @@ onMounted(reload)
 .a-stat.s2::before { background: #E8A93A; }
 .a-stat.s3::before { background: #5C8A4D; }
 .a-stat.s4::before { background: #4A90B8; }
+.a-stat.s5::before { background: #C24A3A; }
+.a-stat.s5 .val { color: #C24A3A; }
+.a-stat.s5 { border-color: #f0c8c8; }
 .a-stat .icon { font-size: 22px; margin-bottom: 4px; }
 .a-stat .label { font-size: 12px; color: #8B7355; }
 .a-stat .val { font-size: 26px; font-weight: 700; color: #5B3A29; margin: 4px 0; }

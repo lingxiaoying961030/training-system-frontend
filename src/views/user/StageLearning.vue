@@ -251,6 +251,14 @@
                   </label>
                 </div>
               </div>
+              <!-- 答题笔记 -->
+              <div class="note-box">
+                <div class="note-label">📝 答题笔记 <span class="note-optional">（可选）</span></div>
+                <textarea class="note-textarea"
+                  v-model="quizStates[unit.id].notes[currentQuizQuestion(unit).id]"
+                  placeholder="记录你的答题思路、疑问或想法..."
+                  rows="2"></textarea>
+              </div>
               <div class="unit-action quiz-nav">
                 <button v-if="quizStates[unit.id].currentIndex > 0" class="px-btn outline" @click="quizStates[unit.id].currentIndex--">← 上一题</button>
                 <span v-else></span>
@@ -562,8 +570,9 @@ async function startQuiz(unit) {
       }
     } else {
       const answers = {}
+      const notes = {}
       for (const q of questions) { answers[q.id] = q.question_type === 'multiple' ? [] : '' }
-      quizStates[unit.id] = { questions, answers, currentIndex: 0, submitted: false, result: null }
+      quizStates[unit.id] = { questions, answers, notes, currentIndex: 0, submitted: false, result: null }
     }
   } catch (err) {
     if (err.message?.includes('已用完')) {
@@ -662,7 +671,7 @@ async function submitQuiz(unit) {
   if (unanswered.length > 0) { alert(`还有 ${unanswered.length} 题未作答`); return }
   try {
     const res = await api.post(`/training/units/${unit.id}/submit`, {
-      answers: state.answers, questions: state.questions
+      answers: state.answers, questions: state.questions, notes: state.notes
     })
     if (res.success) {
       state.submitted = true
@@ -949,6 +958,15 @@ onMounted(async () => {
 
 .unit-action { margin-top: 12px; }
 .unit-action.quiz-nav { display: flex; justify-content: space-between; align-items: center; }
+
+/* 答题笔记 */
+.note-box { margin: 10px 0 4px; }
+.note-label { font-size: 12px; color: var(--pixel-text-secondary, #9e8a76); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+.note-optional { font-size: 10px; color: #c8b89a; }
+.note-textarea { width: 100%; padding: 8px 12px; border: 2px solid #e0d5c8; border-radius: 6px; font-size: 12px; font-family: inherit; resize: vertical; min-height: 44px; max-height: 120px; background: #fdfcf5; color: var(--pixel-text, #4a3728); transition: border-color 0.2s; }
+.note-textarea:focus { outline: none; border-color: var(--pixel-link, #4a90d9); background: #fff; }
+.note-textarea::placeholder { color: #c8b89a; }
+
 .done-msg { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: #2E7D32; font-size: 13px; }
 .done-msg img { width: 16px; height: 16px; image-rendering: pixelated; }
 .attempts-warn { font-size: 13px; color: var(--pixel-red, #C24A3A); margin-top: 6px; }
