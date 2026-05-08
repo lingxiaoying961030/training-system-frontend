@@ -53,6 +53,20 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- 翻页 -->
+        <div v-if="totalPages > 1" class="px-pagination">
+          <button class="px-page-btn" :disabled="currentPage <= 1" @click="goPage(currentPage - 1)">‹ 上一页</button>
+          <template v-for="p in paginationPages" :key="p">
+            <span v-if="p === '...'" style="color:#ccc;font-size:12px">…</span>
+            <span v-else class="px-page-num" :class="{ active: p === currentPage }" @click="goPage(p)">{{ p }}</span>
+          </template>
+          <button class="px-page-btn" :disabled="currentPage >= totalPages" @click="goPage(currentPage + 1)">下一页 ›</button>
+          <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+        </div>
+        <div v-else-if="searchFiltered.length > 0" class="px-pagination">
+          <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+        </div>
       </div>
     </n-spin>
 
@@ -66,12 +80,12 @@
           <n-input v-model:value="formData.phone" placeholder="手机号" />
         </n-form-item>
         <n-form-item label="角色">
-          <n-checkbox-group v-model:value="formData.roles">
+          <n-checkbox-group v-model:value="formData.roles" @update:value="onRolesChange">
             <n-space>
-              <n-checkbox value="student">学员</n-checkbox>
-              <n-checkbox value="mentor">导师</n-checkbox>
-              <n-checkbox value="data_mentor">数据 Mentor</n-checkbox>
-              <n-checkbox value="admin">管理员</n-checkbox>
+              <n-checkbox value="student" :disabled="hasNonStudentRole">学员</n-checkbox>
+              <n-checkbox value="mentor" :disabled="hasStudentRole">导师</n-checkbox>
+              <n-checkbox value="data_mentor" :disabled="hasStudentRole">数据 Mentor</n-checkbox>
+              <n-checkbox value="admin" :disabled="hasStudentRole">管理员</n-checkbox>
             </n-space>
           </n-checkbox-group>
         </n-form-item>
@@ -87,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, h, computed, onMounted } from 'vue'
+import { ref, h, computed, onMounted, watch } from 'vue'
 import { NButton, NSpin, NModal, NForm, NFormItem, NInput, NSelect, NCheckbox, NCheckboxGroup, NSpace, useMessage, useDialog } from 'naive-ui'
 import * as XLSX from 'xlsx'
 import api from '../../api/index.js'
@@ -104,25 +118,10 @@ const editingUser = ref(null)
 const formData = ref({ name: '', phone: '', roles: ['student'] })
 const searchKeyword = ref('')
 const filterRole = ref(null)
+const currentPage = ref(1)
+const pageSize = 15
 
-const roleFilterOptions = [
-  { label: '学员', value: 'student' },
-  { label: '导师', value: 'mentor' },
-  { label: '数据 Mentor', value: 'data_mentor' },
-  { label: '管理员', value: 'admin' }
-]
-
-const roleType = (r) => ({ student: 'default', mentor: 'success', data_mentor: 'info', admin: 'warning' }[r] || 'default')
-const roleTagClass = (r) => ({ student: 'pixel-tag-gray', mentor: 'pixel-tag-green', data_mentor: 'pixel-tag-blue', admin: 'pixel-tag-orange' }[r] || 'pixel-tag-gray')
-const roleLabel = (r) => ({ student: '学员', mentor: '导师', data_mentor: '数据 Mentor', admin: '管理员' }[r] || r)
-const sourceLabel = (s) => ({ manual: '手动添加', exam: '笔试通过', feishu: '飞书注册', import: '批量导入' }[s] || s || '-')
-
-function formatDate(dateStr) {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('zh-CN')
-}
-
-const filteredUsers = computed(() => {
+const searchFiltered = computed(() => {
   let list = users.value
   if (searchKeyword.value) {
     const kw = searchKeyword.value.toLowerCase()
@@ -133,6 +132,57 @@ const filteredUsers = computed(() => {
   }
   return list
 })
+
+const totalPages = computed(() => Math.ceil(searchFiltered.value.length / pageSize))
+
+const filteredUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return searchFiltered.value.slice(start, start + pageSize)
+})
+
+const paginationPages = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1)
+  const pages = [1]
+  if (cur > 3) pages.push('...')
+  for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
+function goPage(p) {
+  if (p >= 1 && p <= totalPages.value) currentPage.value = p
+}
+
+// 角色互斥
+const hasStudentRole = computed(() => formData.value.roles.includes('student'))
+const hasNonStudentRole = computed(() => formData.value.roles.some(r => r !== 'student'))
+
+function onRolesChange(newRoles) {
+  // 如果刚选了 student，移除其他角色
+  if (newRoles.includes('student') && !formData.value.roles.includes('student')) {
+    formData.value.roles = ['student']
+    return
+  }
+  // 如果刚选了非 student 角色，移除 student
+  const nonStudent = newRoles.filter(r => r !== 'student')
+  if (nonStudent.length > 0 && newRoles.includes('student')) {
+    formData.value.roles = nonStudent
+    return
+  }
+  formData.value.roles = newRoles
+}
+
+const roleTagClass = (r) => ({ student: 'pixel-tag-gray', mentor: 'pixel-tag-green', data_mentor: 'pixel-tag-blue', admin: 'pixel-tag-orange' }[r] || 'pixel-tag-gray')
+const roleLabel = (r) => ({ student: '学员', mentor: '导师', data_mentor: '数据 Mentor', admin: '管理员' }[r] || r)
+const sourceLabel = (s) => ({ manual: '手动添加', exam: '笔试通过', feishu: '飞书注册', import: '批量导入' }[s] || s || '-')
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleDateString('zh-CN')
+}
 
 async function loadUsers() {
   loading.value = true
@@ -192,6 +242,7 @@ function confirmDelete(user) {
   })
 }
 
+watch([searchKeyword, filterRole], () => { currentPage.value = 1 })
 onMounted(loadUsers)
 
 // ==================== 批量导入 ====================
@@ -255,4 +306,14 @@ async function handleImport(e) {
 
 <style scoped>
 .users-page { ; }
+
+/* 翻页 */
+.px-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px; font-size: 13px; color: var(--pixel-muted, #9e8a76); border-top: 1px solid #e8dcc8; background: #faf8f0; }
+.px-page-btn { padding: 5px 12px; border: 2px solid #d4c5a0; background: var(--pixel-card, #fffbf0); border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--pixel-text, #4a3728); transition: all 0.15s; }
+.px-page-btn:hover:not(:disabled) { border-color: var(--pixel-border, #8b6914); background: #f0e6d2; }
+.px-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.px-page-num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 2px solid #d4c5a0; background: var(--pixel-card, #fffbf0); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+.px-page-num:hover { border-color: var(--pixel-border, #8b6914); background: #f0e6d2; }
+.px-page-num.active { background: var(--pixel-link, #4a90d9); color: #fff; border-color: #3a7bc8; }
+.px-page-total { margin-left: 8px; font-size: 11px; color: var(--pixel-muted, #9e8a76); }
 </style>

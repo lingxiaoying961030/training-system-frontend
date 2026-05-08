@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务5 角色互斥 + 任务6 错题MD渲染 Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --pixel-card: #fffbf0;
+  --pixel-border: #8b6914;
+  --pixel-text: #4a3728;
+  --pixel-muted: #9e8a76;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5edd8; color: var(--pixel-text); padding: 24px; }
+h1 { font-size: 20px; margin-bottom: 24px; color: #5B3A29; }
+h2 { font-size: 16px; margin: 28px 0 14px; color: #5B3A29; padding-bottom: 8px; border-bottom: 2px dashed #d4c5a0; }
+.demo-note { background: #fff8e7; border: 2px solid #e8d5a0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.8; }
+.demo-note strong { color: #d4882a; }
+
+/* ==================== 任务5：角色互斥 ==================== */
+.role-form { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; padding: 20px 24px; max-width: 480px; }
+.role-form label { display: block; font-size: 12px; font-weight: 600; color: var(--pixel-muted); margin-bottom: 8px; }
+.role-checkboxes { display: flex; gap: 16px; flex-wrap: wrap; }
+.role-cb { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 2px solid #d4c5a0; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.15s; user-select: none; }
+.role-cb:hover { border-color: var(--pixel-border); background: #faf5ea; }
+.role-cb.checked { border-color: #4a90d9; background: #e3f2fd; }
+.role-cb.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.role-cb input { margin: 0; }
+.role-hint { margin-top: 10px; font-size: 12px; color: #d4882a; min-height: 18px; }
+.role-result { margin-top: 12px; padding: 10px 14px; background: #f0e6d2; border-radius: 6px; font-size: 12px; }
+
+/* ==================== 任务6：错题MD渲染 ==================== */
+.wrong-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wrong-panel { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; overflow: hidden; }
+.wrong-panel-title { padding: 10px 16px; background: #f0e6d2; font-weight: 600; font-size: 13px; border-bottom: 2px solid #e0d5c8; }
+.wrong-panel-body { padding: 16px; }
+
+.wrong-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e8dcc8; }
+.wrong-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.wrong-q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.wrong-q-num { background: #e8d5a0; color: #5B3A29; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.wrong-q-type { background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+.wrong-q-content { font-size: 13px; line-height: 1.7; margin-bottom: 8px; }
+.wrong-q-content code { background: #f0e6d2; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+.wrong-q-content pre { background: #f5edd8; padding: 10px 12px; border-radius: 6px; overflow-x: auto; margin: 8px 0; }
+.wrong-q-content pre code { background: none; padding: 0; }
+.wrong-opt { padding: 5px 10px; margin: 3px 0; border-radius: 4px; font-size: 13px; border: 1px solid transparent; }
+.wrong-opt.correct { background: #e8f5e9; border-color: #a5d6a7; }
+.wrong-opt.wrong { background: #ffebee; border-color: #ef9a9a; }
+.opt-marker { font-size: 10px; margin-left: 6px; padding: 1px 5px; border-radius: 3px; }
+.correct-marker { background: #c8e6c9; color: #2e7d32; }
+.wrong-marker { background: #ffcdd2; color: #c62828; }
+.wrong-analysis { margin-top: 8px; padding: 8px 12px; background: #f0faf0; border-left: 3px solid #a5d6a7; font-size: 12px; line-height: 1.6; }
+.wrong-answer-row { font-size: 12px; color: var(--pixel-muted); margin-top: 6px; }
+.wrong-answer-row p { margin: 2px 0; }
+.raw-text { white-space: pre-wrap; font-family: monospace; font-size: 12px; color: #666; }
+</style>
+</head>
+<body>
+
+<h1>📄 任务5 & 任务6 Demo</h1>
+
+<!-- ==================== 任务5 ==================== -->
+<h2>🔒 任务5：角色互斥 — 学员与其他角色不可共存</h2>
+<div class="demo-note">
+  <strong>规则</strong>：选了「学员」后，导师/数据Mentor/管理员自动禁用；反之选了任一管理角色，「学员」自动禁用。
+</div>
+
+<div class="role-form">
+  <label>用户角色</label>
+  <div class="role-checkboxes" id="roleCheckboxes">
+    <label class="role-cb" id="cb-student">
+      <input type="checkbox" value="student" onchange="handleRoleChange()"> 学员
+    </label>
+    <label class="role-cb" id="cb-mentor">
+      <input type="checkbox" value="mentor" onchange="handleRoleChange()"> 导师
+    </label>
+    <label class="role-cb" id="cb-data_mentor">
+      <input type="checkbox" value="data_mentor" onchange="handleRoleChange()"> 数据 Mentor
+    </label>
+    <label class="role-cb" id="cb-admin">
+      <input type="checkbox" value="admin" onchange="handleRoleChange()"> 管理员
+    </label>
+  </div>
+  <div class="role-hint" id="roleHint"></div>
+  <div class="role-result" id="roleResult">当前选中角色：<strong>无</strong></div>
+</div>
+
+<!-- ==================== 任务6 ==================== -->
+<h2>📝 任务6：错题 Markdown 渲染 — 对比效果</h2>
+<div class="demo-note">
+  <strong>左边</strong>：当前效果（纯文本显示源码）<br>
+  <strong>右边</strong>：改进效果（Markdown 渲染后显示）
+</div>
+
+<div class="wrong-compare">
+  <!-- 旧：纯文本 -->
+  <div class="wrong-panel">
+    <div class="wrong-panel-title">❌ 当前效果（纯文本）</div>
+    <div class="wrong-panel-body" id="wrongOld"></div>
+  </div>
+  <!-- 新：MD渲染 -->
+  <div class="wrong-panel">
+    <div class="wrong-panel-title">✅ 改进效果（Markdown 渲染）</div>
+    <div class="wrong-panel-body" id="wrongNew"></div>
+  </div>
+</div>
+
+<script>
+// ==================== 任务5：角色互斥 ====================
+const allRoles = ['student', 'mentor', 'data_mentor', 'admin']
+const roleLabels = { student: '学员', mentor: '导师', data_mentor: '数据 Mentor', admin: '管理员' }
+
+function handleRoleChange() {
+  const cbs = document.querySelectorAll('#roleCheckboxes input[type=checkbox]')
+  const checked = Array.from(cbs).filter(cb => cb.checked).map(cb => cb.value)
+
+  const hasStudent = checked.includes('student')
+  const hasOther = checked.some(r => r !== 'student')
+
+  cbs.forEach(cb => {
+    const label = cb.closest('.role-cb')
+    if (hasStudent && cb.value !== 'student') {
+      cb.disabled = true
+      label.classList.add('disabled')
+    } else if (hasOther && cb.value === 'student') {
+      cb.disabled = true
+      label.classList.add('disabled')
+    } else {
+      cb.disabled = false
+      label.classList.remove('disabled')
+    }
+    label.classList.toggle('checked', cb.checked)
+  })
+
+  const hint = document.getElementById('roleHint')
+  if (hasStudent) hint.textContent = '⚠️ 学员角色与其他角色互斥'
+  else if (hasOther) hint.textContent = '⚠️ 已选管理角色，学员选项已禁用'
+  else hint.textContent = ''
+
+  const result = document.getElementById('roleResult')
+  result.innerHTML = '当前选中角色：<strong>' + (checked.length ? checked.map(r => roleLabels[r]).join('、') : '无') + '</strong>'
+}
+
+// ==================== 任务6：错题MD渲染 ====================
+const mockWrongItems = [
+  {
+    content: '以下关于`JSON`格式的说法，**正确**的是：\n\n```json\n{"key": "value"}\n```\n\n请根据上述示例选择正确答案。',
+    questionType: 'single',
+    options: [
+      { key: 'A', text: 'JSON的key必须用**双引号**包裹' },
+      { key: 'B', text: 'JSON支持`注释`语法' },
+      { key: 'C', text: 'JSON的value不能是`数组`' },
+      { key: 'D', text: 'JSON文件扩展名为`.xml`' },
+    ],
+    userAnswer: 'B',
+    correctAnswer: 'A',
+    analysis: '**JSON规范要求**：\n- key必须用双引号\n- 不支持注释\n- value可以是`string`、`number`、`array`、`object`等'
+  },
+  {
+    content: '在Python中，`list.append()`和`list.extend()`的区别是什么？',
+    questionType: 'single',
+    options: [
+      { key: 'A', text: '`append`添加单个元素，`extend`合并另一个列表' },
+      { key: 'B', text: '两者完全相同' },
+      { key: 'C', text: '`extend`只能添加字符串' },
+      { key: 'D', text: '`append`会自动去重' },
+    ],
+    userAnswer: 'B',
+    correctAnswer: 'A',
+    analysis: '`append(x)`将x作为**整体**追加到列表末尾；`extend(iterable)`将可迭代对象的元素**逐个**追加。'
+  }
+]
+
+function renderWrongItems(containerId, useMd) {
+  const container = document.getElementById(containerId)
+  const typeLabel = t => ({ single: '单选', multiple: '多选', judge: '判断' }[t] || t)
+
+  container.innerHTML = mockWrongItems.map((item, idx) => {
+    const content = useMd ? marked.parse(item.content) : `<span class="raw-text">${escapeHtml(item.content)}</span>`
+    const analysis = useMd ? marked.parse(item.analysis) : `<span class="raw-text">${escapeHtml(item.analysis)}</span>`
+
+    const options = item.options.map(opt => {
+      const isCorrect = item.correctAnswer.includes(opt.key)
+      const isUserPick = item.userAnswer.includes(opt.key)
+      const cls = isCorrect ? 'correct' : (isUserPick ? 'wrong' : '')
+      const optText = useMd ? marked.parseInline(opt.text) : escapeHtml(opt.text)
+      let marker = ''
+      if (isCorrect && isUserPick) marker = '<span class="opt-marker correct-marker">✓ 学员选</span>'
+      else if (isCorrect) marker = '<span class="opt-marker correct-marker">正确答案</span>'
+      else if (isUserPick) marker = '<span class="opt-marker wrong-marker">学员选</span>'
+      return `<div class="wrong-opt ${cls}">${opt.key}. ${optText} ${marker}</div>`
+    }).join('')
+
+    return `
+      <div class="wrong-item">
+        <div class="wrong-q-header">
+          <span class="wrong-q-num">第 ${idx + 1} 题</span>
+          <span class="wrong-q-type">${typeLabel(item.questionType)}</span>
+        </div>
+        <div class="wrong-q-content">${content}</div>
+        ${options}
+        <div class="wrong-answer-row">
+          <p>学员答案：${item.userAnswer}</p>
+          <p>正确答案：${item.correctAnswer}</p>
+        </div>
+        <div class="wrong-analysis">💡 ${analysis}</div>
+      </div>
+    `
+  }).join('')
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+marked.setOptions({ breaks: true, gfm: true })
+renderWrongItems('wrongOld', false)
+renderWrongItems('wrongNew', true)
+</script>
+</body>
+</html>

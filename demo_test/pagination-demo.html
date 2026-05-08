@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>翻页 & 关卡筛选 Demo</title>
+<style>
+:root {
+  --pixel-card: #fffbf0;
+  --pixel-border: #8b6914;
+  --pixel-text: #4a3728;
+  --pixel-muted: #9e8a76;
+  --pixel-link: #4a90d9;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5edd8; color: var(--pixel-text); padding: 24px; }
+
+h1 { font-size: 20px; margin-bottom: 24px; color: #5B3A29; }
+h2 { font-size: 16px; margin: 32px 0 16px; color: #5B3A29; padding-bottom: 8px; border-bottom: 2px dashed #d4c5a0; }
+
+/* ==================== 通用翻页组件 ==================== */
+.px-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 16px; font-size: 13px; color: var(--pixel-muted);
+  border-top: 1px solid #e8dcc8; background: #faf8f0;
+}
+.px-pagination .px-page-info {
+  margin: 0 8px; font-size: 12px; color: var(--pixel-text); font-weight: 500;
+}
+.px-pagination .px-page-btn {
+  padding: 5px 12px; border: 2px solid #d4c5a0; background: var(--pixel-card);
+  border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--pixel-text);
+  transition: all 0.15s;
+}
+.px-pagination .px-page-btn:hover:not(:disabled) {
+  border-color: var(--pixel-border); background: #f0e6d2;
+}
+.px-pagination .px-page-btn:disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+.px-pagination .px-page-num {
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  border: 2px solid #d4c5a0; background: var(--pixel-card); border-radius: 4px;
+  cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s;
+}
+.px-pagination .px-page-num:hover { border-color: var(--pixel-border); background: #f0e6d2; }
+.px-pagination .px-page-num.active {
+  background: var(--pixel-link); color: #fff; border-color: #3a7bc8;
+}
+.px-pagination .px-page-size {
+  margin-left: 12px; padding: 4px 8px; border: 2px solid #d4c5a0;
+  border-radius: 4px; font-size: 12px; background: var(--pixel-card);
+}
+.px-pagination .px-page-total {
+  margin-left: 8px; font-size: 11px; color: var(--pixel-muted);
+}
+
+/* ==================== Demo: 表格 ==================== */
+.demo-section { background: var(--pixel-card); border: 2px solid var(--pixel-border); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
+.demo-section-title { padding: 12px 16px; background: #f0e6d2; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e0d5c8; }
+
+.pixel-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pixel-table th { background: #f5edd8; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; color: var(--pixel-muted); border-bottom: 2px solid #e0d5c8; }
+.pixel-table td { padding: 10px 14px; border-bottom: 1px solid #f0e6d2; }
+.pixel-table tr:hover td { background: #faf8f0; }
+.pixel-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.pixel-tag-blue { background: #e3f2fd; color: #1976d2; }
+.pixel-tag-green { background: #e8f5e9; color: #388e3c; }
+.pixel-tag-orange { background: #fff3e0; color: #e65100; }
+.pixel-tag-gray { background: #f0f0f0; color: #666; }
+
+/* ==================== Demo: 筛选工具栏 ==================== */
+.qb-toolbar { display: flex; gap: 8px; padding: 12px 16px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #e8dcc8; }
+.qb-toolbar select, .qb-toolbar input { padding: 7px 10px; border: 2px solid #d4c5a0; border-radius: 6px; font-size: 12px; background: #fff; }
+.qb-toolbar select:disabled { opacity: 0.5; cursor: not-allowed; }
+.qb-toolbar input { flex: 1; min-width: 160px; }
+
+/* ==================== Demo: 卡片列表（审核用） ==================== */
+.rv-card { background: var(--pixel-card); border: 2px solid #e0d5c8; border-radius: 8px; margin: 0 16px 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+.rv-card:hover { border-color: #c8b89a; }
+.rv-name { font-weight: 600; font-size: 13px; }
+.rv-meta { font-size: 12px; color: var(--pixel-muted); margin-left: 8px; }
+
+/* ==================== 标注 ==================== */
+.demo-note { background: #fff8e7; border: 2px solid #e8d5a0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.8; }
+.demo-note strong { color: #d4882a; }
+.demo-highlight { background: #ffe0b2; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>📄 翻页 & 筛选优化 Demo</h1>
+
+<div class="demo-note">
+  <strong>任务 1：翻页组件</strong> — 统一应用于 题库管理、实战审核、学员进度、账号管理 四个页面<br>
+  <strong>任务 2：题库关卡筛选</strong> — 在项目→计划筛选后，增加关卡级筛选
+</div>
+
+<!-- ==================== 任务 2：关卡筛选 ==================== -->
+<h2>🔍 任务 2：题库管理 — 增加关卡筛选</h2>
+<div class="demo-section">
+  <div class="demo-section-title">📝 题库管理</div>
+  <div class="qb-toolbar">
+    <select id="selProject" onchange="onProjectChange()">
+      <option value="">全部项目</option>
+      <option value="p1">📁 AI标注培训</option>
+      <option value="p2">📁 数据清洗培训</option>
+    </select>
+    <select id="selPlan" onchange="onPlanChange()">
+      <option value="">全部计划</option>
+    </select>
+    <select id="selStage" style="min-width:140px;">
+      <option value="">全部关卡</option>
+    </select>
+    <select>
+      <option value="">全部类型</option>
+      <option>单选</option>
+      <option>多选</option>
+      <option>判断</option>
+    </select>
+    <select>
+      <option value="">全部题池</option>
+      <option>练习池</option>
+      <option>测验池</option>
+    </select>
+    <input placeholder="🔍 搜索题目内容...">
+  </div>
+  <div style="padding: 16px; text-align: center; color: var(--pixel-muted); font-size: 13px;">
+    ↑ 选择项目 → 计划后，<span class="demo-highlight">关卡下拉框</span> 联动加载该计划下的关卡列表
+  </div>
+</div>
+
+<!-- ==================== 任务 1：翻页（表格型） ==================== -->
+<h2>📊 任务 1-A：表格翻页（学员进度 / 账号管理）</h2>
+<div class="demo-section">
+  <div class="demo-section-title">📊 学员进度</div>
+  <table class="pixel-table">
+    <thead>
+      <tr><th>姓名</th><th>手机号</th><th>当前进度</th><th>Mentor</th><th>操作</th></tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+  <div class="px-pagination" id="studentPagination"></div>
+</div>
+
+<!-- ==================== 任务 1：翻页（卡片型） ==================== -->
+<h2>📋 任务 1-B：卡片翻页（实战审核）</h2>
+<div class="demo-section">
+  <div class="demo-section-title">📋 实战审核</div>
+  <div style="padding-top: 10px;" id="reviewCards"></div>
+  <div class="px-pagination" id="reviewPagination"></div>
+</div>
+
+<!-- ==================== 任务 1：翻页（题库分组内） ==================== -->
+<h2>📝 任务 1-C：分组内翻页（题库管理 — 关卡内题目）</h2>
+<div class="demo-section">
+  <div class="demo-section-title" style="cursor:pointer">📋 AI标注基础计划 <span style="font-size:12px;color:var(--pixel-muted);font-weight:400;margin-left:6px">86题</span></div>
+  <div style="padding: 8px 16px; background: #faf5ea; border-bottom: 1px solid #e8dcc8; font-size: 12px; font-weight: 500;">🏁 第一关：标注规范 <span style="color:var(--pixel-muted);font-weight:400;margin-left:4px">42题</span></div>
+  <div id="questionList"></div>
+  <div class="px-pagination" id="questionPagination"></div>
+</div>
+
+<script>
+// ==================== 翻页数据模拟 ====================
+const mockStudents = Array.from({length: 47}, (_, i) => ({
+  name: ['张三','李四','王五','赵六','孙七','周八','吴九','郑十','钱十一','陈十二'][i % 10] + (i > 9 ? `(${i+1})` : ''),
+  phone: '138' + String(10000000 + i).slice(1),
+  progress: ['未开始','学习中(2/8)','学习中(5/8)','✅ 全部通关'][i % 4],
+  mentor: ['王导师','李导师','-'][i % 3]
+}))
+
+const mockReviews = Array.from({length: 23}, (_, i) => ({
+  name: ['张三','李四','王五','赵六','孙七'][i % 5],
+  stage: ['标注规范','数据清洗','模型评估','实战演练'][i % 4],
+  status: ['⏳ 待审核','✅ 已通过','❌ 未通过'][i % 3],
+  time: `05-0${7 - (i % 3)} 1${i % 4}:30`
+}))
+
+const mockQuestions = Array.from({length: 42}, (_, i) => ({
+  id: i + 1,
+  type: ['单选','多选','判断'][i % 3],
+  typeClass: ['pixel-tag-blue','pixel-tag-orange','pixel-tag-green'][i % 3],
+  content: `这是第 ${i+1} 道题目的内容，关于AI标注规范的相关知识点...`,
+  pool: i % 2 === 0 ? '练习' : '测验'
+}))
+
+// ==================== 通用翻页渲染 ====================
+function renderPagination(containerId, currentPage, totalPages, totalItems, pageSize, onPageChange) {
+  const el = document.getElementById(containerId)
+  if (totalPages <= 1) { el.innerHTML = `<span class="px-page-total">共 ${totalItems} 条</span>`; return }
+
+  let html = ''
+  html += `<button class="px-page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="${onPageChange}(${currentPage - 1})">‹ 上一页</button>`
+
+  // 页码：最多显示 7 个
+  const pages = []
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i)
+  } else {
+    pages.push(1)
+    if (currentPage > 3) pages.push('...')
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i)
+    if (currentPage < totalPages - 2) pages.push('...')
+    pages.push(totalPages)
+  }
+
+  for (const p of pages) {
+    if (p === '...') {
+      html += `<span style="color:#ccc;font-size:12px">…</span>`
+    } else {
+      html += `<span class="px-page-num ${p === currentPage ? 'active' : ''}" onclick="${onPageChange}(${p})">${p}</span>`
+    }
+  }
+
+  html += `<button class="px-page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="${onPageChange}(${currentPage + 1})">下一页 ›</button>`
+  html += `<span class="px-page-total">共 ${totalItems} 条</span>`
+
+  el.innerHTML = html
+}
+
+// ==================== 学员表格 ====================
+let studentPage = 1
+const studentPageSize = 10
+
+function renderStudents(page) {
+  studentPage = page
+  const start = (page - 1) * studentPageSize
+  const items = mockStudents.slice(start, start + studentPageSize)
+  const tbody = document.getElementById('studentTable')
+  tbody.innerHTML = items.map(s => `
+    <tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.phone}</td>
+      <td>${s.progress}</td>
+      <td>${s.mentor}</td>
+      <td><a href="#" style="color:var(--pixel-link);text-decoration:none;font-size:12px">查看详情</a></td>
+    </tr>
+  `).join('')
+  renderPagination('studentPagination', page, Math.ceil(mockStudents.length / studentPageSize), mockStudents.length, studentPageSize, 'renderStudents')
+}
+
+// ==================== 审核卡片 ====================
+let reviewPage = 1
+const reviewPageSize = 8
+
+function renderReviews(page) {
+  reviewPage = page
+  const start = (page - 1) * reviewPageSize
+  const items = mockReviews.slice(start, start + reviewPageSize)
+  const container = document.getElementById('reviewCards')
+  container.innerHTML = items.map(r => `
+    <div class="rv-card">
+      <div><span class="rv-name">${r.name}</span><span class="rv-meta">${r.stage} · AI标注培训</span></div>
+      <div><span class="pixel-tag pixel-tag-gray">${r.status}</span> <span style="font-size:11px;color:#aaa;margin-left:8px">${r.time}</span></div>
+    </div>
+  `).join('')
+  renderPagination('reviewPagination', page, Math.ceil(mockReviews.length / reviewPageSize), mockReviews.length, reviewPageSize, 'renderReviews')
+}
+
+// ==================== 题目列表 ====================
+let questionPage = 1
+const questionPageSize = 10
+
+function renderQuestions(page) {
+  questionPage = page
+  const start = (page - 1) * questionPageSize
+  const items = mockQuestions.slice(start, start + questionPageSize)
+  const container = document.getElementById('questionList')
+  container.innerHTML = items.map(q => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 14px 7px 24px;border-bottom:1px solid #f0e6d2;font-size:12px;">
+      <input type="checkbox">
+      <span class="pixel-tag ${q.typeClass}">${q.type}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.content}</span>
+      <span class="pixel-tag pixel-tag-gray">${q.pool}</span>
+      <span style="cursor:pointer">👁</span>
+      <span style="cursor:pointer">✏️</span>
+      <span style="cursor:pointer">🗑</span>
+    </div>
+  `).join('')
+  renderPagination('questionPagination', page, Math.ceil(mockQuestions.length / questionPageSize), mockQuestions.length, questionPageSize, 'renderQuestions')
+}
+
+// ==================== 关卡联动 ====================
+const mockData = {
+  p1: {
+    plans: [
+      { id: 'pl1', name: 'AI标注基础', stages: ['标注规范','数据清洗','质量检查'] },
+      { id: 'pl2', name: 'AI标注进阶', stages: ['复杂场景标注','多模态标注'] }
+    ]
+  },
+  p2: {
+    plans: [
+      { id: 'pl3', name: '数据预处理', stages: ['格式转换','异常检测','数据对齐'] }
+    ]
+  }
+}
+
+function onProjectChange() {
+  const pid = document.getElementById('selProject').value
+  const planSel = document.getElementById('selPlan')
+  const stageSel = document.getElementById('selStage')
+  planSel.innerHTML = '<option value="">全部计划</option>'
+  stageSel.innerHTML = '<option value="">全部关卡</option>'
+  if (pid && mockData[pid]) {
+    mockData[pid].plans.forEach(p => {
+      planSel.innerHTML += `<option value="${p.id}">${p.name}</option>`
+    })
+  }
+}
+
+function onPlanChange() {
+  const pid = document.getElementById('selProject').value
+  const planId = document.getElementById('selPlan').value
+  const stageSel = document.getElementById('selStage')
+  stageSel.innerHTML = '<option value="">全部关卡</option>'
+  if (pid && planId && mockData[pid]) {
+    const plan = mockData[pid].plans.find(p => p.id === planId)
+    if (plan) {
+      plan.stages.forEach(s => {
+        stageSel.innerHTML += `<option value="${s}">🏁 ${s}</option>`
+      })
+    }
+  }
+}
+
+// ==================== 初始化 ====================
+renderStudents(1)
+renderReviews(1)
+renderQuestions(1)
+</script>
+</body>
+</html>

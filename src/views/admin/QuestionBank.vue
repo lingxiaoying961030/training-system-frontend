@@ -35,6 +35,10 @@
         <option value="">全部计划</option>
         <option v-for="p in filteredPlans" :key="p.id" :value="p.id">{{ p.name }}</option>
       </select>
+      <select v-model="filterStageId" :disabled="!filterPlanId">
+        <option value="">全部关卡</option>
+        <option v-for="s in filteredStages" :key="s.id" :value="s.id">🏁 {{ s.title }}</option>
+      </select>
       <select v-model="filterType">
         <option value="">全部类型</option>
         <option value="single">单选</option>
@@ -344,6 +348,11 @@ const filteredPlans = computed(() => {
   return plans.value.filter(p => p.project_id === filterProjectId.value)
 })
 
+const filteredStages = computed(() => {
+  if (!filterPlanId.value) return []
+  return stages.value.filter(s => s.plan_id === filterPlanId.value)
+})
+
 const uploadPlans = computed(() => {
   if (!uploadForm.projectId) return []
   return plans.value.filter(p => p.project_id === uploadForm.projectId)
@@ -366,7 +375,9 @@ const allStages = computed(() => {
 const filteredQuestions = computed(() => {
   let qs = questions.value
   if (filterProjectId.value) qs = qs.filter(q => q.project_id === filterProjectId.value)
-  if (filterPlanId.value) {
+  if (filterStageId.value) {
+    qs = qs.filter(q => q.stage_id === filterStageId.value)
+  } else if (filterPlanId.value) {
     const planStageIds = stages.value.filter(s => s.plan_id === filterPlanId.value).map(s => s.id)
     qs = qs.filter(q => planStageIds.includes(q.stage_id))
   }
@@ -412,7 +423,7 @@ const groupedQuestions = computed(() => {
       const stage = stageMap[sid]
       return reactive({
         key: sid, label: stage?.title || '未知关卡', questions: sqs,
-        open: true, page: 1, pageSize: 20,
+        open: true, page: 1, pageSize: 15,
         get pagedQuestions() { return this.questions.slice((this.page - 1) * this.pageSize, this.page * this.pageSize) }
       })
     })
@@ -430,7 +441,7 @@ const groupedQuestions = computed(() => {
       key: 'general', type: 'general',
       label: '项目通用题（未绑定关卡）',
       questions: generalQs, stages: null, open: true,
-      page: 1, pageSize: 20,
+      page: 1, pageSize: 15,
       counts: countTypes(generalQs),
       get pagedQuestions() { return this.questions.slice((this.page - 1) * this.pageSize, this.page * this.pageSize) }
     }))

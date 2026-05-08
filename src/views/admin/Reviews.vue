@@ -138,6 +138,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 翻页 -->
+    <div v-if="totalPages > 1" class="px-pagination">
+      <button class="px-page-btn" :disabled="currentPage <= 1" @click="goPage(currentPage - 1)">‹ 上一页</button>
+      <template v-for="p in paginationPages" :key="p">
+        <span v-if="p === '...'" style="color:#ccc;font-size:12px">…</span>
+        <span v-else class="px-page-num" :class="{ active: p === currentPage }" @click="goPage(p)">{{ p }}</span>
+      </template>
+      <button class="px-page-btn" :disabled="currentPage >= totalPages" @click="goPage(currentPage + 1)">下一页 ›</button>
+      <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+    </div>
+    <div v-else-if="searchFiltered.length > 0" class="px-pagination">
+      <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+    </div>
+
   </div>
 </template>
 
@@ -160,6 +175,8 @@ const searchKeyword = ref('')
 const filters = ref({ projectId: null, planId: null, status: null })
 const projects = ref([])
 const plans = ref([])
+const currentPage = ref(1)
+const pageSize = 8
 
 const projectOptions = computed(() => projects.value.map(p => ({ label: p.name, value: p.id })))
 const planOptions = computed(() => plans.value.map(p => ({ label: p.name, value: p.id })))
@@ -171,7 +188,7 @@ const statusCounts = computed(() => ({
   rejected: reviews.value.filter(r => r.status === 'rejected').length,
 }))
 
-const filteredReviews = computed(() => {
+const searchFiltered = computed(() => {
   if (!searchKeyword.value) return reviews.value
   const kw = searchKeyword.value.toLowerCase()
   return reviews.value.filter(r =>
@@ -181,6 +198,29 @@ const filteredReviews = computed(() => {
     (r.projectName || '').toLowerCase().includes(kw)
   )
 })
+
+const totalPages = computed(() => Math.ceil(searchFiltered.value.length / pageSize))
+
+const filteredReviews = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return searchFiltered.value.slice(start, start + pageSize)
+})
+
+const paginationPages = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1)
+  const pages = [1]
+  if (cur > 3) pages.push('...')
+  for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
+function goPage(p) {
+  if (p >= 1 && p <= totalPages.value) currentPage.value = p
+}
 
 function statusLabel(s) { return { pending: '⏳ 待审核', approved: '✅ 已通过', rejected: '❌ 未通过' }[s] || s }
 function scoreClass(s) { return s >= 7 ? 'high' : s >= 5 ? 'mid' : 'low' }
@@ -258,13 +298,24 @@ async function resetReview(reviewId) {
   })
 }
 
-watch(() => filters.value.status, () => loadReviews())
-watch(() => filters.value.planId, () => loadReviews())
+watch(() => filters.value.status, () => { currentPage.value = 1; loadReviews() })
+watch(() => filters.value.planId, () => { currentPage.value = 1; loadReviews() })
+watch(searchKeyword, () => { currentPage.value = 1 })
 onMounted(() => { loadProjects(); loadReviews() })
 </script>
 
 <style scoped>
 .rv-page { }
+
+/* 翻页 */
+.px-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px; font-size: 13px; color: #9e8a76; margin-top: 12px; }
+.px-page-btn { padding: 5px 12px; border: 2px solid #d4c5a0; background: #FFFDF5; border-radius: 4px; cursor: pointer; font-size: 12px; color: #5B3A29; transition: all 0.15s; }
+.px-page-btn:hover:not(:disabled) { border-color: #8b6914; background: #f0e6d2; }
+.px-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.px-page-num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 2px solid #d4c5a0; background: #FFFDF5; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+.px-page-num:hover { border-color: #8b6914; background: #f0e6d2; }
+.px-page-num.active { background: #4A90B8; color: #fff; border-color: #3a7bc8; }
+.px-page-total { margin-left: 8px; font-size: 11px; color: #8B7355; }
 
 /* 页头 */
 .rv-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }

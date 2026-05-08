@@ -146,12 +146,12 @@
                 <span class="wrong-q-num">第 {{ idx + 1 }} 题</span>
                 <span v-if="item.questionType" class="wrong-q-type">{{ quizTypeLabel(item.questionType) }}</span>
               </div>
-              <div class="wrong-q-content">{{ item.content }}</div>
+              <div class="wrong-q-content" v-html="renderMd(item.content)"></div>
               <template v-if="item.options && item.options.length">
                 <div v-for="opt in item.options" :key="opt.key"
                   class="wrong-opt"
                   :class="wrongOptClass(item, opt.key)">
-                  {{ opt.key }}. {{ opt.text }}
+                  {{ opt.key }}. <span v-html="renderMdInline(opt.text)"></span>
                   <span v-if="item.correctAnswer?.includes(opt.key) && item.userAnswer?.includes(opt.key)" class="opt-marker correct-marker">✓ 学员选</span>
                   <span v-else-if="item.correctAnswer?.includes(opt.key)" class="opt-marker correct-marker">正确答案</span>
                   <span v-else-if="item.userAnswer?.includes(opt.key)" class="opt-marker wrong-marker">学员选</span>
@@ -161,7 +161,7 @@
                 <p>学员答案：{{ item.userAnswer || '未作答' }}</p>
                 <p>正确答案：{{ item.correctAnswer }}</p>
               </div>
-              <div v-if="item.analysis" class="wrong-analysis">💡 {{ item.analysis }}</div>
+              <div v-if="item.analysis" class="wrong-analysis">💡 <span v-html="renderMd(item.analysis)"></span></div>
             </div>
           </div>
         </div>
@@ -175,6 +175,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMessage, useDialog } from 'naive-ui'
 import api from '../../api/index.js'
+import { marked } from 'marked'
+
+marked.setOptions({ breaks: true, gfm: true })
+function renderMd(text) { return text ? marked.parse(String(text)) : '' }
+function renderMdInline(text) { return text ? marked.parseInline(String(text)) : '' }
 
 const route = useRoute()
 const studentId = route.params.id
@@ -638,6 +643,15 @@ onMounted(() => {
 .wrong-q-num { font-size: 14px; font-weight: 600; color: var(--pixel-brown, #5B3A29); }
 .wrong-q-type { font-size: 11px; color: var(--pixel-blue, #4A90B8); background: #F0F5FA; padding: 1px 6px; border: 1px solid #B8D4E8; }
 .wrong-q-content { font-size: 14px; line-height: 1.7; margin-bottom: 10px; padding: 8px 12px; background: #FDFAF0; border: 2px solid var(--pixel-border, #E0D5C8); }
+.wrong-q-content :deep(code) { background: #f0e6d2; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+.wrong-q-content :deep(pre) { background: #f5edd8; padding: 10px 12px; border-radius: 6px; overflow-x: auto; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+.wrong-q-content :deep(pre code) { background: none; padding: 0; }
+.wrong-q-content :deep(p) { margin: 4px 0; }
+.wrong-q-content :deep(ul), .wrong-q-content :deep(ol) { margin: 6px 0; padding-left: 24px; }
+.wrong-q-content :deep(li) { margin: 2px 0; }
+.wrong-analysis :deep(p) { margin: 2px 0; display: inline; }
+.wrong-analysis :deep(code) { background: #d4edda; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+.wrong-analysis :deep(ul), .wrong-analysis :deep(ol) { margin: 4px 0; padding-left: 20px; }
 .wrong-opt { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border: 2px solid var(--pixel-border, #E0D5C8); font-size: 13px; background: var(--pixel-card, #FFFDF5); margin-bottom: 3px; }
 .wrong-opt.is-correct { border-color: var(--pixel-green, #5C8A4D); background: #ECF5E8; }
 .wrong-opt.user-wrong { border-color: var(--pixel-red, #C24A3A); background: #FFF0EE; }

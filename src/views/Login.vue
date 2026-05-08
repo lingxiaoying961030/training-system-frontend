@@ -82,7 +82,7 @@ function showError(msg) {
 
 function getRedirectPath(roles) {
   if (!roles) return '/projects'
-  if (roles.includes('admin') || roles.includes('mentor') || roles.includes('guide')) {
+  if (roles.some(r => ['admin', 'mentor', 'guide', 'data_mentor'].includes(r))) {
     return '/admin/projects'
   }
   return '/projects'
@@ -121,7 +121,7 @@ function handleLoginSuccess(res) {
   userStore.setUserInfo(res.data.user)
   // 管理员直接进管理端，不走欢迎页
   const roles = res.data.user?.roles || []
-  if (roles.includes('admin') || roles.includes('mentor') || roles.includes('guide')) {
+  if (roles.includes('admin') || roles.includes('mentor') || roles.includes('guide') || roles.includes('data_mentor')) {
     router.push(getRedirectPath(roles))
   } else if (!res.data.user?.avatar) {
     router.push('/welcome')
@@ -140,7 +140,7 @@ onMounted(() => {
     userStore.setToken(decoded)
     // 管理员直接进管理端
     const roles = userStore.userInfo?.roles || []
-    if (roles.includes('admin') || roles.includes('mentor') || roles.includes('guide')) {
+    if (roles.includes('admin') || roles.includes('mentor') || roles.includes('guide') || roles.includes('data_mentor')) {
       router.replace(getRedirectPath(roles))
     } else if (!userStore.userInfo?.avatar) {
       router.replace('/welcome')

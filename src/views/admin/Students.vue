@@ -75,6 +75,20 @@
         </tbody>
       </table>
 
+      <!-- 翻页 -->
+      <div v-if="totalPages > 1" class="px-pagination">
+        <button class="px-page-btn" :disabled="currentPage <= 1" @click="goPage(currentPage - 1)">‹ 上一页</button>
+        <template v-for="p in paginationPages" :key="p">
+          <span v-if="p === '...'" style="color:#ccc;font-size:12px">…</span>
+          <span v-else class="px-page-num" :class="{ active: p === currentPage }" @click="goPage(p)">{{ p }}</span>
+        </template>
+        <button class="px-page-btn" :disabled="currentPage >= totalPages" @click="goPage(currentPage + 1)">下一页 ›</button>
+        <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+      </div>
+      <div v-else-if="searchFiltered.length > 0" class="px-pagination">
+        <span class="px-page-total">共 {{ searchFiltered.length }} 条</span>
+      </div>
+
       <!-- Fixed 弹窗：渲染到 body 层，不受表格 overflow 限制 -->
       <Teleport to="body">
         <div v-if="popoverStudent" class="progress-popover-fixed"
@@ -154,7 +168,10 @@ const planOptions = computed(() => {
   return list.map(p => ({ label: p.name, value: p.id }))
 })
 
-const filteredStudents = computed(() => {
+const currentPage = ref(1)
+const pageSize = 15
+
+const searchFiltered = computed(() => {
   if (!searchKeyword.value) return students.value
   const kw = searchKeyword.value.toLowerCase()
   return students.value.filter(s =>
@@ -163,12 +180,36 @@ const filteredStudents = computed(() => {
   )
 })
 
+const totalPages = computed(() => Math.ceil(searchFiltered.value.length / pageSize))
+
+const filteredStudents = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return searchFiltered.value.slice(start, start + pageSize)
+})
+
+function goPage(p) {
+  if (p >= 1 && p <= totalPages.value) currentPage.value = p
+}
+
+const paginationPages = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1)
+  const pages = [1]
+  if (cur > 3) pages.push('...')
+  for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
 function goToDetail(id) {
   router.push(`/admin/students/${id}`)
 }
 
 function onProjectChange() {
   filterPlanId.value = null
+  currentPage.value = 1
   loadStudents()
 }
 
@@ -200,12 +241,23 @@ async function loadFilters() {
   } catch {}
 }
 
-watch(filterPlanId, loadStudents)
+watch(searchKeyword, () => { currentPage.value = 1 })
+watch(filterPlanId, () => { currentPage.value = 1; loadStudents() })
 onMounted(() => { loadFilters(); loadStudents() })
 </script>
 
 <style scoped>
 .students-page { ; }
+
+/* 翻页 */
+.px-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px; font-size: 13px; color: var(--pixel-muted, #9e8a76); border-top: 1px solid #e8dcc8; background: #faf8f0; }
+.px-page-btn { padding: 5px 12px; border: 2px solid #d4c5a0; background: var(--pixel-card, #fffbf0); border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--pixel-text, #4a3728); transition: all 0.15s; }
+.px-page-btn:hover:not(:disabled) { border-color: var(--pixel-border, #8b6914); background: #f0e6d2; }
+.px-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.px-page-num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 2px solid #d4c5a0; background: var(--pixel-card, #fffbf0); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+.px-page-num:hover { border-color: var(--pixel-border, #8b6914); background: #f0e6d2; }
+.px-page-num.active { background: var(--pixel-link, #4a90d9); color: #fff; border-color: #3a7bc8; }
+.px-page-total { margin-left: 8px; font-size: 11px; color: var(--pixel-muted, #9e8a76); }
 
 /* Hover 弹窗 */
 .progress-hover-trigger { cursor: pointer; }
