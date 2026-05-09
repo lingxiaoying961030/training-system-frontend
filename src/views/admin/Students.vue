@@ -68,7 +68,21 @@
                 </template>
               </div>
             </td>
-            <td>{{ student.mentor?.name || '-' }}</td>
+            <td>
+              <template v-if="student.mentors && student.mentors.length > 0">
+                <span class="mentor-primary">{{ student.mentors[0].name }}</span>
+                <span v-if="student.mentors.length > 1" class="mentor-more">
+                  +{{ student.mentors.length - 1 }}
+                  <div class="mentor-tooltip">
+                    <div v-for="m in student.mentors" :key="m.id + m.planId" class="tt-row">
+                      <span>{{ m.name }}</span>
+                      <span class="tt-plan">{{ m.planName }}</span>
+                    </div>
+                  </div>
+                </span>
+              </template>
+              <template v-else>-</template>
+            </td>
             <td>
               <button class="pixel-btn-text" @click.stop="goToDetail(student.id)">查看详情</button>
             </td>
@@ -250,6 +264,30 @@ onMounted(() => { loadFilters(); loadStudents() })
 
 <style scoped>
 .students-page { ; }
+
+/* 多Mentor展示 */
+.mentor-primary { font-size: 13px; }
+.mentor-more {
+  font-size: 11px; color: #4A90B8; cursor: pointer;
+  margin-left: 4px; position: relative; display: inline-block;
+}
+.mentor-more:hover .mentor-tooltip { display: block; }
+.mentor-tooltip {
+  display: none; position: absolute; right: 0; bottom: 100%; z-index: 100;
+  background: #fff; border: 1px solid #E0D5C8; border-radius: 6px;
+  padding: 8px 12px; min-width: 200px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  font-size: 12px; line-height: 1.8; margin-bottom: 6px;
+}
+.mentor-tooltip::after {
+  content: ''; position: absolute; top: 100%; right: 12px;
+  border: 6px solid transparent; border-top-color: #fff;
+}
+.mentor-tooltip::before {
+  content: ''; position: absolute; top: 100%; right: 11px;
+  border: 7px solid transparent; border-top-color: #E0D5C8;
+}
+.tt-row { display: flex; justify-content: space-between; gap: 16px; white-space: nowrap; }
+.tt-plan { color: #999; font-size: 11px; }
 
 /* 翻页 */
 .px-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px; font-size: 13px; color: var(--pixel-muted, #9e8a76); border-top: 1px solid #e8dcc8; background: #faf8f0; }
