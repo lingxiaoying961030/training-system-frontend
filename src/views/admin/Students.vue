@@ -225,26 +225,16 @@ function positionTooltip(e) {
   const trigger = e.currentTarget
   const tooltip = trigger.querySelector('.mentor-tooltip')
   if (!tooltip) return
-  // 重置
-  tooltip.style.bottom = ''
-  tooltip.style.top = ''
-  tooltip.classList.remove('arrow-bottom', 'arrow-top')
-  // 判断上方空间
+  // 用 fixed 定位到视口层，避免任何父级遮挡
   const rect = trigger.getBoundingClientRect()
-  const tooltipHeight = tooltip.offsetHeight || 80
-  if (rect.top < tooltipHeight + 20) {
-    // 上方空间不够，向下弹
-    tooltip.style.top = '100%'
-    tooltip.style.bottom = 'auto'
-    tooltip.style.marginTop = '6px'
-    tooltip.style.marginBottom = ''
-    tooltip.classList.add('arrow-top')
+  tooltip.style.position = 'fixed'
+  tooltip.style.left = Math.max(8, rect.right - 220) + 'px'
+  // 判断上下空间
+  const tooltipHeight = tooltip.scrollHeight || 80
+  if (rect.top > tooltipHeight + 20) {
+    tooltip.style.top = (rect.top - tooltipHeight - 8) + 'px'
   } else {
-    tooltip.style.bottom = '100%'
-    tooltip.style.top = 'auto'
-    tooltip.style.marginBottom = '6px'
-    tooltip.style.marginTop = ''
-    tooltip.classList.add('arrow-bottom')
+    tooltip.style.top = (rect.bottom + 8) + 'px'
   }
 }
   router.push(`/admin/students/${id}`)
@@ -300,26 +290,10 @@ onMounted(() => { loadFilters(); loadStudents() })
 }
 .mentor-more:hover .mentor-tooltip { display: block; }
 .mentor-tooltip {
-  display: none; position: absolute; right: 0; bottom: 100%; z-index: 100;
+  display: none; position: fixed; z-index: 9999;
   background: #fff; border: 1px solid #E0D5C8; border-radius: 6px;
-  padding: 8px 12px; min-width: 200px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  font-size: 12px; line-height: 1.8; margin-bottom: 6px;
-}
-.mentor-tooltip.arrow-bottom::after {
-  content: ''; position: absolute; top: 100%; right: 12px;
-  border: 6px solid transparent; border-top-color: #fff;
-}
-.mentor-tooltip.arrow-bottom::before {
-  content: ''; position: absolute; top: 100%; right: 11px;
-  border: 7px solid transparent; border-top-color: #E0D5C8;
-}
-.mentor-tooltip.arrow-top::after {
-  content: ''; position: absolute; bottom: 100%; right: 12px;
-  border: 6px solid transparent; border-bottom-color: #fff;
-}
-.mentor-tooltip.arrow-top::before {
-  content: ''; position: absolute; bottom: 100%; right: 11px;
-  border: 7px solid transparent; border-bottom-color: #E0D5C8;
+  padding: 8px 12px; min-width: 200px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 12px; line-height: 1.8;
 }
 .tt-row { display: flex; justify-content: space-between; gap: 16px; white-space: nowrap; }
 .tt-plan { color: #999; font-size: 11px; }
