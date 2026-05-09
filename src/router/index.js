@@ -128,6 +128,11 @@ const routes = [
         component: () => import('../views/admin/StudentDetail.vue')
       },
       {
+        path: 'progress-detail',
+        name: 'AdminProgressDetail',
+        component: () => import('../views/admin/ProgressDetail.vue')
+      },
+      {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: () => import('../views/admin/Dashboard.vue')
