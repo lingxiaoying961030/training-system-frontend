@@ -81,6 +81,18 @@
                     <template v-else>🔒</template>
                   </span>
                   <span class="stage-name" :class="stage.status">{{ stage.title }}</span>
+                  <!-- 时间信息 -->
+                  <span v-if="stage.started_at" class="stage-time-info">
+                    <span class="time-label">{{ formatShortDate(stage.started_at) }}</span>
+                    <template v-if="stage.completed_at">
+                      <span class="time-arrow">→</span>
+                      <span class="time-label">{{ formatShortDate(stage.completed_at) }}</span>
+                      <span class="time-duration">{{ calcDuration(stage.started_at, stage.completed_at) }}</span>
+                    </template>
+                    <template v-else-if="stage.status === 'active' || stage.status === 'failed'">
+                      <span class="time-duration ongoing">已{{ calcDuration(stage.started_at, new Date().toISOString()) }}</span>
+                    </template>
+                  </span>
                   <!-- 单元 chips（始终显示） -->
                   <div class="unit-chips">
                     <span v-for="unit in stage.units" :key="unit.id" class="unit-chip" :class="unit.status"
@@ -242,6 +254,24 @@ function statusText(status) {
     failed: '未通过'
   }
   return map[status] || status
+}
+
+function formatShortDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function calcDuration(start, end) {
+  if (!start || !end) return ''
+  const ms = new Date(end) - new Date(start)
+  const hours = Math.floor(ms / 3600000)
+  const days = Math.floor(hours / 24)
+  const remainHours = hours % 24
+  if (days > 0) return `${days}天${remainHours}小时`
+  if (hours > 0) return `${hours}小时`
+  const mins = Math.floor(ms / 60000)
+  return `${mins}分钟`
 }
 
 function unitTypeIcon(type) {
@@ -573,6 +603,16 @@ onMounted(() => {
 .stage-name.completed { color: var(--pixel-text, #4a3728); }
 .stage-name.active { color: var(--pixel-link, #4a90d9); font-weight: 500; }
 .stage-name.locked { color: #aaa; }
+.stage-time-info {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--pixel-text-secondary, #8B7355); margin-left: 8px; flex-shrink: 0;
+}
+.stage-time-info .time-label { color: #999; }
+.stage-time-info .time-arrow { color: #ccc; }
+.stage-time-info .time-duration {
+  background: #FFF3E0; color: #E65100; padding: 1px 6px; border-radius: 3px; font-size: 10px;
+}
+.stage-time-info .time-duration.ongoing { background: #E3F2FD; color: #1565C0; }
 
 /* 单元 chips */
 .unit-chips { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }

@@ -27,7 +27,7 @@
       <table class="pixel-table">
         <thead>
           <tr>
-            <th style="width: 170px;">时间</th>
+            <th style="width: 180px; white-space: nowrap;">时间</th>
             <th style="width: 100px;">操作人</th>
             <th style="width: 130px;">操作类型</th>
             <th>详情</th>
@@ -35,7 +35,7 @@
         </thead>
         <tbody>
           <tr v-for="log in logs" :key="log.id">
-            <td>{{ formatTime(log.created_at) }}</td>
+            <td style="white-space: nowrap;">{{ formatTime(log.created_at) }}</td>
             <td>{{ log.user_name || '-' }}</td>
             <td>
               <span class="pixel-tag" :class="actionTagClass(log.action)">
@@ -49,26 +49,40 @@
     </div>
 
     <!-- 分页 -->
-    <div v-if="total > pageSize" class="pagination">
-      <n-pagination
-        v-model:page="currentPage"
-        :page-count="Math.ceil(total / pageSize)"
-        @update:page="loadLogs"
-      />
+    <div v-if="total > pageSize" class="pixel-pagination">
+      <span class="page-info">共 {{ total }} 条</span>
+      <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage > 1 && (currentPage--, loadLogs())">‹</button>
+      <template v-for="p in visiblePages" :key="p">
+        <span v-if="p === '...'" class="page-ellipsis">…</span>
+        <button v-else class="page-btn" :class="{ active: p === currentPage }" @click="currentPage = p; loadLogs()">{{ p }}</button>
+      </template>
+      <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage < totalPages && (currentPage++, loadLogs())">›</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { NPagination } from 'naive-ui'
+import { ref, computed, onMounted, watch } from 'vue'
 import api from '../../api/index.js'
 
 const loading = ref(false)
 const logs = ref([])
 const total = ref(0)
 const currentPage = ref(1)
-const pageSize = 50
+const pageSize = 20
+
+const totalPages = computed(() => Math.ceil(total.value / pageSize))
+const visiblePages = computed(() => {
+  const tp = totalPages.value
+  const cp = currentPage.value
+  if (tp <= 7) return Array.from({ length: tp }, (_, i) => i + 1)
+  const pages = [1]
+  if (cp > 3) pages.push('...')
+  for (let i = Math.max(2, cp - 1); i <= Math.min(tp - 1, cp + 1); i++) pages.push(i)
+  if (cp < tp - 2) pages.push('...')
+  pages.push(tp)
+  return pages
+})
 
 const filterAction = ref(null)
 const filterUserId = ref(null)
@@ -111,19 +125,19 @@ function formatDetail(log) {
   const d = log.detail || {}
   switch (log.action) {
     case 'reset_quiz':
-      return `重置学员(${d.studentId || '-'})的单元测验`
+      return `重置「${d.studentName || d.studentId || '-'}」的单元测验${d.stageName ? '（' + d.stageName + (d.unitName ? ' › ' + d.unitName : '') + '）' : ''}`
     case 'assign_mentor':
-      return `为学员分配 Mentor（计划: ${d.planId || '-'}）`
+      return `为「${d.studentName || '-'}」分配 Mentor「${d.mentorName || '-'}」${d.planName ? '（' + d.planName + '）' : ''}`
     case 'remove_mentor':
       return `移除 Mentor 分配`
     case 'delete_user':
       return `删除用户`
     case 'review_pass':
-      return `审核通过，评分: ${d.score || '-'}${d.comment ? '，备注: ' + d.comment : ''}`
+      return `审核通过${d.studentName ? '「' + d.studentName + '」' : ''}，评分: ${d.score || '-'}${d.comment ? '，备注: ' + d.comment : ''}`
     case 'review_fail':
-      return `审核不通过，评分: ${d.score || '-'}${d.comment ? '，备注: ' + d.comment : ''}`
+      return `审核不通过${d.studentName ? '「' + d.studentName + '」' : ''}，评分: ${d.score || '-'}${d.comment ? '，备注: ' + d.comment : ''}`
     case 'review_reset':
-      return `重置审核记录`
+      return `重置${d.studentName ? '「' + d.studentName + '」的' : ''}审核记录`
     case 'import_students':
       return `批量导入 ${d.success || 0} 人，跳过 ${d.skipped || 0} 人，失败 ${d.failedCount || 0} 行`
     default:
@@ -167,9 +181,19 @@ onMounted(() => {
 
 <style scoped>
 .audit-page { }
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+.pixel-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 16px; padding: 12px;
 }
+.page-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--pixel-border, #E0D5C8); border-radius: 6px;
+  background: var(--pixel-card, #FFFDF5); font-size: 13px; cursor: pointer;
+  color: var(--pixel-text, #3E2723);
+}
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn.active { background: var(--pixel-green, #5C8A4D); color: #fff; border-color: var(--pixel-green, #5C8A4D); }
+.page-btn:hover:not(.active):not(:disabled) { background: #F0EBE3; }
+.page-info { font-size: 12px; color: var(--pixel-text-secondary, #8B7355); }
+.page-ellipsis { font-size: 12px; color: #aaa; }
 </style>
