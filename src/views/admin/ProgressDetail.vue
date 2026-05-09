@@ -99,7 +99,9 @@
             <tr v-for="student in paginatedStudents" :key="student.id">
               <td class="sticky-col">
                 <div class="student-cell">
-                  <div class="student-avatar">{{ student.avatar ? '' : '👤' }}</div>
+                  <div class="student-avatar">
+                    <img :src="getAvatarHead(student.avatar, student.id)" class="avatar-img" />
+                  </div>
                   <div class="student-name-wrap">
                     <span class="student-name">{{ student.name }}</span>
                     <span class="student-phone">{{ maskPhone(student.phone) }}</span>
@@ -146,6 +148,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../../api/index.js'
+import { getAvatarHead } from '../../pixel-map.js'
 
 const loading = ref(false)
 const projects = ref([])
@@ -319,9 +322,11 @@ tbody tr:hover .sticky-col { background: #FFFDF0; }
 
 .student-cell { display: flex; align-items: center; gap: 8px; min-width: 140px; }
 .student-avatar {
-  width: 28px; height: 28px; border-radius: 50%; background: #E8F5E9;
-  display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: #FFF8E7; border: 2px solid var(--pixel-border, #E0D5C8);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
+.avatar-img { width: 28px; height: 28px; image-rendering: pixelated; }
 .student-name-wrap { display: flex; flex-direction: column; }
 .student-name { font-weight: 500; font-size: 13px; }
 .student-phone { font-size: 11px; color: #aaa; }
