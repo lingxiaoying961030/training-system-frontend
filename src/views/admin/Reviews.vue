@@ -60,7 +60,7 @@
         <!-- 卡片头 -->
         <div class="rv-card-hdr" @click="toggleExpand(review.id)">
           <div class="rv-card-left">
-            <div class="rv-avatar">{{ (review.userName || '?')[0] }}</div>
+            <div class="rv-avatar"><img :src="getAvatarHead(review.userAvatar, review.userId)" class="rv-avatar-img" /></div>
             <div class="rv-card-info">
               <span class="rv-name">{{ review.userName }}</span>
               <span class="rv-meta">
@@ -160,6 +160,7 @@
 import { ref, computed, onMounted, watch, inject } from 'vue'
 import { useMessage, useDialog } from 'naive-ui'
 import api from '../../api/index.js'
+import { getAvatarHead } from '../../pixel-map.js'
 
 const message = useMessage()
 const dialog = useDialog()
@@ -361,7 +362,8 @@ onMounted(() => { loadProjects(); loadReviews() })
 .rv-card-hdr { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
 .rv-card-hdr:hover { background: #FFF8E7; }
 .rv-card-left { display: flex; align-items: center; gap: 10px; }
-.rv-avatar { width: 36px; height: 36px; border-radius: 50%; background: #F5EDD8; border: 2px solid #E0D5C8; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #5B3A29; }
+.rv-avatar { width: 36px; height: 36px; border-radius: 50%; background: #FFF8E7; border: 2px solid #E0D5C8; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.rv-avatar-img { width: 30px; height: 30px; image-rendering: pixelated; }
 .rv-card-info { display: flex; flex-direction: column; gap: 2px; }
 .rv-name { font-size: 14px; font-weight: 600; color: #5B3A29; }
 .rv-meta { font-size: 12px; color: #8B7355; }
