@@ -130,6 +130,12 @@
                     <span v-if="unit.unit_type === 'quiz' && unit.wrong_answers && unit.wrong_answers.length > 0" class="unit-action">
                       <button class="btn-wrong" @click.stop="openWrongAnswers(unit, stage)">📋 错题({{ unit.wrong_answers.length }})</button>
                     </span>
+                    <span v-if="unit.unit_type === 'practical' && unit.status === 'active'" class="unit-action">
+                      <button v-if="!unit.notified" class="btn-notify" @click.stop="notifyDataReady(stage, unit)" :disabled="notifying">
+                        📤 通知学员试标
+                      </button>
+                      <span v-else class="notify-sent">✅ 已通知 ({{ unit.notifiedAt }})</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -205,6 +211,7 @@ const dialog = useDialog()
 const student = ref(null)
 const mentors = ref([])
 const loading = ref(true)
+const notifying = ref(false)
 const expandedStages = ref([])
 const groupedProgress = ref([])
 
@@ -465,6 +472,20 @@ async function resetUnit(unitId) {
   })
 }
 
+async function notifyDataReady(stage, unit) {
+  notifying.value = true
+  try {
+    await api.post(`/admin/students/${studentId}/notify-data-ready`, { stageId: stage.id })
+    message.success('已通知学员')
+    unit.notified = true
+    unit.notifiedAt = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  } catch (err) {
+    message.error('通知失败：' + (err.response?.data?.message || err.message))
+  } finally {
+    notifying.value = false
+  }
+}
+
 onMounted(() => {
   loadStudent()
   loadMentors()
@@ -670,6 +691,10 @@ onMounted(() => {
 .btn-wrong:hover { background: #FFECB3; }
 .btn-wrong-inline { padding: 2px 8px; background: #FFF8E7; border: 1px solid var(--pixel-gold, #E8A93A); color: var(--pixel-brown, #5B3A29); border-radius: 4px; font-size: 11px; cursor: pointer; flex-shrink: 0; }
 .btn-wrong-inline:hover { background: #FFECB3; }
+.btn-notify { padding: 4px 10px; background: #E3F2FD; border: 1px solid #90CAF9; color: #1565C0; border-radius: 4px; font-size: 12px; cursor: pointer; }
+.btn-notify:hover { background: #BBDEFB; }
+.btn-notify:disabled { opacity: 0.5; cursor: not-allowed; }
+.notify-sent { font-size: 11px; color: #2E7D32; background: #E8F5E9; padding: 3px 8px; border-radius: 4px; }
 
 /* 错题弹窗 */
 .wrong-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
