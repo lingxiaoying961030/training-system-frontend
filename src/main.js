@@ -22,4 +22,9 @@ userStore.init()
 const siteSettingsStore = useSiteSettingsStore()
 siteSettingsStore.load()
 
+// 环境标题 & favicon
+document.title = import.meta.env.VITE_APP_TITLE || '培训系统'
+const faviconEl = document.querySelector('link[rel="icon"]')
+if (faviconEl) faviconEl.href = import.meta.env.VITE_APP_FAVICON || '/favicon.svg'
+
 app.mount('#app')

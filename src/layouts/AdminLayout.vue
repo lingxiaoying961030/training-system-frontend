@@ -41,8 +41,8 @@
             <router-link to="/admin/students" class="nav-item sub">
               <span class="nav-icon">📈</span> 学员进度
             </router-link>
-            <router-link v-if="userStore.isAdmin" to="/admin/users" class="nav-item sub">
-              <span class="nav-icon">🔑</span> 账号管理
+            <router-link to="/admin/progress-detail" class="nav-item sub">
+              <span class="nav-icon">📊</span> 学习明细
             </router-link>
           </div>
         </div>
@@ -54,6 +54,9 @@
             <span class="nav-arrow">{{ groupOpen.system ? '▾' : '▸' }}</span>
           </div>
           <div v-show="groupOpen.system" class="nav-group-items">
+            <router-link to="/admin/users" class="nav-item sub">
+              <span class="nav-icon">🔑</span> 账号管理
+            </router-link>
             <router-link to="/admin/settings" class="nav-item sub">
               <span class="nav-icon">🔧</span> 系统设置
             </router-link>
