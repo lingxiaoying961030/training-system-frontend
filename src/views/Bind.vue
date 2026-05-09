@@ -2,40 +2,45 @@
   <div class="bind-page">
     <div class="bind-card">
       <div class="bind-header">
-        <h1>🔗 完善信息</h1>
-        <p>首次使用飞书登录，请绑定手机号</p>
+        <div class="bind-icon">⛺️</div>
+        <h1>绑定账号</h1>
+        <p>首次飞书登录，请绑定你的培训账号</p>
       </div>
 
-      <n-form ref="formRef" :model="form" :rules="rules">
-        <n-form-item path="name" label="姓名">
-          <n-input
-            v-model:value="form.name"
+      <div class="bind-form">
+        <div class="form-group">
+          <label>👤 姓名</label>
+          <input
+            v-model="form.name"
+            type="text"
             placeholder="请输入真实姓名"
-            :maxlength="20"
+            maxlength="20"
+            class="pixel-input"
           />
-        </n-form-item>
-        <n-form-item path="phone" label="手机号">
-          <n-input
-            v-model:value="form.phone"
-            placeholder="请输入手机号"
-            :maxlength="11"
+        </div>
+        <div class="form-group">
+          <label>📱 手机号</label>
+          <input
+            v-model="form.phone"
+            type="text"
+            placeholder="请输入培训时使用的手机号"
+            maxlength="11"
+            class="pixel-input"
             @keyup.enter="handleBind"
           />
-        </n-form-item>
-        <n-button
-          type="primary"
-          block
-          strong
-          size="large"
-          :loading="loading"
+        </div>
+        <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+        <button
+          class="pixel-btn"
+          :disabled="loading"
           @click="handleBind"
         >
-          绑定并登录
-        </n-button>
-      </n-form>
+          {{ loading ? '绑定中...' : '🔗 绑定并登录' }}
+        </button>
+      </div>
 
       <div class="bind-tip">
-        <p>💡 如果你是笔试通过人员，请填写笔试时使用的姓名和手机号</p>
+        💡 请填写培训注册时使用的姓名和手机号，绑定后可直接用飞书一键登录
       </div>
     </div>
   </div>
@@ -54,21 +59,13 @@ const message = useMessage()
 const userStore = useUserStore()
 
 const loading = ref(false)
-const formRef = ref(null)
 const feishuInfo = ref(null)
+const errorMsg = ref('')
 
 const form = ref({
   name: '',
   phone: ''
 })
-
-const rules = {
-  name: { required: true, message: '请输入姓名', trigger: 'blur' },
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ]
-}
 
 onMounted(async () => {
   const token = route.query.t
@@ -96,9 +93,13 @@ onMounted(async () => {
 })
 
 async function handleBind() {
-  try {
-    await formRef.value?.validate()
-  } catch {
+  errorMsg.value = ''
+  if (!form.value.name.trim()) {
+    errorMsg.value = '请输入姓名'
+    return
+  }
+  if (!/^1\d{10}$/.test(form.value.phone)) {
+    errorMsg.value = '请输入正确的手机号'
     return
   }
 
@@ -118,7 +119,7 @@ async function handleBind() {
       router.push('/')
     }
   } catch (e) {
-    message.error(e.message)
+    errorMsg.value = e.message || '绑定失败，请重试'
   } finally {
     loading.value = false
   }
@@ -131,37 +132,65 @@ async function handleBind() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #FFF8E7;
+  position: relative;
+}
+.bind-page::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(circle, #F5EDD8 1px, transparent 1px);
+  background-size: 20px 20px; opacity: 0.5;
 }
 
 .bind-card {
-  width: 420px;
-  padding: 40px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  position: relative; z-index: 1;
+  width: 380px; padding: 36px;
+  background: #FFFDF5;
+  border: 3px solid #E0D5C8;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 #E0D5C8;
 }
 
 .bind-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
+}
+.bind-icon { font-size: 44px; margin-bottom: 8px; }
+.bind-header h1 { font-size: 22px; color: #5B3A29; margin-bottom: 6px; }
+.bind-header p { font-size: 13px; color: #8B7355; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  font-size: 13px; color: #5B3A29; font-weight: 500;
+  display: block; margin-bottom: 6px;
+}
+.pixel-input {
+  width: 100%; padding: 10px 12px;
+  border: 2px solid #E0D5C8; border-radius: 6px;
+  background: #FFF8E7; font-size: 14px; color: #3E2723;
+  outline: none; transition: border-color 0.2s;
+}
+.pixel-input:focus { border-color: #E8A93A; background: #FFFDF5; }
+.pixel-input::placeholder { color: #C4B5A0; }
+
+.error-msg {
+  font-size: 12px; color: #C24A3A; margin-bottom: 12px;
+  padding: 6px 10px; background: #FFF0EE; border-radius: 4px;
+  border: 1px solid #FFCDD2;
 }
 
-.bind-header h1 {
-  font-size: 28px;
-  margin-bottom: 8px;
-  color: #1d1d1f;
+.pixel-btn {
+  width: 100%; padding: 12px;
+  border: 2px solid #5B3A29; border-radius: 6px;
+  background: #5C8A4D; color: #fff; font-size: 15px; font-weight: 600;
+  cursor: pointer; box-shadow: 2px 2px 0 #3E5A33;
+  transition: transform 0.1s;
 }
-
-.bind-header p {
-  font-size: 14px;
-  color: #86868b;
-}
+.pixel-btn:hover:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #3E5A33; }
+.pixel-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .bind-tip {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 13px;
-  color: #86868b;
+  margin-top: 20px; padding: 10px 12px;
+  background: #FFF3E0; border: 1px dashed #FFB74D; border-radius: 6px;
+  font-size: 12px; color: #8B7355; text-align: center; line-height: 1.6;
 }
 </style>
