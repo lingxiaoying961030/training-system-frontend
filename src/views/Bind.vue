@@ -29,7 +29,11 @@
             @keyup.enter="handleBind"
           />
         </div>
-        <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+        <div v-if="errorMsg" class="error-block">
+          <div class="error-icon">🚫</div>
+          <div class="error-title">未找到匹配的账号</div>
+          <div class="error-desc">{{ errorMsg }}</div>
+        </div>
         <button
           class="pixel-btn"
           :disabled="loading"
@@ -172,10 +176,25 @@ async function handleBind() {
 .pixel-input:focus { border-color: #E8A93A; background: #FFFDF5; }
 .pixel-input::placeholder { color: #C4B5A0; }
 
-.error-msg {
-  font-size: 12px; color: #C24A3A; margin-bottom: 12px;
-  padding: 6px 10px; background: #FFF0EE; border-radius: 4px;
-  border: 1px solid #FFCDD2;
+.error-block {
+  margin-bottom: 18px;
+  padding: 16px;
+  background: #FFF5F3;
+  border: 2px solid #E8A08A;
+  border-radius: 8px;
+  text-align: center;
+  animation: shake 0.4s ease-in-out;
+}
+.error-block .error-icon { font-size: 36px; margin-bottom: 8px; }
+.error-block .error-title { font-size: 15px; color: #C24A3A; font-weight: 600; margin-bottom: 6px; }
+.error-block .error-desc { font-size: 12px; color: #8B7355; line-height: 1.6; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
 }
 
 .pixel-btn {
