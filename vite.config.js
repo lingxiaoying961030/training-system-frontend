@@ -8,6 +8,13 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/lxy-training/' : '/',
   plugins: [
     vue(),
+    {
+      name: 'html-transform',
+      transformIndexHtml(html) {
+        const base = process.env.NODE_ENV === 'production' ? '/lxy-training/' : '/'
+        return html.replace('./favicon.svg', `${base}favicon.svg`)
+      }
+    },
     AutoImport({
       imports: ['vue', 'vue-router'],
       resolvers: [NaiveUiResolver()]
