@@ -4,7 +4,7 @@ import router from './router/index.js'
 import App from './App.vue'
 import { useUserStore } from './stores/user.js'
 import { useSiteSettingsStore } from './stores/siteSettings.js'
-import { BASE } from './asset-url.js'
+import { BASE, assetUrl } from './asset-url.js'
 import './style.css'
 import './pixel-theme.css'
 
@@ -25,6 +25,8 @@ siteSettingsStore.load()
 // 环境标题 & favicon
 document.title = import.meta.env.VITE_APP_TITLE || '培训系统'
 const faviconEl = document.querySelector('link[rel="icon"]')
-if (faviconEl) faviconEl.href = import.meta.env.VITE_APP_FAVICON || `${import.meta.env.BASE_URL}favicon.svg`
+if (faviconEl) {
+  faviconEl.href = [new URL('.', document.baseURI).pathname, 'favicon.svg'].join('')
+}
 
 app.mount('#app')
