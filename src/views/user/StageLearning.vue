@@ -592,6 +592,32 @@ function hasAnswer(unit) {
 
 async function startQuiz(unit) {
   try {
+    // 功能4: 测验类型先检查本地暂存（含题目数据），避免重新抽题导致暂存失效
+    if (unit.unit_type === 'quiz') {
+      const draftRaw = (() => {
+        try {
+          const raw = localStorage.getItem(quizDraftKey(unit.id))
+          if (!raw) return null
+          const d = JSON.parse(raw)
+          if (Date.now() - d.savedAt > 24 * 60 * 60 * 1000) { localStorage.removeItem(quizDraftKey(unit.id)); return null }
+          if (!d.questions || !d.questions.length) return null
+          return d
+        } catch { return null }
+      })()
+      if (draftRaw) {
+        const questions = draftRaw.questions
+        const answers = {}
+        const notes = {}
+        for (const q of questions) { answers[q.id] = q.question_type === 'multiple' ? [] : '' }
+        Object.assign(answers, draftRaw.answers)
+        Object.assign(notes, draftRaw.notes || {})
+        quizStates[unit.id] = { questions, answers, notes, currentIndex: draftRaw.currentIndex || 0, submitted: false, result: null }
+        quizDraftRestored[unit.id] = true
+        setTimeout(() => { delete quizDraftRestored[unit.id] }, 3000)
+        return
+      }
+    }
+
     // 优先用预加载的题目
     let questions = prefetchedQuestions[unit.id]
     if (!questions) {
@@ -618,17 +644,7 @@ async function startQuiz(unit) {
       const answers = {}
       const notes = {}
       for (const q of questions) { answers[q.id] = q.question_type === 'multiple' ? [] : '' }
-      // 功能4: 尝试恢复本地暂存
-      const draft = loadQuizDraft(unit.id, questions)
-      if (draft) {
-        Object.assign(answers, draft.answers)
-        Object.assign(notes, draft.notes || {})
-        quizStates[unit.id] = { questions, answers, notes, currentIndex: draft.currentIndex || 0, submitted: false, result: null }
-        quizDraftRestored[unit.id] = true
-        setTimeout(() => { delete quizDraftRestored[unit.id] }, 3000)
-      } else {
-        quizStates[unit.id] = { questions, answers, notes, currentIndex: 0, submitted: false, result: null }
-      }
+      quizStates[unit.id] = { questions, answers, notes, currentIndex: 0, submitted: false, result: null }
     }
   } catch (err) {
     if (err.message?.includes('已用完')) {
@@ -841,6 +857,7 @@ function saveQuizDraft(unitId) {
     answers: state.answers,
     notes: state.notes,
     currentIndex: state.currentIndex,
+    questions: state.questions,
     questionIds: state.questions.map(q => q.id),
     savedAt: Date.now()
   }
