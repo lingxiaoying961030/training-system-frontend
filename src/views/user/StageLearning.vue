@@ -946,14 +946,10 @@ function reportTimeSpent() {
   const url = `${import.meta.env.VITE_API_BASE || ''}/api/training/stages/${stageId}/track-time`
   const token = localStorage.getItem('training_token')
   const body = JSON.stringify({ seconds })
-  // 优先用 sendBeacon（beforeunload 时更可靠）
-  if (navigator.sendBeacon) {
-    const blob = new Blob([body], { type: 'application/json' })
-    const headers = token ? `?token=${token}` : ''
-    navigator.sendBeacon(url + headers, blob)
-  } else {
-    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body, keepalive: true }).catch(() => {})
-  }
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  // 用 fetch + keepalive，确保页面关闭时也能发出去
+  fetch(url, { method: 'POST', headers, body, keepalive: true }).catch(() => {})
 }
 
 function onBeforeUnload() {
