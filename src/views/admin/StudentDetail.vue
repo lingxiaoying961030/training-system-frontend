@@ -87,11 +87,10 @@
                     <template v-if="stage.completed_at">
                       <span class="time-arrow">→</span>
                       <span class="time-label">{{ formatShortDate(stage.completed_at) }}</span>
-                      <span class="time-duration">{{ calcDuration(stage.started_at, stage.completed_at) }}</span>
                     </template>
-                    <template v-else-if="stage.status === 'active' || stage.status === 'failed'">
-                      <span class="time-duration ongoing">已{{ calcDuration(stage.started_at, new Date().toISOString()) }}</span>
-                    </template>
+                    <span v-if="stage.time_spent_seconds > 0" class="time-duration">
+                      学习 {{ formatTimeSpent(stage.time_spent_seconds) }}
+                    </span>
                   </span>
                   <!-- 单元 chips（始终显示） -->
                   <div class="unit-chips">
@@ -279,6 +278,14 @@ function calcDuration(start, end) {
   if (hours > 0) return `${hours}小时`
   const mins = Math.floor(ms / 60000)
   return `${mins}分钟`
+}
+
+function formatTimeSpent(seconds) {
+  if (!seconds || seconds < 60) return '不足1分钟'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h > 0) return `${h}小时${m}分钟`
+  return `${m}分钟`
 }
 
 function unitTypeIcon(type) {
