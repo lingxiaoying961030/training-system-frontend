@@ -1063,7 +1063,7 @@ onBeforeUnmount(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.article-body { font-size: 14px; line-height: 1.8; color: var(--pixel-text, #3E2723); padding: 0 16px; max-height: calc(100vh - 260px); min-height: 300px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; }
+.article-body { font-size: 14px; line-height: 1.8; color: var(--pixel-text, #3E2723); padding: 0 16px; height: calc(100vh - 300px); min-height: 300px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; }
 .article-body::-webkit-scrollbar { width: 6px; }
 .article-body::-webkit-scrollbar-thumb { background: var(--pixel-border, #E0D5C8); border-radius: 3px; }
 .article-body::-webkit-scrollbar-thumb:hover { background: #C8B89A; }
