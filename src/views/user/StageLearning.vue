@@ -223,6 +223,8 @@
               </template>
             </div>
             <div v-else-if="!quizStates[unit.id].submitted" class="quiz-area">
+              <!-- 功能4: 暂存恢复提示 -->
+              <div v-if="quizDraftRestored[unit.id]" class="draft-restored-hint">💾 已恢复上次答题进度</div>
               <p class="quiz-progress">第 {{ quizStates[unit.id].currentIndex + 1 }} / {{ quizStates[unit.id].questions.length }} 题</p>
               <div class="question-item">
                 <p class="q-text">{{ quizStates[unit.id].currentIndex + 1 }}.
@@ -256,11 +258,12 @@
                 <div class="note-label">📝 答题笔记 <span class="note-optional">（可选）</span></div>
                 <textarea class="note-textarea"
                   v-model="quizStates[unit.id].notes[currentQuizQuestion(unit).id]"
+                  @input="saveQuizDraft(unit.id)"
                   placeholder="记录你的答题思路、疑问或想法..."
                   rows="2"></textarea>
               </div>
               <div class="unit-action quiz-nav">
-                <button v-if="quizStates[unit.id].currentIndex > 0" class="px-btn outline" @click="quizStates[unit.id].currentIndex--">← 上一题</button>
+                <button v-if="quizStates[unit.id].currentIndex > 0" class="px-btn outline" @click="quizStates[unit.id].currentIndex--; saveQuizDraft(unit.id)">← 上一题</button>
                 <span v-else></span>
                 <button v-if="quizStates[unit.id].currentIndex < quizStates[unit.id].questions.length - 1"
                   class="px-btn green" @click="nextQuizQuestion(unit)"
@@ -278,6 +281,10 @@
                 <p v-if="quizStates[unit.id].result.score < 80 && quizStates[unit.id].result.remainingAttempts !== null" class="sub-text">
                   剩余机会：{{ quizStates[unit.id].result.remainingAttempts }} 次
                 </p>
+              </div>
+              <!-- 功能1: 查看错题汇总按钮（不显示正确答案，强迫找导师） -->
+              <div v-if="hasWrongAnswers(unit)" class="unit-action" style="text-align:center; margin-top:12px;">
+                <button class="px-btn outline" @click="openWrongModal(unit)">📋 查看错题汇总</button>
               </div>
               <!-- 通过时才展示错题详情 -->
               <template v-if="quizStates[unit.id].result.score >= 80">
@@ -337,13 +344,45 @@
       <h2>🎊 恭喜通关！</h2>
       <p>本关卡全部完成！</p>
     </div>
+
+    <!-- 功能1: 错题汇总弹窗 -->
+    <div v-if="wrongModal.visible" class="wrong-overlay" @click.self="wrongModal.visible = false">
+      <div class="wrong-modal">
+        <div class="wrong-modal-header">
+          <h3>📋 错题汇总 — {{ wrongModal.unitTitle }}</h3>
+          <button class="wrong-modal-close" @click="wrongModal.visible = false">✕</button>
+        </div>
+        <div class="wrong-modal-body">
+          <div class="wrong-stats">
+            <span>答错：<strong>{{ wrongModal.items.length }}</strong> 题</span>
+            <span v-if="wrongModal.score !== null">得分：<strong>{{ wrongModal.score }}</strong> 分</span>
+          </div>
+          <p class="wrong-hint">💡 仅显示你的答案，如需了解正确答案请联系导师。</p>
+          <div v-for="(item, idx) in wrongModal.items" :key="idx" class="wrong-item">
+            <div class="wrong-q-header">
+              <span class="wrong-q-num">第 {{ idx + 1 }} 题</span>
+              <span class="q-type" v-if="item.questionType">[{{ typeLabel(item.questionType) }}]</span>
+            </div>
+            <div class="q-content-md" v-html="renderMd(item.content)"></div>
+            <div v-if="item.options" class="wrong-options">
+              <div v-for="opt in item.options" :key="opt.key"
+                class="wrong-opt"
+                :class="{ 'user-selected': item.userAnswer?.includes(opt.key) }">
+                {{ opt.key }}. <span v-html="renderMdInline(opt.text)"></span>
+                <span v-if="item.userAnswer?.includes(opt.key)" class="opt-marker wrong-marker">你选</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useDialog } from 'naive-ui'
+import { useUserStore } from '../../stores/user.js'
 import api from '../../api/index.js'
 import { marked } from 'marked'
 import { starBurst, shakeEl, fireworkBurst, junimoCelebrate } from '../../pixel-particles.js'
@@ -363,7 +402,7 @@ function renderMdInline(text) {
 }
 
 const route = useRoute()
-const dialog = useDialog()
+const userStore = useUserStore()
 const stageId = route.params.id
 const planId = route.query.planId || null
 
@@ -462,6 +501,8 @@ function nextQuizQuestion(unit) {
   if (state.currentIndex < state.questions.length - 1) {
     state.currentIndex++
   }
+  // 功能4: 保存暂存（记住翻页位置）
+  if (unit.unit_type === 'quiz') saveQuizDraft(unit.id)
 }
 
 function hasQuizAnswer(unit) {
@@ -572,7 +613,17 @@ async function startQuiz(unit) {
       const answers = {}
       const notes = {}
       for (const q of questions) { answers[q.id] = q.question_type === 'multiple' ? [] : '' }
-      quizStates[unit.id] = { questions, answers, notes, currentIndex: 0, submitted: false, result: null }
+      // 功能4: 尝试恢复本地暂存
+      const draft = loadQuizDraft(unit.id, questions)
+      if (draft) {
+        Object.assign(answers, draft.answers)
+        Object.assign(notes, draft.notes || {})
+        quizStates[unit.id] = { questions, answers, notes, currentIndex: draft.currentIndex || 0, submitted: false, result: null }
+        quizDraftRestored[unit.id] = true
+        setTimeout(() => { delete quizDraftRestored[unit.id] }, 3000)
+      } else {
+        quizStates[unit.id] = { questions, answers, notes, currentIndex: 0, submitted: false, result: null }
+      }
     }
   } catch (err) {
     if (err.message?.includes('已用完')) {
@@ -638,6 +689,8 @@ function onQuizOptChange(unit, key, questionType) {
   } else {
     quizStates[unit.id].answers[qId] = key
   }
+  // 功能4: 自动保存暂存
+  if (unit.unit_type === 'quiz') saveQuizDraft(unit.id)
 }
 
 function onPracticeChange(unit, key, questionType) {
@@ -677,6 +730,8 @@ async function submitQuiz(unit) {
       state.submitted = true
       state.result = res.data
       state.result.remainingAttempts = res.data.remainingAttempts
+      // 功能4: 清除本地暂存
+      clearQuizDraft(unit.id)
       // 通过时乐观解锁
       if (res.data.score >= 80) {
         optimisticUnlock(unit)
@@ -694,6 +749,7 @@ async function submitQuiz(unit) {
 function retryQuiz(unit) {
   delete quizStates[unit.id]
   delete resultViewIndex[unit.id]
+  clearQuizDraft(unit.id)
   startQuiz(unit)
 }
 
@@ -736,21 +792,14 @@ async function loadPracticalStatus(unit) {
 }
 
 async function submitPractical(unit) {
-  dialog.warning({
-    title: '确认申报',
-    content: '⚠️ 申报后无法撤回，请确认你已完成全部实战任务。确定申报吗？',
-    positiveText: '确定申报',
-    negativeText: '取消',
-    onPositiveClick: async () => {
-      practicalSubmitting.value = true
-      try {
-        await api.post(`/training/practical/${unit.id}/submit`)
-        await loadPracticalStatus(unit)
-        await fetchUnits()
-      } catch (err) { alert('申报失败：' + err.message) }
-      finally { practicalSubmitting.value = false }
-    }
-  })
+  if (!confirm('⚠️ 申报后无法撤回，请确认你已完成全部实战任务。确定申报吗？')) return
+  practicalSubmitting.value = true
+  try {
+    await api.post(`/training/practical/${unit.id}/submit`)
+    await loadPracticalStatus(unit)
+    await fetchUnits()
+  } catch (err) { alert('申报失败：' + err.message) }
+  finally { practicalSubmitting.value = false }
 }
 
 function formatPracticalTime(t) {
@@ -773,10 +822,153 @@ async function fetchUnits() {
   } catch (err) { console.error('获取学习单元失败:', err) }
 }
 
+// ===== 功能4: 测验答题本地暂存 =====
+const quizDraftRestored = reactive({}) // unitId → true 表示已恢复暂存
+
+function quizDraftKey(unitId) {
+  return `quiz_draft_${stageId}_${unitId}`
+}
+
+function saveQuizDraft(unitId) {
+  const state = quizStates[unitId]
+  if (!state || state.submitted) return
+  const draft = {
+    answers: state.answers,
+    notes: state.notes,
+    currentIndex: state.currentIndex,
+    questionIds: state.questions.map(q => q.id),
+    savedAt: Date.now()
+  }
+  try { localStorage.setItem(quizDraftKey(unitId), JSON.stringify(draft)) } catch {}
+}
+
+function loadQuizDraft(unitId, questions) {
+  try {
+    const raw = localStorage.getItem(quizDraftKey(unitId))
+    if (!raw) return null
+    const draft = JSON.parse(raw)
+    // 过期检查：24小时
+    if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(quizDraftKey(unitId))
+      return null
+    }
+    // questionIds 匹配检查
+    const currentIds = questions.map(q => q.id).sort().join(',')
+    const draftIds = (draft.questionIds || []).sort().join(',')
+    if (currentIds !== draftIds) {
+      localStorage.removeItem(quizDraftKey(unitId))
+      return null
+    }
+    return draft
+  } catch { return null }
+}
+
+function clearQuizDraft(unitId) {
+  try { localStorage.removeItem(quizDraftKey(unitId)) } catch {}
+}
+
+// ===== 功能1: 错题汇总弹窗 =====
+const wrongModal = reactive({ visible: false, items: [], unitTitle: '', score: null })
+
+function openWrongModal(unit) {
+  const state = quizStates[unit.id]
+  if (!state?.result?.details) return
+  const wrongs = state.result.details.filter(d => !d.isCorrect)
+  if (!wrongs.length) return
+  // 补充 options（从前端缓存的 questions 里取）
+  wrongs.forEach(d => {
+    if (!d.options && state.questions) {
+      const q = state.questions.find(q => q.id === d.questionId)
+      if (q) {
+        d.options = [
+          q.option_a ? { key: 'A', text: q.option_a } : null,
+          q.option_b ? { key: 'B', text: q.option_b } : null,
+          q.option_c ? { key: 'C', text: q.option_c } : null,
+          q.option_d ? { key: 'D', text: q.option_d } : null,
+        ].filter(Boolean)
+        if (!d.questionType) d.questionType = q.question_type
+      }
+    }
+  })
+  wrongModal.items = wrongs
+  wrongModal.unitTitle = unit.title
+  wrongModal.score = state.result.score
+  wrongModal.visible = true
+}
+
+function hasWrongAnswers(unit) {
+  const state = quizStates[unit.id]
+  if (!state?.result?.details) return false
+  return state.result.details.some(d => !d.isCorrect)
+}
+
 // 预加载缓存
 const prefetchedQuestions = reactive({})
 
+// ===== 功能2: 关卡停留时长统计 =====
+let timeEnter = 0
+let timeAccumulated = 0
+let timePaused = false
+
+function startTimeTracking() {
+  timeEnter = Date.now()
+  timeAccumulated = 0
+  timePaused = false
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('beforeunload', onBeforeUnload)
+}
+
+function onVisibilityChange() {
+  if (document.hidden) {
+    // 暂停：累加当前段
+    if (!timePaused) {
+      timeAccumulated += (Date.now() - timeEnter) / 1000
+      timePaused = true
+    }
+  } else {
+    // 恢复
+    timeEnter = Date.now()
+    timePaused = false
+  }
+}
+
+function getAccumulatedSeconds() {
+  let total = timeAccumulated
+  if (!timePaused) {
+    total += (Date.now() - timeEnter) / 1000
+  }
+  return Math.round(total)
+}
+
+function reportTimeSpent() {
+  const seconds = getAccumulatedSeconds()
+  if (seconds < 3) return // 太短不上报
+  const url = `${import.meta.env.VITE_API_BASE || ''}/api/training/stages/${stageId}/track-time`
+  const token = localStorage.getItem('training_token')
+  const body = JSON.stringify({ seconds })
+  // 优先用 sendBeacon（beforeunload 时更可靠）
+  if (navigator.sendBeacon) {
+    const blob = new Blob([body], { type: 'application/json' })
+    const headers = token ? `?token=${token}` : ''
+    navigator.sendBeacon(url + headers, blob)
+  } else {
+    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body, keepalive: true }).catch(() => {})
+  }
+}
+
+function onBeforeUnload() {
+  reportTimeSpent()
+}
+
+function stopTimeTracking() {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  window.removeEventListener('beforeunload', onBeforeUnload)
+  reportTimeSpent()
+}
+
 onMounted(async () => {
+  // 开始计时
+  startTimeTracking()
   try {
     const mapParams = {}
     if (planId) mapParams.planId = planId
@@ -801,6 +993,10 @@ onMounted(async () => {
       break // 只预加载第一个
     }
   }
+})
+
+onBeforeUnmount(() => {
+  stopTimeTracking()
 })
 </script>
 
@@ -1020,4 +1216,42 @@ onMounted(async () => {
 .all-done img { width: 48px; height: 48px; image-rendering: pixelated; margin-bottom: 8px; }
 .all-done h2 { font-size: 20px; color: var(--pixel-brown, #5B3A29); margin: 0 0 6px; }
 .all-done p { font-size: 14px; color: var(--pixel-text-secondary); margin: 0; }
+
+/* ===== 功能4: 暂存恢复提示 ===== */
+.draft-restored-hint {
+  background: #E8F5E9; border: 2px solid #A5D6A7; padding: 6px 14px;
+  font-size: 12px; color: #2E7D32; margin-bottom: 10px; text-align: center;
+  animation: fadeOut 3s forwards;
+}
+@keyframes fadeOut { 0%,70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ===== 功能1: 错题汇总弹窗 ===== */
+.wrong-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.wrong-modal {
+  background: var(--pixel-card, #FFFDF5); border: 3px solid var(--pixel-brown, #5B3A29);
+  width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;
+}
+.wrong-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 2px solid var(--pixel-border, #E0D5C8);
+}
+.wrong-modal-header h3 { margin: 0; font-size: 15px; color: var(--pixel-brown, #5B3A29); }
+.wrong-modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--pixel-text-secondary); padding: 4px 8px; }
+.wrong-modal-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+.wrong-stats { display: flex; gap: 16px; font-size: 13px; color: var(--pixel-text-secondary); margin-bottom: 8px; }
+.wrong-hint { font-size: 12px; color: var(--pixel-gold, #E8A93A); margin: 0 0 12px; padding: 6px 10px; background: #FFF8E7; border: 1px solid var(--pixel-gold); }
+.wrong-item { border: 2px solid var(--pixel-border, #E0D5C8); padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--pixel-red, #C24A3A); }
+.wrong-q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.wrong-q-num { font-size: 13px; font-weight: 600; color: var(--pixel-brown, #5B3A29); }
+.wrong-options { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.wrong-opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border: 2px solid var(--pixel-border, #E0D5C8);
+  font-size: 14px; background: var(--pixel-card, #FFFDF5);
+}
+.wrong-opt.user-selected { border-color: var(--pixel-red, #C24A3A); background: #FFF0EE; }
 </style>
