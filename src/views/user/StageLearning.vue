@@ -216,6 +216,10 @@
             <!-- 已完成/未通过：显示上次成绩和重做 -->
             <div v-else-if="!quizStates[unit.id]" class="quiz-result-info">
               <p>上次得分：{{ unit.progress.score }}分（{{ unit.progress.score >= 80 ? '通过' : '未通过' }}）</p>
+              <!-- 历史错题汇总 -->
+              <div v-if="unit.progress.wrong_answers && unit.progress.wrong_answers.length > 0" class="unit-action" style="margin-bottom:8px;">
+                <button class="px-btn outline" @click="openHistoryWrongModal(unit)">📋 查看错题汇总</button>
+              </div>
               <template v-if="unit.progress.status !== 'completed'">
                 <p v-if="unit.progress.attempt_count >= 2" class="attempts-warn">⚠️ 已用完所有机会</p>
                 <button v-if="unit.progress.attempt_count < 2" class="px-btn outline" @click="retryQuiz(unit)">重新做题（剩余 {{ 2 - unit.progress.attempt_count }} 次）</button>
@@ -903,6 +907,15 @@ function hasWrongAnswers(unit) {
   const state = quizStates[unit.id]
   if (!state?.result?.details) return false
   return state.result.details.some(d => !d.isCorrect)
+}
+
+function openHistoryWrongModal(unit) {
+  const wrongs = unit.progress.wrong_answers || []
+  if (!wrongs.length) return
+  wrongModal.items = wrongs
+  wrongModal.unitTitle = unit.title
+  wrongModal.score = unit.progress.score
+  wrongModal.visible = true
 }
 
 // 预加载缓存
