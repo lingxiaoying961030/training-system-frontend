@@ -372,6 +372,7 @@
                 <span v-if="item.userAnswer?.includes(opt.key)" class="opt-marker wrong-marker">你选</span>
               </div>
             </div>
+            <div v-if="item.note" class="wrong-note">📝 {{ item.note }}</div>
           </div>
         </div>
       </div>
@@ -875,8 +876,10 @@ function openWrongModal(unit) {
   if (!state?.result?.details) return
   const wrongs = state.result.details.filter(d => !d.isCorrect)
   if (!wrongs.length) return
-  // 补充 options（从前端缓存的 questions 里取）
+  // 补充 options 和 note
   wrongs.forEach(d => {
+    // 补充笔记
+    if (!d.note && state.notes) d.note = state.notes[d.questionId] || null
     if (!d.options && state.questions) {
       const q = state.questions.find(q => q.id === d.questionId)
       if (q) {
@@ -1251,4 +1254,5 @@ onBeforeUnmount(() => {
   font-size: 14px; background: var(--pixel-card, #FFFDF5);
 }
 .wrong-opt.user-selected { border-color: var(--pixel-red, #C24A3A); background: #FFF0EE; }
+.wrong-note { font-size: 12px; color: var(--pixel-text-secondary, #8B7355); margin-top: 6px; padding: 6px 10px; background: #FDFAF0; border: 1px dashed var(--pixel-border, #E0D5C8); }
 </style>
